@@ -11,21 +11,30 @@ export function mountFirmwareView(host,api){
  const encoders=make('div',{className:'native-encoders'}),panel=make('div',{className:'native-buttons'});
  const navigation=make('div',{className:'native-navigation'}),octaves=make('div',{className:'native-buttons native-octaves'});
  const toolbar=make('div',{className:'native-toolbar'}),help=make('button',{type:'button',className:'native-help-button'},'?');
- const menu=make('details',{className:'native-menu'}),menuToggle=make('summary',{},'☰'),submenu=make('details'),layoutToggle=make('summary');
- const menuContent=make('div',{className:'native-menu-content'}),touchKeys=make('button',{type:'button',className:'native-touch-toggle',role:'switch'});
+ const touchKeys=make('button',{type:'button',className:'native-touch-toggle',role:'switch'});
  let touchEnabled=false;try{touchEnabled=localStorage.getItem('sloop.fm1TouchKeys')==='true';}catch{}
  const applyTouchKeys=()=>{touchKeys.setAttribute('aria-checked',String(touchEnabled));document.body.classList.toggle('fm1-touch-keys',touchEnabled||document.body.classList.contains('fm1-device-layout'));};
  touchKeys.onclick=()=>{touchEnabled=!touchEnabled;applyTouchKeys();try{localStorage.setItem('sloop.fm1TouchKeys',String(touchEnabled));}catch{}};
- submenu.append(layoutToggle,layout);menuContent.append(submenu,touchKeys);menu.append(menuToggle,menuContent);toolbar.append(help,menu);applyTouchKeys();
- // Names and five-stop swatches from firmware/src/gfx.c.
- const palettes=[['GREEN',['#00280c','#00541e','#108c36','#38c85c','#78ff92']],['AMBER',['#3c1a00','#6e3200','#aa5200','#e17808','#ffa628']],['CYAN',['#001e32','#003e60','#1070a0','#38acde','#8cdeff']],['RED',['#340808','#64120e','#aa241a','#e24030','#ff705c']],['MONO',['#282828','#505050','#828282','#bababa','#e2e2e2']]];
+ toolbar.append(help);applyTouchKeys();
+ // Hardware finishes, sampled from FM-1 product photos (see WEBSITE_DEVELOPMENT.md).
+ const finishes=[
+  ['black','Black',['#151619','#292b30','#202226','#eeeeef']],
+  ['black-green','Black / Green',['#151619','#397d70','#296154','#eeeeef']],
+  ['white-blue','White / Blue',['#e6e4e1','#334f87','#263d6b','#252932']],
+  ['orange','Orange',['#ee4c20','#b93829','#963025','#fff3e9']],
+  ['purple','Purple',['#b889c5','#7550a5','#60418c','#251e30']],
+  ['white-gray','White / Gray',['#e6e4e1','#626571','#4c4f5b','#252932']]
+ ];
  const paletteMenu=make('details',{className:'native-palette-menu'}),paletteToggle=make('summary'),palettePopup=make('div',{className:'native-palette-popup'}),paletteHeading=make('strong');
- palettePopup.append(paletteHeading);paletteMenu.append(paletteToggle,palettePopup);toolbar.insertBefore(paletteMenu,menu);
- const paletteButtons=palettes.map(([name,colors],index)=>{const b=make('button',{type:'button',className:'native-palette-option'}),swatch=make('span',{className:'native-palette-strip'}),label=make('span',{},name);swatch.style.background=`linear-gradient(90deg,${colors.join(',')})`;b.append(swatch,label);b.onclick=()=>{emit(5,index,1);paletteMenu.open=false;paletteToggle.focus();};palettePopup.append(b);return b;});
- function paintPalette(index){const colors=palettes[index]?.[1]||palettes[4][1];paletteToggle.style.background=`conic-gradient(${colors.join(',')},${colors[0]})`;paletteButtons.forEach((b,i)=>b.setAttribute('aria-pressed',String(i===index)));}
- paintPalette(4);
+ palettePopup.append(paletteHeading);paletteMenu.append(paletteToggle,palettePopup);toolbar.append(paletteMenu,layout);
+ const paletteButtons=finishes.map(([id,name,colors])=>{const b=make('button',{type:'button',className:'native-palette-option'}),swatch=make('span',{className:'native-palette-strip'}),label=make('span',{},name);b.setAttribute('aria-label',name);swatch.style.background=`linear-gradient(90deg,${colors[0]} 0 50%,${colors[1]} 50% 75%,${colors[2]} 75%)`;b.append(swatch,label);b.onclick=()=>{paintFinish(id);try{localStorage.setItem('sloop.fm1Finish',id);}catch{}paletteMenu.open=false;paletteToggle.focus();};palettePopup.append(b);return b;});
+ palettePopup.append(touchKeys);
+ function paintFinish(id){const f=finishes.find(f=>f[0]===id)||finishes.find(f=>f[0]==='orange'),colors=f[2];document.body.dataset.fm1Finish=f[0];['shell','pad','key','ink'].forEach((v,i)=>document.body.style.setProperty('--fm1-'+v,colors[i]));paletteToggle.style.background=`conic-gradient(${colors[0]} 0 50%,${colors[1]} 50% 75%,${colors[2]} 75%)`;paletteButtons.forEach((b,i)=>b.setAttribute('aria-pressed',String(finishes[i]===f)));}
+ let finish='orange';try{finish=localStorage.getItem('sloop.fm1Finish');}catch{}paintFinish(finish);
+ const icon=(button,path)=>{const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('aria-hidden','true');const shape=document.createElementNS(svg.namespaceURI,'path');shape.setAttribute('d',path);svg.append(shape);button.append(svg);};
+ icon(device,'M3 4h18v16H3z M7 7h6v6H7z M16 8h2 M16 12h2 M6 16v2 M9 16v2 M12 16v2 M15 16v2 M18 16v2');
+ icon(expanded,'M9 3H3v6 M15 3h6v6 M3 15v6h6 M21 15v6h-6 M3 3l6 6 M21 3l-6 6 M3 21l6-6 M21 21l-6-6');
  document.addEventListener('pointerdown',e=>{if(!paletteMenu.contains(e.target))paletteMenu.open=false;});
- paletteMenu.addEventListener('toggle',()=>{if(paletteMenu.open)menu.open=false;});menu.addEventListener('toggle',()=>{if(menu.open)paletteMenu.open=false;});
  paletteMenu.addEventListener('keydown',e=>{if(e.key==='Escape'){paletteMenu.open=false;paletteToggle.focus();}});
  const controls=make('div',{className:'native-controls'});controls.append(encoders,panel);
  const body=make('div',{className:'native-body'});body.append(navigation,screen,controls);
@@ -69,15 +78,13 @@ export function mountFirmwareView(host,api){
   document.body.classList.toggle('fm1-device-layout',dock);applyTouchKeys();window.SloopPlay.dock(dock);
  }
  const choose=mode=>{host.dataset.layout=mode;device.setAttribute('aria-pressed',String(mode==='device'));expanded.setAttribute('aria-pressed',String(mode==='expanded'));dockKeyboard();};
- device.onclick=()=>{choose('device');menu.open=false;};expanded.onclick=()=>{choose('expanded');menu.open=false;};choose('device');
- document.addEventListener('pointerdown',e=>{if(!menu.contains(e.target))menu.open=false;});
- menu.addEventListener('keydown',e=>{if(e.key==='Escape'){menu.open=false;menuToggle.focus();}});
+ device.onclick=()=>{choose('device');paletteMenu.open=false;};expanded.onclick=()=>{choose('expanded');paletteMenu.open=false;};choose('device');
  const tour=make('dialog',{className:'native-tour'}),spotlight=make('div',{className:'native-tour-spotlight'}),bubble=make('div',{className:'native-tour-bubble'});
  const progress=make('div',{className:'native-tour-progress'}),title=make('h2',{id:'native-tour-title'}),copy=make('p',{id:'native-tour-copy'}),actions=make('div',{className:'native-tour-actions'});
  const skip=make('button',{type:'button'}),back=make('button',{type:'button'}),next=make('button',{type:'button'});
  actions.append(skip,back,next);bubble.append(progress,title,copy,actions);tour.append(spotlight,bubble);document.body.append(tour);
  tour.setAttribute('aria-labelledby',title.id);tour.setAttribute('aria-describedby',copy.id);
- const steps=[['welcome',()=>help],['layout',()=>menuToggle],['sound',()=>navigation],['knobs',()=>encoders],['keyboard',()=>document.querySelector('.play-keyboard')],['layers',()=>panel],['record',()=>panel.children[11]],['song',()=>panel.children[7]],['finish',()=>help]];
+ const steps=[['welcome',()=>help],['layout',()=>layout],['sound',()=>navigation],['knobs',()=>encoders],['keyboard',()=>document.querySelector('.play-keyboard')],['layers',()=>panel],['record',()=>panel.children[11]],['song',()=>panel.children[7]],['finish',()=>help]];
  let step=0,tourStarted=false,tourFrame;
  function positionTour(){
   if(!tour.open)return;
@@ -95,7 +102,7 @@ export function mountFirmwareView(host,api){
   steps[step][1]().scrollIntoView({block:'center',behavior:'instant'});positionTour();
  }
  function startTour(){
-  if(tour.open)return;releaseAll();window.SloopPlay.release();menu.open=false;tourStarted=true;
+  if(tour.open)return;releaseAll();window.SloopPlay.release();paletteMenu.open=false;tourStarted=true;
   document.cookie='sloop_simulator_tour_v1=seen; Max-Age=31536000; Path=/; SameSite=Lax';
   step=0;tour.showModal();renderStep();next.focus({preventScroll:true});
  }
@@ -107,9 +114,9 @@ export function mountFirmwareView(host,api){
  const reposition=()=>{cancelAnimationFrame(tourFrame);tourFrame=requestAnimationFrame(positionTour);};
  window.addEventListener('resize',reposition);window.addEventListener('scroll',reposition,true);
  new ResizeObserver(reposition).observe(bubble);
- function translate(){device.textContent=window.SloopI18n.t('view.device');expanded.textContent=window.SloopI18n.t('view.expanded');canvas.setAttribute('aria-label',t('screen'));
+ function translate(){[[device,'device'],[expanded,'expanded']].forEach(([b,key])=>{b.title=window.SloopI18n.t('view.'+key);b.setAttribute('aria-label',b.title);});layout.setAttribute('aria-label',t('layout'));canvas.setAttribute('aria-label',t('screen'));
   paletteToggle.title=t('colors');paletteToggle.setAttribute('aria-label',t('colors'));paletteHeading.textContent=t('colors');
-  help.title=t('guide');help.setAttribute('aria-label',t('guide'));menuToggle.title=t('menu');menuToggle.setAttribute('aria-label',t('menu'));layoutToggle.textContent=t('layout');touchKeys.textContent=t('touchKeys');if(tour.open)renderStep();
+  help.title=t('guide');help.setAttribute('aria-label',t('guide'));touchKeys.textContent=t('touchKeys');if(tour.open)renderStep();
   host.querySelectorAll('.native-dial').forEach(dial=>{dial.title=t('knobHelp');dial.setAttribute('aria-description',t('knobHelp'));});
  }
  translate();window.SloopI18n.onChange(translate);
@@ -117,7 +124,6 @@ export function mountFirmwareView(host,api){
  function display(data){
   lastData=data;if(!shown)return;cancelAnimationFrame(pendingFrame);
   pendingFrame=requestAnimationFrame(()=>{
-   paintPalette(data.state.native.prefs[0]);
    data.pixels.forEach((swapped,i)=>{const p=(swapped>>8)|((swapped&255)<<8),q=i*4;pixels.data[q]=(p>>11)*255/31;pixels.data[q+1]=((p>>5)&63)*255/63;pixels.data[q+2]=(p&31)*255/31;pixels.data[q+3]=255;});ctx.putImageData(pixels,0,0);
    const s=data.state.status;window.SloopPlay.nativeStatus(s);state.textContent=`${t('track')} ${s[0]+1} · ${s[2]||s[4]?t('recording'):s[3]?t('armed'):s[1]?t('playing'):t('stopped')} · ${t('layer')} ${['PLAY','FX','EDIT','ARP','SEQ','SCL','GLO','SAVE'][s[5]]||'PLAY'}`;
    host.querySelectorAll('[data-native-kind="0"]').forEach(b=>{const k=+b.dataset.nativeId;b.classList.toggle('lit',!!(s[18]&(1<<k)));b.classList.toggle('backlit',!!(s[19]&(1<<k)));});
@@ -128,5 +134,5 @@ export function mountFirmwareView(host,api){
  document.addEventListener('visibilitychange',()=>{if(document.hidden&&shown)releaseAll();});
  api.listen(display);
  const maybeTour=()=>{if(shown&&!tourStarted&&!document.cookie.split('; ').includes('sloop_simulator_tour_v1=seen'))startTour();};
- return {show(on){shown=on;host.hidden=!on;window.SloopPlay.firmware(on?{panel:emit}:null);dockKeyboard();if(!on){clearTimeout(bootTimer);splash.hidden=true;host.removeAttribute('aria-busy');closeTour(false);menu.open=false;releaseAll();cancelAnimationFrame(pendingFrame);}else{if(lastData)display(lastData);if(!booted){booted=true;splash.hidden=false;host.setAttribute('aria-busy','true');bootTimer=setTimeout(()=>{splash.hidden=true;host.removeAttribute('aria-busy');maybeTour();},1000);}else requestAnimationFrame(maybeTour);}}};
+ return {show(on){shown=on;host.hidden=!on;window.SloopPlay.firmware(on?{panel:emit}:null);dockKeyboard();if(!on){clearTimeout(bootTimer);splash.hidden=true;host.removeAttribute('aria-busy');closeTour(false);paletteMenu.open=false;releaseAll();cancelAnimationFrame(pendingFrame);}else{if(lastData)display(lastData);if(!booted){booted=true;splash.hidden=false;host.setAttribute('aria-busy','true');bootTimer=setTimeout(()=>{splash.hidden=true;host.removeAttribute('aria-busy');maybeTour();},1000);}else requestAnimationFrame(maybeTour);}}};
 }
