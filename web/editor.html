@@ -181,10 +181,12 @@
 <link rel="stylesheet" href="interface.css">
 <link rel="stylesheet" href="sloop.css">
 <link rel="stylesheet" href="firmware-view.css">
+<link rel="stylesheet" href="standalone.css">
 <script src="locales.js"></script><script src="i18n.js"></script><script src="skin.js"></script>
 </head>
-<body class="editor-page">
+<body class="editor-page standalone-synth" data-editor-view="firmware">
 <main>
+  <details id="utility-drawer" class="utility-drawer"><summary title="Show or hide extra controls" aria-label="Show or hide extra controls"><span aria-hidden="true"></span></summary><div class="utility-content">
   <header class="brand-row masthead" id="page-top">
     <div><span class="eyebrow" data-i18n="brand.editorKicker">FM-1 / LIVE GROOVEBOX</span><h1><a class="brand-home" href="../../"><img class="sloop-logo" src="sloop-logo.svg" width="196" height="82" alt="Sloop"><svg class="salt-lettering" viewBox="0 0 285 260" width="90" height="82" role="img" aria-label="[salt]" fill="none" stroke="currentColor" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
       <path d="M25 68H12V178H25 M266 68H279V178H266" stroke-width="8"/>
@@ -234,6 +236,7 @@
     </nav>
     <div class="trackbar" id="trackbar" hidden><span class="dim" data-t="track"></span><span class="seg" id="trackbtns" role="group"></span></div>
   </header>
+  </div></details>
   <section id="firmware-view" hidden aria-label="FM-1 Simulator"></section>
   <p class="hint" id="hint" hidden></p>
 
@@ -2422,6 +2425,7 @@ async function connect() {
         if (!browserSynth) {
           const {BrowserSynth} = await import('./audio/browser.js');
           browserSynth = new BrowserSynth();
+          browserSynth.onNative=nativeListener;
           browserSynth.onStorage = ok => window.SloopI18n.text($('audio-status'), ok ? 'audio.saved' : 'audio.storageFailed');
           browserSynth.onTransport = state => {
             $('audio-play').setAttribute('aria-pressed', String(state.playing));
@@ -4576,21 +4580,25 @@ $("connect").addEventListener("click", () => {
 function audioControls(enabled) {
   externalMIDI?.release();$('midi-enable').disabled=!enabled;
   for (const id of ['audio-play','audio-stop','audio-export','audio-import']) $(id).disabled = !enabled;
-  if (!enabled) setEditorView(false).catch(report);
+  if (!enabled && !document.body.classList.contains('standalone-synth')) setEditorView(false).catch(report);
 }
-let firmwareView, externalMIDI;
-async function setEditorView(on) {
-  externalMIDI?.release();
-  if(on && (!dev || !browserMode || busy))return;
-  window.SloopPlay.release();
-  if(on && !firmwareView){
+let firmwareView, externalMIDI, nativeListener;
+async function ensureFirmwareView() {
+  if(!firmwareView){
     const {mountFirmwareView}=await import('./firmware-view.js');
     firmwareView=mountFirmwareView($('firmware-view'),{
-      panel:(kind,id,value)=>browserSynth.panel(kind,id,value),release:()=>browserSynth?.releasePanel(),
-      volume:steps=>{const control=$('audio-volume');control.value=Math.max(0,Math.min(100,+control.value+steps));browserSynth.volume(+control.value/100);},
-      listen:callback=>{browserSynth.onNative=callback;}
+      panel:(kind,id,value)=>browserSynth?.panel(kind,id,value),release:()=>browserSynth?.releasePanel(),
+      volume:steps=>{const control=$('audio-volume');control.value=Math.max(0,Math.min(100,+control.value+steps));browserSynth?.volume(+control.value/100);},
+      listen:callback=>{nativeListener=callback;if(browserSynth)browserSynth.onNative=callback;}
     });
   }
+}
+async function setEditorView(on) {
+  externalMIDI?.release();
+  if(document.body.classList.contains('standalone-synth'))on=true;
+  if(on && (!dev || !browserMode || busy))return;
+  window.SloopPlay.release();
+  if(on)await ensureFirmwareView();
   if(on && (!dev || !browserMode))return;
   if(browserSynth?.context?.state==='running'){
     const was=browserSynth.firmwareActive;
@@ -4674,7 +4682,7 @@ $('audio-file').addEventListener('change', async e => {
   if(file.size>3000000){sayK('error',window.SloopI18n.t('audio.invalidSession'));return;}
   if(!confirm(window.SloopI18n.t('audio.replaceSession')))return;
   busy++;
-  try {await setEditorView(false);audioControls(false);window.SloopPlay.release();await browserSynth.import(await file.text());await load(dev);syncPlay();}
+  try {await setEditorView(false);audioControls(false);window.SloopPlay.release();await browserSynth.import(await file.text());await load(dev);syncPlay();if(document.body.classList.contains('standalone-synth'))await setEditorView(true);}
   catch(error){sayK('error',window.SloopI18n.t('audio.invalidSession'));console.error(error);}
   finally {busy--;audioControls(!!dev);}
 });
@@ -4705,12 +4713,20 @@ tipClose.onclick=dismissModeTip;$('audio-mode').addEventListener('click',dismiss
 document.addEventListener('keydown',e=>{if(e.key==='Escape')dismissModeTip();});
 window.addEventListener('resize',positionModeTip);window.addEventListener('scroll',positionModeTip,{passive:true});
 window.SloopI18n.onChange(renderModeTip);renderModeTip();
-setTimeout(()=>{if(!tipDismissed){modeTip.hidden=false;positionModeTip();}},700);
+setTimeout(()=>{if(!document.body.classList.contains('standalone-synth')&&!tipDismissed){modeTip.hidden=false;positionModeTip();}},700);
 applyLang();
 showTab(tab);
 libInit();
 if (!MOCK && !navigator.requestMIDIAccess) sayK("nomidi");
 if (QS.get('browser') === '1') chooseAudioMode(true);
+if(document.body.classList.contains('standalone-synth')){
+ import('./standalone.js').then(async({mountStandalone})=>{
+  await ensureFirmwareView();firmwareView.show(true,{preview:true});
+  mountStandalone({start:async()=>{await switchSource('firmware');if(!dev||!browserSynth?.node)throw new Error($('status').textContent||'Audio could not start. Try again.');},
+   pause:async()=>{window.SloopPlay.release();externalMIDI?.release();await browserSynth?.stop();},
+   resume:async()=>{await browserSynth.start();await setEditorView(true);},isRunning:()=>browserSynth?.context?.state==='running',release:()=>window.SloopPlay.release()});
+ }).catch(error=>{$('firmware-view').hidden=false;$('firmware-view').textContent='Unable to load the simulator. Please reload. '+error.message;});
+}
 })();
 </script>
 </body>

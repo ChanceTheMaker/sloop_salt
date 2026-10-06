@@ -1,15 +1,14 @@
 # Website analytics
 
 At the owner's request, Sloop shares Felucca Salt's GA4 property `G-JVF09MZEGD`.
-Only `chancethemaker.github.io/sloop_salt/` sends analytics. Local previews and
-other forks do not. The public installer, editor and alternate Salt homepage
-load the same optional module; the root redirect does not send a duplicate view.
+Only `chancethemaker.github.io/fm1-simulator/` sends analytics. Local previews and
+other forks do not. This branch publishes the standalone simulator at the site root.
 
 The implementation is adapted from Chance Roth's Felucca Salt code under GPL-3.0.
 It retains Felucca's default-on notice and Essential only opt-out. Cookie settings
-can be reopened from the website settings menu, or the installer footer. The
+can be reopened from the device credits. The
 choice persists independently under `sloop.web.analyticsConsent`. GA cookies use
-the `sloop` prefix and `/sloop_salt/` path, following Google's
+the `sloop` prefix and `/fm1-simulator/` path, following Google's
 [configuration reference](https://developers.google.com/analytics/devguides/collection/ga4/reference/config).
 
 Page views, theme changes, ZIP/FWSC download clicks and successful initial browser

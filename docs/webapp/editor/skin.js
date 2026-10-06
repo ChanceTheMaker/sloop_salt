@@ -181,7 +181,7 @@
       '<label class="width-toggle"><span data-i18n="ui.fullWidth"></span><input id="web-width" type="checkbox" data-i18n-aria-label="ui.fullWidth"></label>';
     const menu = document.createElement('details'); menu.className = 'settings-menu';
     const trigger = document.createElement('summary'); trigger.textContent = '☰'; trigger.dataset.i18nAriaLabel = 'ui.websiteSettings';
-    menu.append(trigger); document.querySelector('.brand-links').append(menu); menu.append(host);
+    menu.append(trigger); document.querySelector('.brand-links').append(menu); if(!document.body.classList.contains('standalone-synth'))menu.append(host);else menu.hidden=true;
     document.addEventListener('pointerdown', e => { if (!menu.contains(e.target)) menu.open = false; });
     menu.addEventListener('keydown', e => { if (e.key === 'Escape') { menu.open = false; trigger.focus(); } });
     const width = document.getElementById('web-width'); width.checked = root.dataset.fullWidth === 'true';

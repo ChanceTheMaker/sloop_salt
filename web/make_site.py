@@ -96,7 +96,7 @@ def main(pkg, version, out):
         f'<image href="data:image/png;base64,{logo}" x="10" y="10" width="220" height="176"/>'
         f'<text x="120" y="213" text-anchor="middle" fill="#c4c4cc" font-family="monospace" font-size="12">{escape(version)}</text>'
         '<text x="120" y="231" text-anchor="middle" fill="#606068" font-family="monospace" font-size="12">based on felucca</text></svg>', encoding="utf-8")
-    for asset in ("firmware-view.js", "firmware-view.css", "midi-input.js"):
+    for asset in ("firmware-view.js", "firmware-view.css", "midi-input.js", "standalone.js", "standalone.css"):
         shutil.copy(HERE / asset, ed / asset)
     (ed / "audio").mkdir(exist_ok=True)
     for asset in ("browser.js", "worklet.js", "session.js", "native-state.js", "engine.wasm"):

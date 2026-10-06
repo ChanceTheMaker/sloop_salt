@@ -222,3 +222,24 @@ merge the stacked feature PRs into main.
 Owner-authorized shared GA4 analytics: see `web/ANALYTICS.md`. The build adds only
 the optional analytics stylesheet/script to the original installer page; its
 template, update logic and firmware bytes remain unchanged.
+
+
+## Standalone FM-1 Simulator
+
+Branch `feat/standalone-fm1` follows the completed website checkpoint
+`website-overhaul-2026-10-06` (source `1f20ea4`). The existing Sloop Pages site
+remains unchanged. The new publication is https://chancethemaker.github.io/fm1-simulator/.
+Its separate repository holds the generated editor at the root plus LICENSE,
+release metadata and the complete corresponding source archive.
+
+The page opens directly on the Orange FM-1 with Start synth in its display.
+Audio starts only after this gesture. Device/Expanded, finish selection, help
+and audio pause remain on the device. Old upper controls are retained in a
+closed top drawer; branding/navigation and redundant sound-source controls are
+hidden. Credits, Chance Roth attribution, the disclaimer and source link remain
+below the device. The drawer always starts closed, even after reload.
+
+Preview: http://127.0.0.1:8769/webapp/editor/ (`tools/preview_site.py`).
+`web/test_standalone.mjs` checks startup, real AudioWorklet output, QWERTY,
+pause/resume, both layouts, drawer/export, help, finish persistence and mobile
+bounds. Firmware sources and hardware packages remain untouched.
