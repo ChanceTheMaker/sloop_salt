@@ -213,7 +213,7 @@ h2 { font-family:var(--ui-font); }
 .editor-page .play-keyboard.collapsed { padding:6px 12px; border-radius:10px 10px 0 0; }
 .editor-page .play-keyboard.collapsed .play-controls { margin:0; }
 .editor-page .play-keyboard.collapsed .keyboard-tray { font-size:11px; }
-footer { color:var(--dim); font:11px/1.8 var(--ui-font); margin-top:22px; }
+footer { color:var(--dim); font:11px/1.8 var(--ui-font); margin-top:22px; text-align:center; }
 footer a { text-underline-offset:3px; }
 .hint { border:1px solid var(--line); border-radius:10px; color:var(--dim); }
 /* The finish follows each skin's personality without sacrificing legibility. */

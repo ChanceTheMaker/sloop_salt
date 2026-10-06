@@ -1,9 +1,9 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
 body[data-editor-view=firmware] #tabs,body[data-editor-view=firmware] #trackbar,
 body[data-editor-view=firmware] .panel,body[data-editor-view=firmware] #hint {display:none!important}
-#firmware-view {max-width:1100px;margin:1rem auto;padding:20px;background:#101214;color:#eee;border:1px solid #45494e;border-radius:12px;font:13px/1.4 monospace}
+#firmware-view {position:relative;max-width:1100px;margin:8px auto;padding:12px;background:#101214;color:#eee;border:1px solid #45494e;border-radius:12px;font:13px/1.4 monospace}
 .fw-layouts {display:grid;gap:8px;padding:12px}.fw-layouts button[aria-pressed=true] {outline:2px solid #eee}
-.native-toolbar {display:flex;justify-content:flex-end;align-items:center;gap:8px;position:relative;z-index:2}
+.native-toolbar {display:flex;justify-content:flex-end;align-items:center;gap:8px;position:absolute;top:8px;right:8px;z-index:2}
 .native-toolbar .native-help-button,.native-menu>summary {box-sizing:border-box;display:grid;place-items:center;width:36px;height:36px;padding:0;border:1px solid #68717b;border-radius:9px;background:#242a31;color:#fff;font:20px/1 system-ui;cursor:pointer;list-style:none}
 .native-menu>summary::-webkit-details-marker {display:none}
 .native-menu-content {position:absolute;right:0;top:44px;width:230px;padding:10px;background:#20262d;color:#fff;border:1px solid #68717b;border-radius:12px;box-shadow:0 12px 32px #0009}
@@ -25,15 +25,16 @@ body[data-editor-view=firmware] .panel,body[data-editor-view=firmware] #hint {di
 .native-tour-actions button {min-height:40px;padding:8px 12px;border:1px solid #758494;border-radius:9px;background:#283644;color:#fff;font:600 14px/1.3 system-ui;cursor:pointer}
 .native-tour-actions button:first-child {margin-right:auto}.native-tour-actions button:last-child {background:#b6eaff;color:#102332;border-color:#b6eaff}
 .native-tour-actions button:disabled {opacity:.45;cursor:default}.native-tour :focus-visible {outline:3px solid #7cd8ff;outline-offset:3px}
-.native-body {display:grid;grid-template-columns:minmax(130px,.75fr) minmax(200px,1fr) minmax(340px,1.65fr);align-items:center;gap:24px;padding:16px 0}
+.native-body {display:grid;grid-template-columns:minmax(130px,.75fr) minmax(200px,1fr) minmax(340px,1.65fr);align-items:center;gap:24px;padding:0}
 .native-navigation {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 8px}
 .native-octaves {grid-column:1/-1;order:4;grid-template-columns:repeat(2,minmax(0,1fr))!important;max-width:116px!important;margin-top:8px}
 .native-screen {display:block;width:100%;max-width:480px;aspect-ratio:1;image-rendering:pixelated;border:10px solid #050506;border-radius:6px;box-sizing:border-box;margin:auto}
 [data-layout=device] .native-screen {max-width:320px}
 #firmware-view[data-layout=expanded] {max-width:1280px}
 [data-layout=expanded] .native-body {grid-template-columns:minmax(130px,.65fr) minmax(320px,1.8fr) minmax(340px,1.3fr)}
-.native-status {text-align:center;min-height:2.8em;font-size:12px;color:#bec5cc}
+.native-status {text-align:center;margin:4px 0 0;font-size:11px;line-height:1.4;color:#bec5cc}
 .native-encoders {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px 8px;max-width:320px;margin:0 auto 30px}
+.native-controls {padding-top:32px}
 .native-encoder {display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;font-size:11px}
 .native-dial {position:relative;width:58px;height:58px;padding:0!important;border:3px solid #090a0c!important;border-radius:50%!important;touch-action:none;cursor:ns-resize;background:repeating-conic-gradient(#17191d 0deg 5deg,#34373c 6deg 9deg,#101114 10deg 14deg)!important;box-shadow:0 6px 7px #0009,0 1px 0 2px #494c50,inset 0 1px 2px #ffffff30!important;isolation:isolate}
 .native-dial::before {content:'';position:absolute;inset:5px;border-radius:50%;background:radial-gradient(ellipse at 35% 22%,#62666c,#303339 45%,#17191d 85%);box-shadow:inset 0 1px 2px #ffffff38,inset 0 -3px 5px #0008;border:1px solid #090a0c}
@@ -67,6 +68,6 @@ body[data-editor-view=firmware].fm1-touch-keys .piano button.native-guide {outli
 body[data-editor-view=firmware].fm1-touch-keys .piano button:focus-visible {outline:2px solid #74dcff;outline-offset:2px}
 body[data-editor-view=firmware].fm1-touch-keys .piano small {font:9px/1.2 system-ui}
 @media(max-width:600px){body[data-editor-view=firmware].fm1-touch-keys .piano button {width:calc(100% / var(--white-keys,16) - 3px);margin-left:1.5px;border-width:1px;font-size:7px}body[data-editor-view=firmware].fm1-touch-keys .piano button.black {width:calc(60% / var(--white-keys,16));margin-left:0}body[data-editor-view=firmware].fm1-touch-keys .piano small {font-size:8px}}
-@media(max-width:780px){#firmware-view {padding:12px}.native-body {grid-template-columns:minmax(110px,.7fr) minmax(150px,1fr);gap:22px 10px}.native-controls {grid-column:1/-1}.native-screen {border-width:5px}.native-encoders {gap:8px}.native-buttons {gap:5px;font-size:11px}.native-navigation {gap:20px 4px}.native-encoder {font-size:9px}.native-encoder>div button {padding:3px 7px!important}}
+@media(max-width:780px){#firmware-view {padding:48px 10px 10px}.native-body {grid-template-columns:minmax(110px,.7fr) minmax(150px,1fr);gap:14px 10px}.native-controls {grid-column:1/-1;padding-top:0}.native-screen {border-width:5px}.native-encoders {gap:8px;margin-bottom:22px}.native-buttons {gap:5px;font-size:11px}.native-navigation {gap:20px 4px}.native-encoder {font-size:9px}.native-encoder>div button {padding:3px 7px!important}}
 @media(min-width:781px) and (max-width:1050px){[data-layout=expanded] .native-body {grid-template-columns:minmax(130px,.6fr) minmax(320px,1.4fr)}[data-layout=expanded] .native-controls {grid-column:1/-1}}
 @media(max-width:780px){[data-layout=expanded] .native-body {grid-template-columns:minmax(0,1fr)}[data-layout=expanded] .native-display {grid-row:1}[data-layout=expanded] .native-navigation {grid-template-columns:repeat(4,minmax(0,1fr));gap:14px 8px}}
