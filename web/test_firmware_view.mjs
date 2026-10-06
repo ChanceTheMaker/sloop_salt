@@ -26,7 +26,7 @@ const signal=()=>page.waitForFunction(()=>{const a=new Float32Array(testAnalyser
 try{
  await page.goto('http://127.0.0.1:8769/webapp/editor/',{waitUntil:'domcontentloaded',timeout:60000});
  await page.locator('#view-firmware').click();await page.locator('.native-screen').waitFor({state:'visible'});
- const chooseLayout=async name=>{await page.locator('.native-menu>summary').click();if(!await page.locator('.native-menu-content>details').evaluate(e=>e.open))await page.locator('.native-menu-content>details>summary').click();await page.getByRole('button',{name,exact:true}).click();};
+ const chooseLayout=async name=>{await page.getByRole('button',{name,exact:true}).click();};
  assert.equal(await page.locator('#firmware-view #play-keys button').count(),27);
  await chooseLayout('Expanded');
  await page.waitForFunction(()=>document.querySelector('.native-status').textContent.includes('Stopped'));

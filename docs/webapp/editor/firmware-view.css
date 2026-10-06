@@ -2,22 +2,22 @@
 body[data-editor-view=firmware] #tabs,body[data-editor-view=firmware] #trackbar,
 body[data-editor-view=firmware] .panel,body[data-editor-view=firmware] #hint {display:none!important}
 #firmware-view {position:relative;max-width:1100px;margin:8px auto;padding:12px;background:#101214;color:#eee;border:1px solid #45494e;border-radius:12px;font:13px/1.4 monospace}
-.fw-layouts {display:grid;gap:8px;padding:12px}.fw-layouts button[aria-pressed=true] {outline:2px solid #eee}
+.fw-layouts {display:flex;gap:2px;padding:3px;border:1px solid #68717b;border-radius:10px;background:#20262d}
+.fw-layouts button {display:grid;place-items:center;width:34px;height:30px;padding:5px;border:0;border-radius:6px;background:transparent;color:#b8c1cc;cursor:pointer}
+.fw-layouts button[aria-pressed=true] {background:#dce6ee;color:#15232e;box-shadow:0 1px 3px #0005}
+.fw-layouts svg {width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
 .native-toolbar {display:flex;justify-content:flex-end;align-items:center;gap:8px;position:absolute;top:8px;right:8px;z-index:2}
-.native-toolbar .native-help-button,.native-menu>summary {box-sizing:border-box;display:grid;place-items:center;width:36px;height:36px;padding:0;border:1px solid #68717b;border-radius:9px;background:#242a31;color:#fff;font:20px/1 system-ui;cursor:pointer;list-style:none}
-.native-menu>summary::-webkit-details-marker {display:none}
+.native-toolbar .native-help-button {box-sizing:border-box;display:grid;place-items:center;width:36px;height:36px;padding:0;border:1px solid #68717b;border-radius:9px;background:#242a31;color:#fff;font:20px/1 system-ui;cursor:pointer;list-style:none}
 .native-toolbar .native-help-button {border:0;background:transparent;box-shadow:none}
 .native-palette-menu>summary {display:block;box-sizing:border-box;width:32px;height:32px;border:2px solid #b0b8c1;border-radius:50%;box-shadow:inset 0 0 0 3px #101214;cursor:pointer;list-style:none}
 .native-palette-menu>summary::-webkit-details-marker {display:none}
-.native-palette-popup {position:absolute;right:0;top:44px;width:250px;max-width:calc(100vw - 48px);box-sizing:border-box;padding:16px;background:#20262d;color:#f5f7fa;border:1px solid #68717b;border-radius:16px;box-shadow:0 16px 40px #000a;font:14px/1.5 system-ui}
+.native-palette-popup {position:absolute;right:0;top:44px;width:250px;max-width:calc(100vw - 48px);max-height:calc(100dvh - 100px);overflow-y:auto;box-sizing:border-box;padding:16px;background:#20262d;color:#f5f7fa;border:1px solid #68717b;border-radius:16px;box-shadow:0 16px 40px #000a;font:14px/1.5 system-ui}
 .native-palette-popup strong {display:block;margin-bottom:12px}
 .native-palette-popup .native-palette-option {display:flex;align-items:center;gap:12px;width:100%;margin:6px 0;padding:9px;border:1px solid transparent;border-radius:9px;background:#151a20;color:#fff;font:600 12px/1.5 system-ui;cursor:pointer}
 .native-palette-option[aria-pressed=true] {border-color:#dce8f2!important;background:#323d47!important}
 .native-palette-option[aria-pressed=true]::after {content:'✓';margin-left:auto}
 .native-palette-strip {width:90px;height:22px;border-radius:6px;box-shadow:inset 0 0 0 1px #ffffff30}
-.native-menu-content {position:absolute;right:0;top:44px;width:230px;padding:10px;background:#20262d;color:#fff;border:1px solid #68717b;border-radius:12px;box-shadow:0 12px 32px #0009}
-.native-menu-content>details>summary {padding:8px;cursor:pointer;font:15px/1.5 system-ui}
-.native-menu .native-touch-toggle {display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;margin-top:8px;padding:12px 8px;background:#20262d;color:#fff;border:0;border-top:1px solid #68717b;border-radius:0;font:14px/1.5 system-ui;text-align:left;cursor:pointer}
+.native-palette-popup .native-touch-toggle {display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;margin-top:8px;padding:12px 8px;background:#20262d;color:#fff;border:0;border-top:1px solid #68717b;border-radius:0;font:14px/1.5 system-ui;text-align:left;cursor:pointer}
 .native-touch-toggle::after {content:'';flex:none;width:34px;height:20px;border-radius:12px;background:radial-gradient(circle at 10px 10px,#fff 0 6px,transparent 7px),#606a76}
 .native-touch-toggle[aria-checked=true]::after {background:radial-gradient(circle at 24px 10px,#fff 0 6px,transparent 7px),#237fa3}
 .native-tour {position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:0;border:0;background:transparent;color:#f5f7fa;overflow:hidden}
@@ -91,3 +91,14 @@ body[data-editor-view=firmware].fm1-touch-keys .piano small {font:9px/1.2 system
 @media(max-width:780px){#firmware-view {padding:48px 10px 10px}.native-body {grid-template-columns:minmax(110px,.7fr) minmax(150px,1fr);gap:14px 10px}.native-controls {grid-column:1/-1;padding-top:0}.native-screen {border-width:5px}.native-encoders {gap:8px;margin-bottom:22px}.native-buttons {gap:5px;font-size:11px}.native-navigation {gap:20px 4px}.native-encoder {font-size:9px}.native-encoder>div button {padding:3px 7px!important}}
 @media(min-width:781px) and (max-width:1050px){[data-layout=expanded] .native-body {grid-template-columns:minmax(130px,.6fr) minmax(320px,1.4fr)}[data-layout=expanded] .native-controls {grid-column:1/-1}}
 @media(max-width:780px){[data-layout=expanded] .native-body {grid-template-columns:minmax(0,1fr)}[data-layout=expanded] .native-display {grid-row:1}[data-layout=expanded] .native-navigation {grid-template-columns:repeat(4,minmax(0,1fr));gap:14px 8px}}
+
+/* Physical device finishes are independent of the native display palette. */
+#firmware-view {background:var(--fm1-shell,#151619);color:var(--fm1-ink,#eee);border-color:color-mix(in srgb,var(--fm1-shell) 70%,#888);box-shadow:inset 0 1px 0 #ffffff30,0 4px 12px #0003}
+.native-status,.native-toolbar .native-help-button {color:var(--fm1-ink)}
+.native-buttons {background:var(--fm1-pad);border-color:color-mix(in srgb,var(--fm1-key) 65%,#000)}
+.native-buttons button {background:linear-gradient(color-mix(in srgb,var(--fm1-key) 80%,#fff),var(--fm1-key));border-color:color-mix(in srgb,var(--fm1-key) 65%,#000);color:#fff}
+body.fm1-device-layout #firmware-view>.play-keyboard {background:var(--fm1-shell);border-color:color-mix(in srgb,var(--fm1-shell) 80%,#888);color:var(--fm1-ink)}
+body[data-editor-view=firmware].fm1-touch-keys .piano-scroll {background:var(--fm1-pad)}
+body[data-editor-view=firmware].fm1-touch-keys .piano button {--capsule-fill:linear-gradient(100deg,color-mix(in srgb,var(--fm1-key) 90%,#000),color-mix(in srgb,var(--fm1-pad) 90%,#fff),var(--fm1-key));--capsule-ink:#f0f1f4;border-color:color-mix(in srgb,var(--fm1-key) 55%,#000)}
+body[data-editor-view=firmware].fm1-touch-keys .piano button.black {--capsule-fill:linear-gradient(100deg,color-mix(in srgb,var(--fm1-key) 75%,#000),var(--fm1-key),color-mix(in srgb,var(--fm1-key) 75%,#000))}
+body[data-editor-view=firmware].fm1-touch-keys .piano button.extended {--capsule-fill:linear-gradient(100deg,color-mix(in srgb,var(--fm1-key) 35%,#000),color-mix(in srgb,var(--fm1-pad) 40%,#000),color-mix(in srgb,var(--fm1-key) 35%,#000));--capsule-ink:#8a9095}

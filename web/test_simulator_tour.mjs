@@ -24,6 +24,7 @@ try{
  await page.locator('#view-firmware').click();
  await page.locator('.native-splash:not([hidden])').waitFor({state:'visible'});
  await page.screenshot({path:'build/screenshots/simulator-splash.png'});
+ assert.equal(await page.locator('body').getAttribute('data-fm1-finish'),'orange','first visit defaults to Orange');
  assert.equal(await page.locator('#firmware-view #play-keys button').count(),27);
  assert.deepEqual(await page.locator('#play-keys button').evaluateAll(keys=>[keys[0].dataset.note,keys.at(-1).dataset.note]),['53','79']);
  assert.equal(await page.locator('#firmware-view .play-keyboard').evaluate(e=>getComputedStyle(e).position),'relative');
@@ -40,23 +41,26 @@ try{
  await tour.getByRole('button',{name:'Back',exact:true}).click();assert.match(await tour.textContent(),/Arrange sections/);
  await next.click();await tour.getByRole('button',{name:'Done',exact:true}).click();
  assert.equal(await tour.isVisible(),false);
+ await page.screenshot({path:'build/screenshots/orange-device.png'});
  assert.equal(await page.locator('.native-help-button').evaluate(e=>document.activeElement===e),true);
  assert.equal(await page.locator('.native-help-button').evaluate(e=>getComputedStyle(e).borderTopWidth),'0px');
- for(const name of ['GREEN','AMBER','CYAN','RED','MONO']){
+ assert.equal(await page.getByRole('button',{name:'Device',exact:true}).getAttribute('title'),'Device');
+ for(const name of ['Black','Black / Green','White / Blue','Orange','Purple','White / Gray']){
   await page.locator('.native-palette-menu>summary').click();
   await page.getByRole('button',{name,exact:true}).click();
   await page.waitForFunction(name=>[...document.querySelectorAll('.native-palette-option')].some(b=>b.textContent===name&&b.getAttribute('aria-pressed')==='true'),name);
  }
- await page.locator('.native-palette-menu>summary').click();await page.getByRole('button',{name:'CYAN',exact:true}).click();
+ await page.locator('.native-palette-menu>summary').click();await page.getByRole('button',{name:'White / Blue',exact:true}).click();
  const download=page.waitForEvent('download');await page.locator('#audio-export').click();
- assert.equal(JSON.parse(await readFile(await (await download).path(),'utf8')).native.prefs[0],2);
+ assert.equal(JSON.parse(await readFile(await (await download).path(),'utf8')).native.prefs[0],4,'cosmetic finishes preserve native display colors');
+ assert.equal(await page.locator('#firmware-view').evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(230, 228, 225)');
  await page.locator('.native-palette-menu>summary').click();await page.screenshot({path:'build/screenshots/device-colors.png'});
  await page.keyboard.press('Escape');await page.waitForTimeout(600);
  await page.reload({waitUntil:'domcontentloaded'});await page.locator('#view-firmware').click();await page.locator('.native-screen').waitFor({state:'visible'});
  assert.equal(await tour.isVisible(),false,'cookie suppresses automatic replay');
  await page.waitForFunction(()=>document.querySelector('.native-palette-option:nth-of-type(3)')?.getAttribute('aria-pressed')==='true');
- await page.locator('.native-menu>summary').click();await page.locator('.native-menu-content>details>summary').click();
- await page.getByRole('button',{name:'Expanded',exact:true}).click();assert.equal(await page.locator('#firmware-view').getAttribute('data-layout'),'expanded');assert.equal(await page.locator('.native-menu').evaluate(e=>e.open),false);
+
+ await page.getByRole('button',{name:'Expanded',exact:true}).click();assert.equal(await page.locator('#firmware-view').getAttribute('data-layout'),'expanded');assert.equal(await page.locator('.native-menu').count(),0);
  for(const viewport of [{width:390,height:844},{width:320,height:568},{width:740,height:360}]){
   await page.setViewportSize(viewport);await page.locator('.native-help-button').click();await fits();
   for(let i=1;i<9;i++){await next.click();await fits();if(i===4&&viewport.width===390)await page.screenshot({path:'build/screenshots/tutorial-mobile.png'});}
@@ -66,9 +70,9 @@ try{
  const toggle=page.getByRole('switch',{name:'FM-1 Touch Keys',exact:true});
  await page.waitForFunction(()=>document.querySelectorAll('#play-keys button').length>40);
  const originalNotes=await page.locator('#play-keys button').evaluateAll(keys=>keys.map(k=>k.dataset.note));
- await page.locator('.native-menu>summary').click();await toggle.click();
+ await page.locator('.native-palette-menu>summary').click();await toggle.click();
  assert.equal(await toggle.getAttribute('aria-checked'),'true');assert.deepEqual(await page.locator('#play-keys button').evaluateAll(keys=>keys.map(k=>k.dataset.note)),originalNotes);
- await page.locator('.native-menu>summary').click();
+ await page.locator('.native-palette-menu>summary').click();
  const key=page.locator('#play-keys button').first(),second=page.locator('#play-keys button:not(.black)').nth(1);
  const firstBox=await key.boundingBox(),secondBox=await second.boundingBox();
  const checkRows=async()=>assert.ok(await page.locator('#play-keys').evaluate(e=>{
@@ -88,7 +92,7 @@ try{
  assert.equal(await second.getAttribute('aria-pressed'),'false');
  await page.reload({waitUntil:'domcontentloaded'});await page.locator('#view-firmware').click();await page.locator('.native-screen').waitFor({state:'visible'});
  assert.ok(await page.locator('body').evaluate(e=>e.classList.contains('fm1-touch-keys')),'touch preference survives reload');
- await page.locator('.native-menu>summary').click();await page.locator('.native-menu-content>details>summary').click();await page.getByRole('button',{name:'Expanded',exact:true}).click();
+ await page.getByRole('button',{name:'Expanded',exact:true}).click();
  await page.setViewportSize({width:390,height:844});
  await checkRows();
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
@@ -96,7 +100,7 @@ try{
  await page.locator('#browser-start').click();await page.locator('#firmware-view').waitFor({state:'hidden'});
  assert.equal(await key.evaluate(e=>getComputedStyle(e).borderRadius)==='999px',false,'touch style is simulator-only');
  await page.locator('#view-firmware').click();await page.setViewportSize({width:1440,height:1100});
- await page.locator('.native-menu>summary').click();await toggle.click();
+ await page.locator('.native-palette-menu>summary').click();await toggle.click();
  assert.ok(await page.locator('#play-keys button').count()>27,'piano range restored');
- assert.deepEqual(errors,[]);console.log('Tutorial, layout menu, touch keys, illumination, sliding, persistence and responsive bounds passed');
+ assert.deepEqual(errors,[]);console.log('Tutorial, layout switch, touch keys, illumination, sliding, persistence and responsive bounds passed');
 }finally{await browser.close();}

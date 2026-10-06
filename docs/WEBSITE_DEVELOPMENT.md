@@ -153,7 +153,8 @@ the middle, and four knobs over two six-button rows at right. Master adjusts
 the existing browser volume. Narrow screens wrap the right group below while
 keeping each physical control group intact. The playable keyboard stays docked.
 
-The panel's top-right hamburger contains a Layout submenu for Device/Expanded.
+The panel's top-right two-icon switch selects Device/Expanded directly, with
+localized tooltips and pressed states.
 The adjacent help button replays a nine-step, localized simulator tutorial with
 anchored bubbles, arrows, and control highlights. The first and last steps
 explain replay. It opens on the first simulator visit and stores only a local
@@ -166,9 +167,9 @@ focus returns to Help, and short viewports can scroll the bubble's text.
 `web/test_simulator_tour.mjs` checks first-visit display, cookie persistence,
 manual replay, all steps, focus restoration, Escape, layout selection, and
 desktop/mobile/landscape bounds. The existing native simulator and play-mode
-tests also exercise the Layout submenu.
+tests also exercise the layout switch.
 
-The hamburger also offers FM-1 Touch Keys, an optional capsule finish on the
+In Expanded, the device-color popup also offers FM-1 Touch Keys, an optional capsule finish on the
 existing responsive piano keyboard. It preserves the extended note range,
 QWERTY mapping, horizontal note order, sliding, and note ownership. Capsules have
 equal half-height keys in two rows: black keys above, white keys below. Capsule light strips
@@ -196,12 +197,17 @@ USB input with actual AudioWorklet sound; physical-controller testing remains
 to be done. Web MIDI permission and port semantics follow the
 [Web MIDI specification](https://www.w3.org/TR/webmidi/).
 
-The circular swatch next to the simulator hamburger opens all five native
-COLOR palettes: Green, Amber, Cyan, Red and Mono. The browser-only palette
-event applies the existing firmware setting and redraw; it neither changes
-firmware sources nor invents a hardware command. Selection mirrors native
-preferences, including menu changes, export/import and reload. The help icon
-alone is borderless. Palette browser checks cover every choice and persistence.
+The circular swatch opens six physical FM-1 finishes: Black, Black / Green,
+White / Blue, Orange, Purple and White / Gray. Shell, button pad and key colors
+are photo-derived approximations, based on the [FM-1 product listing](https://ctmusicshop.com/product/midi-keyboards-synthesizers-m-vave-fm-1-pocket-fm-synthesizer/)
+and [product photos](https://www.elektronauts.com/t/m-vave-fm-1/252170).
+Black/Pure Black listing names are represented by one black finish. Original
+dark knobs are retained, matching the photos. Selection is cosmetic and persists
+under `sloop.fm1Finish`; Orange is the default when no valid saved finish exists.
+It does not change native display COLOR preferences or
+exported sessions. The help icon alone is borderless. Browser tests cover all
+finishes, shell recoloring, reload persistence and unchanged native preferences.
+The first-run sound-source notice separates its three choices with bold labels.
 
 GitHub Pages publication (authorized 2026-10-06):
 `https://chancethemaker.github.io/sloop_salt/`, with Studio at

@@ -24,6 +24,8 @@ try{
  assert.match(await page.locator('#browser-start').getAttribute('title'),/Skeuomorph/);
  assert.deepEqual(await page.locator('#audio-mode button').allTextContents(),['FM-1','FM-1 Simulator','Browser Studio']);
  assert.match(await page.locator('.mode-tip').textContent(),/Both browser modes share/);
+ assert.deepEqual(await page.locator('.mode-tip-choice strong').allTextContents(),['FM-1','FM-1 Simulator','Browser Studio']);
+ assert.equal(await page.locator('.mode-tip-choice strong').first().evaluate(e=>getComputedStyle(e).fontWeight),'800');
  assert.equal(await page.locator('#device-mode').getAttribute('aria-pressed'),'true');
  assert.equal(await page.locator('#audio-mode [aria-pressed=true]').count(),1);
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
@@ -36,7 +38,7 @@ try{
  await page.locator('#view-firmware').click();await page.locator('#firmware-view').waitFor({state:'visible',timeout:60000});
  assert.equal(await page.locator('#audio-mode [aria-pressed=true]').count(),1);
  assert.equal(await page.locator('#view-firmware').getAttribute('aria-pressed'),'true');
- await page.locator('.native-menu>summary').click();await page.locator('.native-menu-content>details>summary').click();await page.getByRole('button',{name:'Expanded',exact:true}).click();
+ await page.getByRole('button',{name:'Expanded',exact:true}).click();
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
  await page.locator('#browser-start').click();await page.locator('#firmware-view').waitFor({state:'hidden'});
  assert.equal(await page.locator('#browser-start').getAttribute('aria-pressed'),'true');
