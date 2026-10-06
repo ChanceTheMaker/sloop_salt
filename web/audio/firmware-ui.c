@@ -66,13 +66,14 @@ API void fw_event(unsigned kind,unsigned id,int value) {
     if(kind==0&&id<NB){uint32_t bit=1u<<panel.btn[id];if(value){if(!(fm1_in.buttons&bit))edges_btn|=bit;fm1_in.buttons|=bit;}else fm1_in.buttons&=~bit;}
     if(kind==1&&id<NE)encs[panel.enc[id]]+=clamp(value,-127,127);
     if(kind==2&&id<27){if(value)fm1_in.notes|=1u<<id;else fm1_in.notes&=~(1u<<id);}
+    if(kind==3){song.octave=clamp(value,-4,4);ui.force=1;}
 }
 API void fw_release(void) {
     fm1_in.notes=fm1_in.buttons=0;edges_btn=notes_seen=0;memset(encs,0,sizeof encs);
     layer_unlock();ui.home_t0=0;ui.hold_kind=0;ui.step_held=0;lk_r=lk_w;
 }
 static project_t browser_project;
-static uint32_t browser_prefs[5],browser_status[21];
+static uint32_t browser_prefs[5],browser_status[22];
 static int browser_led(const uint8_t *matrix,unsigned id){unsigned q=led_pos[id];return q!=255&&((matrix[q>>3]>>(q&7))&1u);}
 API unsigned fw_layout(unsigned n) {
     const unsigned layout[]={sizeof(project_t),__builtin_offsetof(project_t,t),sizeof(proj_trk_t),
@@ -105,7 +106,7 @@ API void *fw_buffer(unsigned kind,unsigned k) {
             browser_status[18]|=(unsigned)browser_led(fm1_led,panel.btn[k])<<k;
             browser_status[19]|=(unsigned)browser_led(fm1_led_bg,panel.btn[k])<<k;
         }
-        return browser_status;
+        browser_status[21]=song.octave+4;return browser_status;
     }
     return 0;
 }

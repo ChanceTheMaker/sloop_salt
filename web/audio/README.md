@@ -1,6 +1,6 @@
 # Sloop browser synth
 
-Choose **Browser Studio** or **Firmware**, or open `?browser=1` and press **Start audio**.
+Choose **Browser Studio** or **FM-1 Simulator**, or open `?browser=1` and press **Start audio**.
 No FM-1 or MIDI permission is needed. Both browser views support QWERTY,
 pointer and touch. **FM-1** stops browser playback and returns to
 the device connection screen.
@@ -92,7 +92,7 @@ opening the HTML directly as a local file is insufficient.
 
 ## Browser views
 
-The three-state play-mode switch offers FM-1 (hardware), Firmware (browser
+The three-state play-mode switch offers FM-1 (hardware), FM-1 Simulator (browser
 audio with the native firmware interface), and Browser Studio (the full
 Skeuomorph editor). An anchored introduction explains these options once;
 dismissal is stored under `sloop.web.soundSourceTipDismissed`.
@@ -106,8 +106,11 @@ The framebuffer, scope and key/button lights come from that native code.
 Drag knobs vertically, focus them for arrows/wheel, or use their −/+ buttons.
 Tap functions for pages; hold FX, EDIT, ARP, SEQ, SCL, GLO or SAVE while playing
 keys or adjusting knobs. Hold a layer and tap HOME to lock it. EDIT + OCT−/OCT+
-undoes/redoes. The keyboard shows every QWERTY mapping; the lower Z–/ row covers
-the last ten notes. Focus loss releases all held controls.
+undoes/redoes. Firmware and Studio use the same themed bottom keyboard, note
+labels, QWERTY shortcuts, sliding, sustain and toolbar. Its central 27-key bank
+operates the native panel; extra keys on wider screens play ordinary notes.
+The keyboard octave selector and native OCT buttons stay synchronized.
+Focus loss releases all held controls.
 
 REC opens the free/tempo, length and note/count-in controls. In a free take,
 REC closes the loop and PLAY cancels it. Hold REC to clear a track. Hold SAVE

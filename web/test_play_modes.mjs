@@ -21,7 +21,7 @@ try{
  assert.match(await page.locator('#device-mode').getAttribute('title'),/hardware/);
  assert.match(await page.locator('#view-firmware').getAttribute('title'),/Device and Expanded/);
  assert.match(await page.locator('#browser-start').getAttribute('title'),/Skeuomorph/);
- assert.deepEqual(await page.locator('#audio-mode button').allTextContents(),['FM-1','Firmware','Browser Studio']);
+ assert.deepEqual(await page.locator('#audio-mode button').allTextContents(),['FM-1','FM-1 Simulator','Browser Studio']);
  assert.match(await page.locator('.mode-tip').textContent(),/Both browser modes share/);
  assert.equal(await page.locator('#device-mode').getAttribute('aria-pressed'),'true');
  assert.equal(await page.locator('#audio-mode [aria-pressed=true]').count(),1);

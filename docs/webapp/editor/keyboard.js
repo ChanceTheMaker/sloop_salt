@@ -41,10 +41,18 @@ if(typeof document!=='undefined') (()=>{
  const codes=['KeyA','KeyW','KeyS','KeyE','KeyD','KeyR','KeyF','KeyG','KeyY','KeyH','KeyU','KeyJ','KeyK','KeyO','KeyL','KeyP','Semicolon'];
  const black=n=>[1,3,6,8,10].includes(n%12);
  const name=n=>['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'][n%12]+(Math.floor(n/12)-1);
- let device=null, lastRoute='', pending=false, layout='', focusedNote=null;
+ let device=null, native=null, nativeOctave=null, nativeOctaveUntil=0, lastRoute='', pending=false, layout='', focusedNote=null;
+ const nativeNotes=new Map();
+ const nativeOutput={state:'connected',send(bytes){
+  const [status,note,velocity]=bytes,kind=status&240,index=note-base();
+  if(kind===128||(kind===144&&!velocity)){
+   if(nativeNotes.has(note)){native.panel(2,nativeNotes.get(note),0);nativeNotes.delete(note);return;}
+  }else if(kind===144&&$('play-channel').value==='auto'&&index>=0&&index<27){nativeNotes.set(note,index);native.panel(2,index,1);return;}
+  device?.output?.send(bytes);
+ },panic(){device?.output?.panic?.();}};
  const pointers=new Set(), keyboard=new SloopKeyboard(renderState);
  const base=()=>12*(+$('play-octave').value+1)+5;
- const drums=()=>device?.track===3&&$('play-channel').value==='auto';
+ const drums=()=>!native&&device?.track===3&&$('play-channel').value==='auto';
  function pitch(note) {
   if(!drums())return note;
   let lane=-1;for(let n=base();n<=note;n++)if(!black(n))lane++;
@@ -74,6 +82,7 @@ if(typeof document!=='undefined') (()=>{
  function renderKeys(resize=false) {
   if(resize&&(keyboard.held.size||pointers.size)){pending=true;return;}
   if(!resize)release();
+  if(native&&!resize){nativeOctave=+$('play-octave').value-3;nativeOctaveUntil=performance.now()+200;native.panel(3,0,nativeOctave);}
   const start=base(), width=$('play-keys').getBoundingClientRect().width;
   let first=start,last=start+26,whites=16;
   const extra=drums()?0:Math.max(0,Math.min(59,Math.floor(width/40)-16));
@@ -136,11 +145,10 @@ if(typeof document!=='undefined') (()=>{
  });
  for(const type of ['pointerup','pointercancel','lostpointercapture'])window.addEventListener(type,e=>{pointers.delete(e.pointerId);keyboard.release('pointer:'+e.pointerId);});
   window.addEventListener('keydown',e=>{
-  if(document.body.dataset.editorView==='firmware')return;
   if(e.repeat||e.ctrlKey||e.metaKey||e.altKey||e.isComposing||document.querySelector('.play-keyboard.collapsed'))return;
   const b=e.target.closest?.('#play-keys button[data-note]');
   if(b&&['Space','Enter'].includes(e.code)){e.preventDefault();down('button:'+e.code,b.dataset.note);return;}
-  if(!$('play-typing').checked||e.target.closest?.('input,select,textarea,button:not(#play-keys button),a,summary,[contenteditable]:not([contenteditable="false"]),[role="textbox"],[role="dialog"],[role="tab"]'))return;
+  if(!$('play-typing').checked||e.target.closest?.('input,select,textarea,button:not(#play-keys button):not(.native-buttons button),a,summary,[contenteditable]:not([contenteditable="false"]),[role="textbox"],[role="dialog"],[role="tab"]'))return;
   const i=codes.indexOf(e.code);if(i<0||!keyboard.output)return;
   e.preventDefault();down('key:'+e.code,base()+i);
  });
@@ -149,7 +157,15 @@ if(typeof document!=='undefined') (()=>{
  document.addEventListener('visibilitychange',()=>{if(document.hidden)release();});
  I.onChange(renderState);
  window.SloopPlay={
-  update(next){const old=device;device=next;keyboard.connect(next?.output||null);const changed=old?.track!==next?.track||old?.drumChannel!==next?.drumChannel;if(changed)route();else renderState();},
+  update(next){const old=device;device=next;keyboard.connect(next?.output?(native?nativeOutput:next.output):null);const changed=old?.track!==next?.track||old?.drumChannel!==next?.drumChannel;if(changed)route();else renderState();},
+  firmware(adapter){release();native=adapter;nativeOctave=null;keyboard.connect(device?.output?(native?nativeOutput:device.output):null);renderKeys();},
+  nativeStatus(s){if(!native)return;
+   if(device)device.track=s[0];
+   const octave=s[21]-4;
+   if(nativeOctave===octave||performance.now()>nativeOctaveUntil)nativeOctave=null;
+   if(nativeOctave==null&&+$('play-octave').value!==octave+3){release();$('play-octave').value=String(octave+3);renderKeys(true);}
+   for(const b of $('play-keys').children){const k=+b.dataset.note-base(),active=k>=0&&k<27;b.classList.toggle('native-lit',active&&!!(s[16]&(1<<k)));b.classList.toggle('native-guide',active&&!!(s[17]&(1<<k)));}
+  },
   release
  };
  renderKeys();new ResizeObserver(()=>renderKeys(true)).observe($('play-keys'));

@@ -39,7 +39,7 @@ export class NativeState {
  read(){
   const p=this.e.fw_buffer(3,0),a=Array.from(this.b.subarray(p,p+36));
   const prefs=Array.from(new Uint32Array(this.e.memory.buffer,this.e.fw_buffer(4,0),5));
-  const status=Array.from(new Uint32Array(this.e.memory.buffer,this.e.fw_buffer(5,0),21));
+  const status=Array.from(new Uint32Array(this.e.memory.buffer,this.e.fw_buffer(5,0),22));
   return {...this.readProject(),slots:Array.from({length:4},(_,i)=>this.readProject(1,i)),bank:this.readBank(),solo:status[11],native:{arrangement:a,prefs},status};
  }
  write(state){

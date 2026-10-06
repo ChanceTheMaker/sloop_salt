@@ -140,3 +140,15 @@ real WASM/worklet, framebuffer, QWERTY audio, recording, bank persistence, share
 edits, import/export/reload, mobile layout and mode switching. Static request
 routing in tests avoids intermittent localhost resets while executing the exact
 built assets. Real mobile audio and hardware listening parity remain unverified.
+
+Firmware mode now reuses the existing Felucca-derived keyboard component and
+theme rules, including its responsive extended keys, note labels, toolbar,
+sustain, collapse and sliding. A browser-only adapter routes its central bank
+to native panel keys and synchronizes octave controls; extended notes and
+explicit MIDI channel routing retain the browser synth MIDI path.
+
+The panel follows the [FM-1 front-panel reference](https://www.rackears.io/products/m-vave-fm-1):
+Master/Select above Presets/Algorithm and octave buttons at left, display in
+the middle, and four knobs over two six-button rows at right. Master adjusts
+the existing browser volume. Narrow screens wrap the right group below while
+keeping each physical control group intact. The playable keyboard stays docked.

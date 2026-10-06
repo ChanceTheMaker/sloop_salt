@@ -199,7 +199,7 @@
       <button id="connect" data-t="connect" data-ic="port_usb_c"></button>
       <div id="audio-mode" class="audio-mode" role="group" aria-label="Sound source" data-i18n-aria-label="audio.source">
         <button id="device-mode" type="button" aria-pressed="true" data-i18n-title="audio.tipFM1" title="Connect and edit your FM-1 over USB. Sound comes from the hardware.">FM-1</button>
-        <button id="view-firmware" type="button" aria-pressed="false" data-i18n="view.firmware" data-i18n-title="audio.tipFirmware" title="Play in your browser using firmware-style pages, with Device and Expanded layouts. No FM-1 needed.">Firmware</button>
+        <button id="view-firmware" type="button" aria-pressed="false" data-i18n="view.firmware" data-i18n-title="audio.tipFirmware" title="Play in your browser using the FM-1 Simulator, with Device and Expanded layouts. No FM-1 needed.">FM-1 Simulator</button>
         <button id="browser-start" type="button" aria-pressed="false" data-i18n="audio.browser" data-i18n-title="audio.tipStudio" title="Play and edit in your browser with the full Skeuomorph editor. Shares the same session as Firmware mode.">Browser Studio</button>
       </div>
       <span id="version" class="dim"></span>
@@ -231,7 +231,7 @@
     </nav>
     <div class="trackbar" id="trackbar" hidden><span class="dim" data-t="track"></span><span class="seg" id="trackbtns" role="group"></span></div>
   </header>
-  <section id="firmware-view" hidden aria-label="Firmware view"></section>
+  <section id="firmware-view" hidden aria-label="FM-1 Simulator"></section>
   <p class="hint" id="hint" hidden></p>
 
   <section class="panel" id="p-sound" data-tab="sound" data-dev hidden>
@@ -4580,6 +4580,7 @@ async function setEditorView(on) {
     const {mountFirmwareView}=await import('./firmware-view.js');
     firmwareView=mountFirmwareView($('firmware-view'),{
       panel:(kind,id,value)=>browserSynth.panel(kind,id,value),release:()=>browserSynth?.releasePanel(),
+      volume:steps=>{const control=$('audio-volume');control.value=Math.max(0,Math.min(100,+control.value+steps));browserSynth.volume(+control.value/100);},
       listen:callback=>{browserSynth.onNative=callback;}
     });
   }

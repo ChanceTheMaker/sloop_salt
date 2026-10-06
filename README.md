@@ -282,7 +282,7 @@ Browser sessions save locally. Use **Export session** to keep a portable copy of
 your tracks, project slots, user presets and samples; these files are separate
 from FM-1 backups. **FM-1** stops browser audio and returns to device mode.
 
-The three-state switch selects **FM-1**, **Firmware**, or **Browser Studio**.
+The three-state switch selects **FM-1**, **FM-1 Simulator**, or **Browser Studio**.
 Firmware runs Sloop's native screen and controls in compact Device and larger
 Expanded layouts: hold-button layers, step editing, rolls, punch-in effects,
 undo/redo, free/tempo recording with count-in, section storage and the song
