@@ -185,5 +185,13 @@
   "midi.choose": "ブラウザー音源を演奏する MIDI 入力を選んでください。",
   "midi.empty": "MIDI 入力がありません。USB-MIDI コントローラーを接続してください。",
   "midi.unavailable": "MIDI 入力は利用できません。HTTPS または localhost で Chrome / Edge を使ってください。",
-  "midi.denied": "MIDI アクセスが許可されませんでした。ブラウザーの権限を確認して再試行してください。"
+  "midi.denied": "MIDI アクセスが許可されませんでした。ブラウザーの権限を確認して再試行してください。",
+  "ui.cookieSettings": "Cookie の設定",
+  "ui.closeCookieSettings": "Cookie 設定を閉じる",
+  "ui.cookieChoices": "Cookie の選択",
+  "ui.keepAnalytics": "アクセス解析を有効にする",
+  "ui.essentialOnly": "必須のみ",
+  "ui.googlePrivacy": "Google のプライバシーポリシー",
+  "ui.cookieSummary": "サイトの機能と設定の保存にはブラウザーのストレージを使用します。任意の Google Analytics Cookie は標準で有効です。「必須のみ」でアクセス解析を停止できます。",
+  "ui.cookieDetails": "サイトの機能と設定の保存にはブラウザーのストレージを使用します。任意の Google Analytics Cookie は標準で有効で、訪問数、テーマ選択、ダウンロード、ブラウザー音声の開始を計測します。「必須のみ」で解析を停止できます。MIDI ノート、音声、プリセット名は送信しません。必須の保存だけですべての機能を利用できます。ここでいつでも変更できます。"
 }

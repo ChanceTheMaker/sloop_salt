@@ -109,6 +109,13 @@ def main(pkg, version, out):
             shutil.copy(HERE / asset, dest / asset)
         shutil.copytree(HERE / "fonts", dest / "fonts", dirs_exist_ok=True)
     shutil.copytree(HERE / "screenshots", salt / "screenshots", dirs_exist_ok=True)
+    # Optional analytics share the owner's GA4 property, with Sloop-only settings.
+    for dest in (inst, ed, salt):
+        for asset in ("analytics.js", "analytics.css"):
+            shutil.copy(HERE / asset, dest / asset)
+        page = dest / "index.html"
+        page.write_text(page.read_text(encoding="utf-8").replace("</head>", '<link rel="stylesheet" href="analytics.css"><script defer src="analytics.js"></script></head>'), encoding="utf-8")
+
     (out / "index.html").write_text(
         '<!doctype html><meta charset="utf-8"><title>SLOOP</title>'
         '<meta http-equiv="refresh" content="0; url=webapp/installer/">'

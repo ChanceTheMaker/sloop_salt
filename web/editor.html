@@ -2430,6 +2430,7 @@ async function connect() {
           browserSynth.onError = error => { disconnect(); browserSynth.close().catch(console.error); sayK('error',error.message); };
         }
         await browserSynth.start();
+        window.SloopAnalytics?.track('browser_audio_started');
         mock = await browserSynth.device(makeMockDevice); access = mock.access;
       }
       else if (MOCK) { mock = makeMockDevice({ legacy: QS.get("legacy") === "1" }); access = mock.access; }

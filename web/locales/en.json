@@ -185,5 +185,13 @@
   "midi.choose": "Choose a MIDI input to play the browser synth.",
   "midi.empty": "No MIDI inputs found. Connect a USB-MIDI controller.",
   "midi.unavailable": "MIDI input is unavailable. Use Chrome or Edge over HTTPS or localhost.",
-  "midi.denied": "MIDI access was not granted. Check browser permissions and try again."
+  "midi.denied": "MIDI access was not granted. Check browser permissions and try again.",
+  "ui.cookieSettings": "Cookie settings",
+  "ui.closeCookieSettings": "Close cookie settings",
+  "ui.cookieChoices": "Your cookie choices",
+  "ui.keepAnalytics": "Keep analytics on",
+  "ui.essentialOnly": "Essential only",
+  "ui.googlePrivacy": "Google privacy policy",
+  "ui.cookieSummary": "We use browser storage for site features and your preferences. Optional Google Analytics cookies are on by default to help us understand how the site is used. Choose Essential only to turn analytics off.",
+  "ui.cookieDetails": "We use browser storage for site features and preferences. Optional Google Analytics cookies are on by default to measure visits, theme choices, download clicks, and browser audio starts. Essential only turns analytics off. We do not send MIDI notes, audio, or preset names. Every feature works with essential storage only. You can change your choice here anytime."
 }

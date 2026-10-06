@@ -182,7 +182,7 @@
 <link rel="stylesheet" href="sloop.css">
 <link rel="stylesheet" href="firmware-view.css">
 <script src="locales.js"></script><script src="i18n.js"></script><script src="skin.js"></script>
-</head>
+<link rel="stylesheet" href="analytics.css"><script defer src="analytics.js"></script></head>
 <body class="editor-page">
 <main>
   <header class="brand-row masthead" id="page-top">
@@ -2430,6 +2430,7 @@ async function connect() {
           browserSynth.onError = error => { disconnect(); browserSynth.close().catch(console.error); sayK('error',error.message); };
         }
         await browserSynth.start();
+        window.SloopAnalytics?.track('browser_audio_started');
         mock = await browserSynth.device(makeMockDevice); access = mock.access;
       }
       else if (MOCK) { mock = makeMockDevice({ legacy: QS.get("legacy") === "1" }); access = mock.access; }
