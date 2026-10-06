@@ -6,7 +6,8 @@ const browser=await chromium.launch({headless:true,channel:process.env.BROWSER_C
 const page=await browser.newPage({viewport:{width:1000,height:740},deviceScaleFactor:1});
 try {
  await mkdir('web/screenshots/themes',{recursive:true});
- await page.goto((process.env.STUDIO_URL||'http://127.0.0.1:8769/webapp/editor/')+'?mock=1');
+ await page.goto((process.env.STUDIO_URL||'http://127.0.0.1:8769/webapp/editor/')+'?mock=1',{waitUntil:'domcontentloaded',timeout:60000});
+ await page.waitForFunction(()=>getComputedStyle(document.querySelector('.brand-home')).display==='inline-flex');
  await page.locator('#connect').click();await page.waitForFunction(()=>!document.getElementById('connect').disabled);
  const themes=await page.locator('#web-skin option').evaluateAll(options=>options.map(o=>o.value));
  for(const theme of themes) {

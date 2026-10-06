@@ -35,11 +35,11 @@ body { margin:0; }
 .back-to-top { bottom:calc(var(--keyboard-height,0px) + 16px); right:24px; }
 .salt-mark { display:block; background:currentColor; mask:url("salt-shaker.png") center / contain no-repeat; transform:scaleX(-1); }
 .brand-home .salt-mark { flex:0 0 1.15em; width:1.15em; height:1.15em; }
-.brand-home .sloop-logo { display:block; width:240px; height:auto; border-radius:5px; }
+.brand-home .sloop-logo { display:block; width:195.79px; height:auto; border-radius:5px; }
 .brand-home .salt-lettering { display:block; width:90px; height:82px; flex:0 0 90px; }
 .brand-home:has(.sloop-logo) .salt-mark { flex-basis:.8em; width:.8em; height:.8em; }
-@media(max-width:780px) { .brand-home .sloop-logo { width:180px; } .brand-home .salt-lettering { width:67.5px; height:61.5px; flex-basis:67.5px; } }
-@media(max-width:420px) { .brand-home .sloop-logo { width:160px; } .brand-home .salt-lettering { width:60px; height:54.7px; flex-basis:60px; } }
+@media(max-width:780px) { .brand-home .sloop-logo { width:146.84px; } .brand-home .salt-lettering { width:67.5px; height:61.5px; flex-basis:67.5px; } }
+@media(max-width:420px) { .brand-home .sloop-logo { width:130.53px; } .brand-home .salt-lettering { width:60px; height:54.7px; flex-basis:60px; } }
 .brand-home { color:inherit; text-decoration:none; }
 .brand-links { flex-direction:row; flex-wrap:wrap; }
 .brand-row { gap:20px; }
