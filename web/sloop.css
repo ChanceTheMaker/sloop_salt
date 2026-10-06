@@ -1,0 +1,27 @@
+/* SPDX-License-Identifier: GPL-3.0-only */
+/* SLOOP integration of the Felucca Salt chassis. Device layout stays authoritative. */
+body { margin:0; }
+.salt-mark { display:block; background:currentColor; mask:url("salt-shaker.png") center / contain no-repeat; transform:scaleX(-1); }
+.brand-home .salt-mark { flex:0 0 1.15em; width:1.15em; height:1.15em; }
+.brand-home { color:inherit; text-decoration:none; }
+.brand-links { flex-direction:row; flex-wrap:wrap; }
+.brand-row { gap:20px; }
+.editor-page .top { position:static; }
+.group .card-tools { grid-column:1 / -1; }
+.groups .group { min-width:0; }
+.groups .group[data-controls=knobs] { grid-template-rows:auto; align-content:start; }
+.groups .group[data-controls=knobs] > h3 { margin:12px 0 3px; }
+.groups .group[data-controls=knobs] .row { min-height:105px; }
+.groups .group[data-controls=sliders] .row { min-height:40px; }
+.editor-page main { margin-top:22px; margin-bottom:24px; }
+.editor-page footer { overflow-wrap:anywhere; }
+.brand-links a { white-space:nowrap; }
+@media(max-width:780px) { .brand-row { flex-wrap:wrap; } .brand-links { gap:12px; } }
+@media(max-width:480px) {
+  .editor-page main { padding-left:12px; padding-right:12px; }
+  .top { grid-template-columns:minmax(0,1fr); }
+  .browser { grid-template-columns:minmax(0,1fr); }
+  .browser > div { flex-wrap:wrap; }
+  .tabs button { min-width:70px; }
+  .panel { padding:8px 0; }
+}
