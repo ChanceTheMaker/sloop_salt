@@ -13,7 +13,7 @@ The theme chassis, dial presentation and appearance preferences are adapted from
 Leo Kuroshita / Hügelton Instruments. Code is GPL-3.0-only. Locally hosted fonts
 retain the license notices in `web/fonts/`. The original SLOOP controls and
 descriptor-driven editor remain the source of truth. No Salt analytics or
-browser DSP is included. Website preferences use the `sloop` namespace.
+Felucca DSP binary is included. Website preferences use the `sloop` namespace.
 
 ## Preview and checks
 
@@ -52,7 +52,8 @@ panic. No CC64/120/123 dependency is introduced. Follow-track routing uses a
 selected-track channel that differs from the configurable drum channel. On the
 drum track, white keys map to the editor's authoritative `DRUM_LANES` pitches and
 black keys repeat the lane on their left. Explicit MIDI channels remain available.
-The mock is silent; browser-only synthesis requires a separate SLOOP DSP port.
+The mock remains silent. The separately selected browser synth compiles SLOOP's
+DSP; see [browser audio documentation](../web/audio/README.md).
 
 ## Native aesthetic and widgets
 
@@ -102,3 +103,16 @@ handling. Additional languages from the Felucca reference are not yet ported.
 mixed pointer/QWERTY ownership, language selection/persistence and Japanese labels
 at 1440/390/320 pixels in standard and full-width layouts. Narrow tabs size to
 their labels so translated text cannot overlap adjacent buttons.
+
+## Browser synth
+
+`feat/browser-synth` adds an optional local audio mode on top of the website PR
+stack. Its canonical preview is http://127.0.0.1:8769/webapp/editor/?browser=1.
+Audio starts only after a user gesture. The browser adapter extends the local
+mock with optional compiled metadata and state/MIDI callbacks; the hardware
+protocol codec, command IDs, updater, original homepage and firmware sources
+are unchanged. Full hardware backups are hidden in browser mode; its sessions
+use a separate validated format and IndexedDB namespace.
+
+Build and validation commands, source attribution, supported browser features
+and remaining hardware/mobile checks are recorded in `web/audio/README.md`.

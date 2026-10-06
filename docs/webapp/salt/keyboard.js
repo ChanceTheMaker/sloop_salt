@@ -59,7 +59,7 @@ if(typeof document!=='undefined') (()=>{
   for(const b of $('play-keys').children)b.tabIndex=b===tabKey?0:-1;
   $('play-sustain').disabled=$('play-stop').disabled=!connected;
   $('play-sustain').setAttribute('aria-pressed',String(keyboard.sustain));
-  $('play-help').textContent=I.t(!connected?'play.connect':device?.mock?'play.mock':drums()?'play.drums':'play.help');
+  $('play-help').textContent=I.t(!connected?'play.connect':device?.mock?'play.mock':drums()?'play.drums':device?.browser?'audio.keyboard':'play.help');
   if(pending&&!keyboard.held.size&&!pointers.size){pending=false;requestAnimationFrame(()=>renderKeys(true));}
  }
  function release(){keyboard.releaseAll();pointers.clear();}
@@ -109,7 +109,7 @@ if(typeof document!=='undefined') (()=>{
  $('play-velocity').addEventListener('input',()=>{$('play-velocity-value').value=$('play-velocity').value;});
  $('play-typing').addEventListener('change',release);
  $('play-sustain').addEventListener('click',()=>keyboard.setSustain(!keyboard.sustain));
- $('play-stop').addEventListener('click',release);
+ $('play-stop').addEventListener('click',()=>{release();keyboard.output?.panic?.();});
  $('play-keys').addEventListener('focusin',e=>{
   const b=e.target.closest('button[data-note]');if(!b)return;
   focusedNote=+b.dataset.note;renderState();

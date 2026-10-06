@@ -196,11 +196,26 @@
   <header class="top">
     <div class="bar">
       <button id="connect" data-t="connect" data-ic="port_usb_c"></button>
+      <button id="browser-start" type="button" data-i18n="audio.start">Play in browser</button>
+      <button id="device-mode" type="button" data-i18n="audio.device" hidden>Use FM-1</button>
       <span id="version" class="dim"></span>
       <span id="live" class="dim"></span>
       <span id="mock" class="dim" hidden data-t="mock"></span>
     </div>
     <div id="status"></div>
+    <section id="browser-audio" class="browser-audio" hidden aria-label="Browser synth" data-i18n-aria-label="audio.title">
+      <div class="audio-controls">
+        <button id="audio-play" type="button" data-i18n="audio.play">Play sequence</button>
+        <button id="audio-stop" type="button" data-i18n="audio.stop">Stop</button>
+        <label><span data-i18n="audio.volume">Browser volume</span><input id="audio-volume" type="range" min="0" max="100" value="35"></label>
+        <output id="audio-position" aria-live="off"></output>
+        <button id="audio-export" type="button" data-i18n="audio.export">Export session</button>
+        <button id="audio-import" type="button" data-i18n="audio.import">Import session</button>
+        <input id="audio-file" type="file" accept=".json,application/json" hidden>
+      </div>
+      <p id="audio-status" role="status" data-i18n="audio.help"></p>
+      <canvas id="audio-scope" height="70" role="img" data-i18n-aria-label="audio.scope" aria-label="Browser audio waveform"></canvas>
+    </section>
     <nav class="tabs" id="tabs" role="tablist">
       <button role="tab" data-tab="sound" data-t="sound" data-ic="symbol_audio"></button>
       <button role="tab" data-tab="sequencer" data-t="tabSeq" data-ic="symbol_grid"></button>
@@ -1555,6 +1570,17 @@ function makeMockDevice(opt = {}) {
     [[60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75], [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0]],
   ];
   const P_COUNT = 58, G_COUNT = 32, NSTEP = 64, P_E0 = 50, G_ENGSEL = 20, P_SLCR = 45, P_CHORD = 49;
+  // The audible browser device supplies descriptors and presets from SLOOP's
+  // compiled DSP. The standalone protocol mock keeps its original fixtures.
+  if (opt.catalog) {
+    TP.splice(0, TP.length, ...opt.catalog.common);
+    GP.splice(0, GP.length, ...opt.catalog.globals);
+    ENG.forEach((e, i) => {
+      const source = opt.catalog.engines[i];
+      e.name = source.name; e.edit = source.edit;
+      e.presets = source.presets.map(p => ({...p, e:p.values.slice(P_E0), env:p.values.slice(1,5), mono:p.values[37] === 2}));
+    });
+  }
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   /* four tracks (firmware v3); engine / preset / p / step below are the selected track's */
   const NTRK = 4, TRK_DRUM = 3;
@@ -1598,6 +1624,10 @@ function makeMockDevice(opt = {}) {
     st.p[37] = pr.mono ? 2 : 0;
     st.p[33] = 0; st.p[34] = 24; st.p[35] = 28; st.p[36] = 36;
     for (let i = P_SLCR; i < P_CHORD; i++) st.p[i] = TP[i].def;   /* a factory preset turns the SLICER off (CHORD stays: the key) */
+    if (pr.values) {
+      const kept = new Set([0,25,26,27,29,30,31,32,39,40,49]);
+      pr.values.forEach((value, i) => { if (!kept.has(i)) st.p[i] = value; });
+    }
     if (demo && pr.pat && seqEmpty()) loadPattern(pr.pat - 1);
   }
   function setEngine(ei) {
@@ -1709,7 +1739,7 @@ function makeMockDevice(opt = {}) {
         b(0);
         break;
       case CMD.INFO:
-        s(opt.legacy ? "FELUCCA 0.4 BETA (MOCK)" : opt.v3 ? "FELUCCA 0.8 (MOCK)" : "FELUCCA SLOOP 2.0 (MOCK)"); b(ENG.length); b(P_COUNT); b(G_COUNT); b(NSTEP); b(P_E0);
+        s(opt.catalog ? "SLOOP 2.3 (BROWSER)" : opt.legacy ? "FELUCCA 0.4 BETA (MOCK)" : opt.v3 ? "FELUCCA 0.8 (MOCK)" : "FELUCCA SLOOP 2.0 (MOCK)"); b(ENG.length); b(P_COUNT); b(G_COUNT); b(NSTEP); b(P_E0);
         ENG.forEach((e) => s(e.name));
         if (!opt.legacy) b(NTRK);
         if (v5) b(opt.noBackup ? 5 : 6);                 /* v6: backup / restore */
@@ -1930,6 +1960,7 @@ function makeMockDevice(opt = {}) {
   const output = {
     id: "mock-out", name: "Felucca", type: "output", state: "connected",
     send(data) {
+      if (opt.midi && data[0] !== 0xF0) { opt.midi(data); return; }
       const f = unframe(data);
       if (!f) { console.error("mock: refused a frame that is not F0 7D 46 4C ... F7", data); return; }
       if (busy) { console.warn("mock: frame dropped (device holds only one frame)", data); return; }
@@ -1940,6 +1971,7 @@ function makeMockDevice(opt = {}) {
       setTimeout(() => {
         busy = false;
         const r = handle(f.cmd, f.a);
+        opt.onChange?.(st, f.cmd);
         if (r && input.onmidimessage) input.onmidimessage({ data: Uint8Array.from(r) });
         const ra = r ? r.slice(5, -1) : [];
         if (r && ((f.cmd === CMD.SET && f.a[0] === 1 && f.a[1] === G_ENGSEL) || f.cmd === CMD.PRESET
@@ -2236,7 +2268,8 @@ const TEXT = {
   },
 };
 let lang = window.SloopI18n.language;
-const t = (k) => TEXT[lang][k] ?? k;
+let browserMode = false, browserSynth = null;
+const t = (k) => browserMode && window.SloopLocales.en['audio.editor.' + k] ? window.SloopI18n.t('audio.editor.' + k) : TEXT[lang][k] ?? k;
 let lastKey = null, lastArg = "";
 function sayK(k, arg = "") { lastKey = k; lastArg = arg; $("status").textContent = t(k) + arg; }
 function applyLang() {
@@ -2371,18 +2404,33 @@ const drumGrid = () => isDrum() && !!dev.info.proto && dev.info.proto >= 5;
 /* -------------------------------------------------------------- MIDI --- */
 async function connect() {
   wantConnected = true;
-  if (!MOCK && !navigator.requestMIDIAccess) { sayK("nomidi"); return; }
+  if (!browserMode && !MOCK && !navigator.requestMIDIAccess) { sayK("nomidi"); return; }
   $("connect").disabled = true;
   sayK("connecting");
   try {
     if (!access) {
-      if (MOCK) { mock = makeMockDevice({ legacy: QS.get("legacy") === "1" }); access = mock.access; }
+      if (browserMode) {
+        if (!browserSynth) {
+          const {BrowserSynth} = await import('./audio/browser.js');
+          browserSynth = new BrowserSynth();
+          browserSynth.onStorage = ok => window.SloopI18n.text($('audio-status'), ok ? 'audio.saved' : 'audio.storageFailed');
+          browserSynth.onTransport = state => {
+            $('audio-play').setAttribute('aria-pressed', String(state.playing));
+            $('audio-position').textContent = state.playing ? state.positions.map((n,k)=>`${k+1}:${String(n+1).padStart(2,'0')}`).join(' · ') : '';
+          };
+          browserSynth.onError = error => { disconnect(); browserSynth.close().catch(console.error); sayK('error',error.message); };
+        }
+        await browserSynth.start();
+        mock = await browserSynth.device(makeMockDevice); access = mock.access;
+      }
+      else if (MOCK) { mock = makeMockDevice({ legacy: QS.get("legacy") === "1" }); access = mock.access; }
       else {
         try { access = await navigator.requestMIDIAccess({ sysex: true }); }
         catch (e) { sayK("denied"); return; }
       }
       access.onstatechange = onState;
     }
+    if (browserMode) await browserSynth.start();
     const isF = (p) => /felucca/i.test(p.name || "") && p.state !== "disconnected";
     const input = [...access.inputs.values()].find(isF);
     const output = [...access.outputs.values()].find(isF);
@@ -2401,6 +2449,11 @@ async function connect() {
     setLabel($("connect"), t("disconnect"));
     await load(dev);
     syncPlay();
+    if (browserMode) {
+      browserSynth.volume(+$('audio-volume').value/100);
+      browserSynth.showScope($('audio-scope'));
+      audioControls(true);
+    }
   } catch (e) {
     console.error(e);
     if (dev) {                                       /* not unplugged meanwhile (that says "lost") */
@@ -2408,6 +2461,7 @@ async function connect() {
       disconnect();
       sayK(timeout ? "noreply" : "error", timeout ? "" : e.message);
     }
+    else { if (browserMode) await browserSynth?.stop(); sayK('error', e.message); }
   } finally {
     $("connect").disabled = false;
   }
@@ -2415,6 +2469,7 @@ async function connect() {
 
 function disconnect(reasonKey = "disconnected") {
   window.SloopPlay.update(null);
+  if (browserMode) { browserSynth?.stop().catch(console.error); audioControls(false); }
   if (dev) {
     dev.link.close();
     dev.input.onmidimessage = null;
@@ -2545,7 +2600,7 @@ function buildUI() {
 function syncPlay() {
   if (!dev?.dump) return;
   const drum = dev.gdesc.find(d => d?.label === "CH" && d.min === 0 && d.max === 16);
-  window.SloopPlay.update({output:dev.output,track:dev.sel || 0,drumChannel:drum ? dev.dump.g[drum.id] : 10,lanes:DRUM_LANES,mock:MOCK});
+  window.SloopPlay.update({output:dev.output,track:dev.sel || 0,drumChannel:drum ? dev.dump.g[drum.id] : 10,lanes:DRUM_LANES,mock:MOCK && !browserMode,browser:browserMode});
 }
 function renderTrackbar() {
   syncPlay();
@@ -4508,10 +4563,46 @@ $("bkexport").addEventListener("click", () => libOp(async () => {
 $("connect").addEventListener("click", () => {
   if (dev) { wantConnected = false; disconnect(); } else connect();
 });
+function audioControls(enabled) {
+  for (const id of ['audio-play','audio-stop','audio-export','audio-import']) $(id).disabled = !enabled;
+}
+async function chooseAudioMode(on) {
+  if (busy || $('connect').disabled) return;
+  wantConnected = false;
+  if (dev) disconnect();
+  if (browserSynth) await browserSynth.stop();
+  if (access) access.onstatechange = null;
+  access = null; mock?.stop(); mock = null;
+  browserMode = on;
+  $('browser-audio').hidden = !on;
+  $('device-mode').hidden = !on;
+  $('browser-start').hidden = on;
+  $('mock').hidden = on || !MOCK;
+  audioControls(false);applyLang();
+}
+$('browser-start').addEventListener('click', async () => { await chooseAudioMode(true); if (browserMode) await connect(); });
+$('device-mode').addEventListener('click', () => chooseAudioMode(false).catch(report));
+$('audio-play').addEventListener('click', async () => { try {await browserSynth.start();browserSynth.transport(1);}catch(e){report(e);} });
+$('audio-stop').addEventListener('click', () => { window.SloopPlay.release();browserSynth.panic(); });
+$('audio-volume').addEventListener('input', () => browserSynth?.volume(+$('audio-volume').value/100));
+$('audio-export').addEventListener('click', () => download(`sloop-session-${today()}.json`, JSON.parse(browserSynth.export())));
+$('audio-import').addEventListener('click', () => $('audio-file').click());
+$('audio-file').addEventListener('change', async e => {
+  const file=e.target.files[0];e.target.value='';if(!file||!dev||!browserMode||busy)return;
+  if(file.size>3000000){sayK('error',window.SloopI18n.t('audio.invalidSession'));return;}
+  if(!confirm(window.SloopI18n.t('audio.replaceSession')))return;
+  busy++;audioControls(false);
+  try {window.SloopPlay.release();await browserSynth.import(await file.text());await load(dev);syncPlay();}
+  catch(error){sayK('error',window.SloopI18n.t('audio.invalidSession'));console.error(error);}
+  finally {busy--;audioControls(!!dev);}
+});
+window.addEventListener('pagehide', () => { if(browserMode)browserSynth?.stop().catch(console.error); });
+document.addEventListener('visibilitychange', () => { if(document.hidden && browserMode){browserSynth?.panic();browserSynth?.save();} });
 applyLang();
 showTab(tab);
 libInit();
 if (!MOCK && !navigator.requestMIDIAccess) sayK("nomidi");
+if (QS.get('browser') === '1') chooseAudioMode(true);
 })();
 </script>
 </body>

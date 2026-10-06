@@ -201,7 +201,7 @@
       tray.setAttribute('aria-controls', 'play-keys');
       const setCollapsed = collapsed => {
         // Release held notes/sustain before hiding the performance controls.
-        if (collapsed) document.getElementById('play-stop')?.click();
+        if (collapsed) window.SloopPlay?.release();
         keyboard.classList.toggle('collapsed', collapsed);
         tray.textContent = collapsed ? '\u25b4 ' + I18N.t('ui.showKeyboard') : '\u25be';
         tray.setAttribute('aria-label', I18N.t(collapsed ? 'ui.showKeyboard' : 'ui.minimizeKeyboard'));
