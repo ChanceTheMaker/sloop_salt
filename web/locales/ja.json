@@ -23,5 +23,17 @@
   "site.octave_up": "1 オクターブ上げる",
   "site.oct": "Oct−",
   "site.octx": "Oct+",
-  "nav.backToTop": "ページの先頭へ"
+  "nav.backToTop": "ページの先頭へ",
+  "play.title": "演奏用キーボード",
+  "play.octave": "開始オクターブ",
+  "play.channel": "送信先",
+  "play.velocity": "ベロシティ",
+  "play.typing": "PCキー",
+  "play.sustain": "サステイン",
+  "play.stop": "全ノート停止",
+  "play.follow": "選択トラック",
+  "play.connect": "FM-1を接続して演奏。白鍵: A S D F G H J K L ;、黒鍵: W E R Y U O P。",
+  "play.mock": "モック機器 — 音は出ません。演奏するにはFM-1を接続してください。",
+  "play.help": "マウス、タッチ、PCキーでFM-1を演奏。サステイン解除でノートを離します。",
+  "play.drums": "ドラムトラック: 白鍵16個は16レーン、黒鍵は左の白鍵と同じ音です。"
 }

@@ -23,5 +23,17 @@
   "ui.movedCard": "{name} moved to position {position}.",
   "ui.showKeyboard": "Show keyboard",
   "ui.minimizeKeyboard": "Minimize keyboard",
-  "nav.backToTop": "Back to top"
+  "nav.backToTop": "Back to top",
+  "play.title": "Playable keyboard",
+  "play.octave": "Starting octave",
+  "play.channel": "Routing",
+  "play.velocity": "Velocity",
+  "play.typing": "Computer keys",
+  "play.sustain": "Sustain",
+  "play.stop": "Stop all notes",
+  "play.follow": "Follow track",
+  "play.connect": "Connect your FM-1 to play. QWERTY: A S D F G H J K L ; white keys, W E R Y U O P black keys.",
+  "play.mock": "Mock device — keyboard gestures are silent. Connect an FM-1 for sound.",
+  "play.help": "Play your FM-1: mouse, touch or QWERTY. Sustain holds notes until released.",
+  "play.drums": "Drum track: the 16 white keys play SLOOP’s 16 lanes; black keys repeat the lane on their left."
 }
