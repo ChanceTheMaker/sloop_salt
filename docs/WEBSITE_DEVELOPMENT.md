@@ -202,3 +202,13 @@ event applies the existing firmware setting and redraw; it neither changes
 firmware sources nor invents a hardware command. Selection mirrors native
 preferences, including menu changes, export/import and reload. The help icon
 alone is borderless. Palette browser checks cover every choice and persistence.
+
+GitHub Pages publication (authorized 2026-10-06):
+`https://chancethemaker.github.io/sloop-fm1/`, with Studio at
+`webapp/editor/`. Like the owner's Felucca site, the deployment uses a dedicated
+`gh-pages` branch with static files at its root. Publish the committed `docs/`
+site, excluding this development document, together with LICENSE and a source
+archive for the published source commit. Keep the original installer and
+firmware packages intact. Verify deployed HTML, JS, CSS, WASM and firmware
+against the published artifacts after the Pages build succeeds. This does not
+merge the stacked feature PRs into main.
