@@ -6,6 +6,11 @@ import {catalogFrom} from './audio/browser.js';
 import {snapshot,validate} from './audio/session.js';
 const module=await WebAssembly.compile(await readFile(new URL('./audio/engine.wasm',import.meta.url))),catalog=catalogFrom(module);
 const B={FX:0,SCL:1,ENV:2,LFO:3,EDIT:4,GLO:5,HOME:6,SAVE:7,ARP:8,SEQ:9,PLAY:10,REC:11,DOWN:12,UP:13};
+{
+ const e=new WebAssembly.Instance(module).exports;e.synth_init();const state=new NativeState(e);
+ for(let palette=0;palette<5;palette++){e.fw_event(5,palette,1);e.fw_tick();assert.equal(state.read().native.prefs[0],palette);}
+ e.fw_event(5,100,1);assert.equal(state.read().native.prefs[0],4,'invalid palette ignored');
+}
 function machine(){
  const e=new WebAssembly.Instance(module).exports;e.synth_init();const codec=new NativeState(e);
  for(let k=0;k<3;k++){e.synth_target(k);catalog.engines[0].presets[0].values.forEach((v,i)=>e.synth_param(i,v));}

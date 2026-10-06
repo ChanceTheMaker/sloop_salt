@@ -42,6 +42,7 @@ if(typeof document!=='undefined') (()=>{
  const black=n=>[1,3,6,8,10].includes(n%12);
  const name=n=>['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'][n%12]+(Math.floor(n/12)-1);
  let device=null, native=null, nativeOctave=null, nativeOctaveUntil=0, lastRoute='', pending=false, layout='', focusedNote=null;
+ let docked=false;
  const nativeNotes=new Map();
  const nativeOutput={state:'connected',send(bytes){
   const [status,note,velocity]=bytes,kind=status&240,index=note-base();
@@ -85,7 +86,7 @@ if(typeof document!=='undefined') (()=>{
   if(native&&!resize){nativeOctave=+$('play-octave').value-3;nativeOctaveUntil=performance.now()+200;native.panel(3,0,nativeOctave);}
   const start=base(), width=$('play-keys').getBoundingClientRect().width;
   let first=start,last=start+26,whites=16;
-  const extra=drums()?0:Math.max(0,Math.min(59,Math.floor(width/40)-16));
+  const extra=drums()||(native&&docked)?0:Math.max(0,Math.min(59,Math.floor(width/40)-16));
   for(let i=0;i<extra;i++){
    if((i%2===0&&first>0)||last>=127){if(first===0)break;do{first--;}while(first>0&&black(first));}
    else {do{last++;}while(last<127&&black(last));}
@@ -157,6 +158,7 @@ if(typeof document!=='undefined') (()=>{
  document.addEventListener('visibilitychange',()=>{if(document.hidden)release();});
  I.onChange(renderState);
  window.SloopPlay={
+  dock(on){docked=!!on;renderKeys();},
   update(next){const old=device;device=next;keyboard.connect(next?.output?(native?nativeOutput:next.output):null);const changed=old?.track!==next?.track||old?.drumChannel!==next?.drumChannel;if(changed)route();else renderState();},
   firmware(adapter){release();native=adapter;nativeOctave=null;keyboard.connect(device?.output?(native?nativeOutput:device.output):null);renderKeys();},
   nativeStatus(s){if(!native)return;

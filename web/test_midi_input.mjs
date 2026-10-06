@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {MIDIInput} from './midi-input.js';
+const output=[],ports=new Map(),access=new EventTarget();access.inputs=ports;
+const port=new EventTarget();Object.assign(port,{id:'usb',name:'USB keyboard',state:'connected'});ports.set(port.id,port);
+Object.defineProperty(globalThis,'navigator',{configurable:true,value:{requestMIDIAccess:async options=>{assert.equal(options.sysex,false);return access;}}});
+let enabled=true,list;
+const midi=new MIDIInput({send:b=>output.push(b),enabled:()=>enabled,changed:p=>list=p});
+const emit=data=>{const e=new Event('midimessage');e.data=data;port.dispatchEvent(e);};
+await midi.connect();assert.equal(list.length,1);midi.select('usb');
+emit([0x91,60,87]);assert.deepEqual(output.pop(),[0x91,60,87]);
+emit([0xb1,64,127]);emit([0x91,60,0]);assert.equal(output.length,0);
+emit([0xb1,64,0]);assert.deepEqual(output.pop(),[0x81,60,0]);
+emit([0x90,62,90]);emit([0x91,62,100]);midi.release(0);assert.deepEqual(output.pop(),[0x80,62,0]);assert.equal(midi.notes.size,1);
+port.state='disconnected';access.dispatchEvent(new Event('statechange'));assert.equal(midi.notes.size,0);assert.equal(midi.port,null);assert.deepEqual(output.pop(),[0x81,62,0]);
+port.state='connected';access.dispatchEvent(new Event('statechange'));midi.select('usb');output.length=0;enabled=false;emit([0x90,60,100]);assert.equal(output.length,0);
+enabled=true;emit([0xf0,1,2]);emit([0xf8]);emit([0xe0,0,80]);assert.equal(output.length,0);
+emit([0x90,64,100]);emit([0xb0,123,0]);assert.deepEqual(output.at(-1),[0x80,64,0]);assert.equal(midi.notes.size,0);
+console.log('USB MIDI: permission, selection, channels, velocity, sustain, cleanup, hotplug and message filtering passed');

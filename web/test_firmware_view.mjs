@@ -26,6 +26,9 @@ const signal=()=>page.waitForFunction(()=>{const a=new Float32Array(testAnalyser
 try{
  await page.goto('http://127.0.0.1:8769/webapp/editor/',{waitUntil:'domcontentloaded',timeout:60000});
  await page.locator('#view-firmware').click();await page.locator('.native-screen').waitFor({state:'visible'});
+ const chooseLayout=async name=>{await page.locator('.native-menu>summary').click();if(!await page.locator('.native-menu-content>details').evaluate(e=>e.open))await page.locator('.native-menu-content>details>summary').click();await page.getByRole('button',{name,exact:true}).click();};
+ assert.equal(await page.locator('#firmware-view #play-keys button').count(),27);
+ await chooseLayout('Expanded');
  await page.waitForFunction(()=>document.querySelector('.native-status').textContent.includes('Stopped'));
  assert.equal(await page.locator('.native-buttons button').count(),14);assert.equal(await page.locator('.native-dial').count(),8);
  assert.ok(await page.locator('#play-keys button').count()>27,'shared responsive key range');
@@ -42,11 +45,10 @@ try{
  assert.equal(Number(await page.locator('#audio-volume').inputValue()),volume+10,'Shift drag is eight times finer');
  assert.ok(await page.locator('.native-screen').evaluate(c=>c.getContext('2d').getImageData(0,0,240,240).data.some((v,i)=>i%4!==3&&v>0)));
  const screenWidth=async()=>(await page.locator('.native-screen').boundingBox()).width;
- const chooseLayout=async name=>{await page.locator('.native-menu>summary').click();if(!await page.locator('.native-menu-content>details').evaluate(e=>e.open))await page.locator('.native-menu-content>details>summary').click();await page.getByRole('button',{name,exact:true}).click();};
- const deviceWidth=await screenWidth();await chooseLayout('Expanded');assert.equal(await page.locator('#firmware-view').getAttribute('data-layout'),'expanded');
+ await chooseLayout('Device');const deviceWidth=await screenWidth();await chooseLayout('Expanded');assert.equal(await page.locator('#firmware-view').getAttribute('data-layout'),'expanded');
  assert.ok(await screenWidth()>deviceWidth*1.3,'Expanded visibly enlarges screen on desktop');
  await mkdir('build/screenshots',{recursive:true});await page.screenshot({path:'build/screenshots/simulator-expanded-desktop.png',fullPage:true});
- await chooseLayout('Device');assert.equal(await page.locator('#tabs').isVisible(),false);
+ assert.equal(await page.locator('#tabs').isVisible(),false);
  const before=await exportSession();await button('ENV').click();
  await page.getByRole('button',{name:'KNOB 1',exact:true}).press('Shift+ArrowUp');
  const changed=await exportSession();assert.equal(changed.tracks[0].p[1],before.tracks[0].p[1]+1,'native encoder edit/export barrier');
@@ -104,7 +106,7 @@ try{
  const banked=await exportSession();assert.ok(banked.bank[0],'native user bank saved on audio thread');
  console.log('Native free recording and focus-loss release passed');
  await page.setViewportSize({width:390,height:1000});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'mobile fits');await checkDock();
- const mobileWidth=await screenWidth();await chooseLayout('Expanded');assert.ok(await screenWidth()>mobileWidth*1.5,'Expanded enlarges screen on mobile');assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+ await chooseLayout('Device');const mobileWidth=await screenWidth();await chooseLayout('Expanded');assert.ok(await screenWidth()>mobileWidth*1.5,'Expanded enlarges screen on mobile');assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
  await page.screenshot({path:'build/screenshots/simulator-expanded-mobile.png',fullPage:true});
  await chooseLayout('Device');
  await mkdir('build/screenshots',{recursive:true});await page.screenshot({path:'build/screenshots/native-firmware-mobile.png',fullPage:true});

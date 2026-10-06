@@ -22,6 +22,12 @@ await page.addInitScript(()=>{
 try{
  await page.goto('http://127.0.0.1:8769/webapp/editor/',{waitUntil:'domcontentloaded'});
  await page.locator('#view-firmware').click();
+ await page.locator('.native-splash:not([hidden])').waitFor({state:'visible'});
+ await page.screenshot({path:'build/screenshots/simulator-splash.png'});
+ assert.equal(await page.locator('#firmware-view #play-keys button').count(),27);
+ assert.deepEqual(await page.locator('#play-keys button').evaluateAll(keys=>[keys[0].dataset.note,keys.at(-1).dataset.note]),['53','79']);
+ assert.equal(await page.locator('#firmware-view .play-keyboard').evaluate(e=>getComputedStyle(e).position),'relative');
+ assert.ok(await page.locator('#firmware-view .play-keyboard').evaluate(e=>{const r=e.getBoundingClientRect(),p=e.parentElement.getBoundingClientRect();return r.left>=p.left&&r.right<=p.right&&r.bottom<=p.bottom;}),'device keys stay inside chassis');
  const tour=page.locator('.native-tour'),next=tour.getByRole('button',{name:'Next',exact:true});
  await tour.waitFor({state:'visible'});
  assert.match(await tour.textContent(),/see it again/);
@@ -35,8 +41,20 @@ try{
  await next.click();await tour.getByRole('button',{name:'Done',exact:true}).click();
  assert.equal(await tour.isVisible(),false);
  assert.equal(await page.locator('.native-help-button').evaluate(e=>document.activeElement===e),true);
+ assert.equal(await page.locator('.native-help-button').evaluate(e=>getComputedStyle(e).borderTopWidth),'0px');
+ for(const name of ['GREEN','AMBER','CYAN','RED','MONO']){
+  await page.locator('.native-palette-menu>summary').click();
+  await page.getByRole('button',{name,exact:true}).click();
+  await page.waitForFunction(name=>[...document.querySelectorAll('.native-palette-option')].some(b=>b.textContent===name&&b.getAttribute('aria-pressed')==='true'),name);
+ }
+ await page.locator('.native-palette-menu>summary').click();await page.getByRole('button',{name:'CYAN',exact:true}).click();
+ const download=page.waitForEvent('download');await page.locator('#audio-export').click();
+ assert.equal(JSON.parse(await readFile(await (await download).path(),'utf8')).native.prefs[0],2);
+ await page.locator('.native-palette-menu>summary').click();await page.screenshot({path:'build/screenshots/device-colors.png'});
+ await page.keyboard.press('Escape');await page.waitForTimeout(600);
  await page.reload({waitUntil:'domcontentloaded'});await page.locator('#view-firmware').click();await page.locator('.native-screen').waitFor({state:'visible'});
  assert.equal(await tour.isVisible(),false,'cookie suppresses automatic replay');
+ await page.waitForFunction(()=>document.querySelector('.native-palette-option:nth-of-type(3)')?.getAttribute('aria-pressed')==='true');
  await page.locator('.native-menu>summary').click();await page.locator('.native-menu-content>details>summary').click();
  await page.getByRole('button',{name:'Expanded',exact:true}).click();assert.equal(await page.locator('#firmware-view').getAttribute('data-layout'),'expanded');assert.equal(await page.locator('.native-menu').evaluate(e=>e.open),false);
  for(const viewport of [{width:390,height:844},{width:320,height:568},{width:740,height:360}]){
@@ -55,7 +73,7 @@ try{
  const firstBox=await key.boundingBox(),secondBox=await second.boundingBox();
  const checkRows=async()=>assert.ok(await page.locator('#play-keys').evaluate(e=>{
   const keys=[...e.querySelectorAll('button')],upper=keys.filter(k=>k.classList.contains('black')).map(k=>k.getBoundingClientRect()),lower=keys.filter(k=>!k.classList.contains('black')).map(k=>k.getBoundingClientRect());
-  return [...upper,...lower].every(r=>r.height===72)&&Math.max(...upper.map(r=>r.bottom))<Math.min(...lower.map(r=>r.top));
+  return [...upper,...lower].every(r=>r.height===72&&Math.abs(r.width-lower[0].width)<1)&&Math.max(...upper.map(r=>r.bottom))<Math.min(...lower.map(r=>r.top));
  }),'equal half-height keys, black row above white row');
  await checkRows();
  const finish=element=>{const s=getComputedStyle(element);return [s.background,s.color,s.boxShadow,s.borderWidth];};
@@ -70,6 +88,7 @@ try{
  assert.equal(await second.getAttribute('aria-pressed'),'false');
  await page.reload({waitUntil:'domcontentloaded'});await page.locator('#view-firmware').click();await page.locator('.native-screen').waitFor({state:'visible'});
  assert.ok(await page.locator('body').evaluate(e=>e.classList.contains('fm1-touch-keys')),'touch preference survives reload');
+ await page.locator('.native-menu>summary').click();await page.locator('.native-menu-content>details>summary').click();await page.getByRole('button',{name:'Expanded',exact:true}).click();
  await page.setViewportSize({width:390,height:844});
  await checkRows();
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));

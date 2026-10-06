@@ -7,16 +7,26 @@ export function mountFirmwareView(host,api){
  const layout=make('div',{className:'fw-layouts',role:'group'}),device=make('button',{type:'button'}),expanded=make('button',{type:'button'});
  const canvas=make('canvas',{width:240,height:240,className:'native-screen'});canvas.setAttribute('role','img');
  const state=make('p',{className:'native-status'});state.setAttribute('aria-live','off');
- const screen=make('div',{className:'native-display'});screen.append(canvas,state);
+ const screen=make('div',{className:'native-display'}),frame=make('div',{className:'native-screen-frame'}),splash=make('img',{className:'native-splash',src:'sloop-boot.svg',alt:'SLOOP startup splash',hidden:true});frame.append(canvas,splash);screen.append(frame,state);
  const encoders=make('div',{className:'native-encoders'}),panel=make('div',{className:'native-buttons'});
  const navigation=make('div',{className:'native-navigation'}),octaves=make('div',{className:'native-buttons native-octaves'});
  const toolbar=make('div',{className:'native-toolbar'}),help=make('button',{type:'button',className:'native-help-button'},'?');
  const menu=make('details',{className:'native-menu'}),menuToggle=make('summary',{},'☰'),submenu=make('details'),layoutToggle=make('summary');
  const menuContent=make('div',{className:'native-menu-content'}),touchKeys=make('button',{type:'button',className:'native-touch-toggle',role:'switch'});
  let touchEnabled=false;try{touchEnabled=localStorage.getItem('sloop.fm1TouchKeys')==='true';}catch{}
- const applyTouchKeys=()=>{touchKeys.setAttribute('aria-checked',String(touchEnabled));document.body.classList.toggle('fm1-touch-keys',touchEnabled);};
+ const applyTouchKeys=()=>{touchKeys.setAttribute('aria-checked',String(touchEnabled));document.body.classList.toggle('fm1-touch-keys',touchEnabled||document.body.classList.contains('fm1-device-layout'));};
  touchKeys.onclick=()=>{touchEnabled=!touchEnabled;applyTouchKeys();try{localStorage.setItem('sloop.fm1TouchKeys',String(touchEnabled));}catch{}};
  submenu.append(layoutToggle,layout);menuContent.append(submenu,touchKeys);menu.append(menuToggle,menuContent);toolbar.append(help,menu);applyTouchKeys();
+ // Names and five-stop swatches from firmware/src/gfx.c.
+ const palettes=[['GREEN',['#00280c','#00541e','#108c36','#38c85c','#78ff92']],['AMBER',['#3c1a00','#6e3200','#aa5200','#e17808','#ffa628']],['CYAN',['#001e32','#003e60','#1070a0','#38acde','#8cdeff']],['RED',['#340808','#64120e','#aa241a','#e24030','#ff705c']],['MONO',['#282828','#505050','#828282','#bababa','#e2e2e2']]];
+ const paletteMenu=make('details',{className:'native-palette-menu'}),paletteToggle=make('summary'),palettePopup=make('div',{className:'native-palette-popup'}),paletteHeading=make('strong');
+ palettePopup.append(paletteHeading);paletteMenu.append(paletteToggle,palettePopup);toolbar.insertBefore(paletteMenu,menu);
+ const paletteButtons=palettes.map(([name,colors],index)=>{const b=make('button',{type:'button',className:'native-palette-option'}),swatch=make('span',{className:'native-palette-strip'}),label=make('span',{},name);swatch.style.background=`linear-gradient(90deg,${colors.join(',')})`;b.append(swatch,label);b.onclick=()=>{emit(5,index,1);paletteMenu.open=false;paletteToggle.focus();};palettePopup.append(b);return b;});
+ function paintPalette(index){const colors=palettes[index]?.[1]||palettes[4][1];paletteToggle.style.background=`conic-gradient(${colors.join(',')},${colors[0]})`;paletteButtons.forEach((b,i)=>b.setAttribute('aria-pressed',String(i===index)));}
+ paintPalette(4);
+ document.addEventListener('pointerdown',e=>{if(!paletteMenu.contains(e.target))paletteMenu.open=false;});
+ paletteMenu.addEventListener('toggle',()=>{if(paletteMenu.open)menu.open=false;});menu.addEventListener('toggle',()=>{if(menu.open)paletteMenu.open=false;});
+ paletteMenu.addEventListener('keydown',e=>{if(e.key==='Escape'){paletteMenu.open=false;paletteToggle.focus();}});
  const controls=make('div',{className:'native-controls'});controls.append(encoders,panel);
  const body=make('div',{className:'native-body'});body.append(navigation,screen,controls);
  layout.append(device,expanded);host.replaceChildren(toolbar,body);
@@ -51,7 +61,14 @@ export function mountFirmwareView(host,api){
   if(id<3){wrap.style.order=String(id<1?id+1:id===2?2:3);navigation.append(wrap);}else encoders.append(wrap);
  });
  navigation.append(octaves);
- const choose=mode=>{host.dataset.layout=mode;device.setAttribute('aria-pressed',String(mode==='device'));expanded.setAttribute('aria-pressed',String(mode==='expanded'));};
+ const keyboard=document.querySelector('.play-keyboard'),keyboardHome=document.createComment('Keyboard dock');keyboard.before(keyboardHome);
+ let wasCollapsed=false,booted=false,bootTimer;
+ function dockKeyboard(){
+  const dock=shown&&host.dataset.layout==='device',wasDocked=document.body.classList.contains('fm1-device-layout');
+  if(dock!==wasDocked){window.SloopPlay.release();if(dock){wasCollapsed=keyboard.classList.contains('collapsed');keyboard.classList.remove('collapsed');host.append(keyboard);}else{keyboardHome.after(keyboard);keyboard.classList.toggle('collapsed',wasCollapsed);}}
+  document.body.classList.toggle('fm1-device-layout',dock);applyTouchKeys();window.SloopPlay.dock(dock);
+ }
+ const choose=mode=>{host.dataset.layout=mode;device.setAttribute('aria-pressed',String(mode==='device'));expanded.setAttribute('aria-pressed',String(mode==='expanded'));dockKeyboard();};
  device.onclick=()=>{choose('device');menu.open=false;};expanded.onclick=()=>{choose('expanded');menu.open=false;};choose('device');
  document.addEventListener('pointerdown',e=>{if(!menu.contains(e.target))menu.open=false;});
  menu.addEventListener('keydown',e=>{if(e.key==='Escape'){menu.open=false;menuToggle.focus();}});
@@ -91,6 +108,7 @@ export function mountFirmwareView(host,api){
  window.addEventListener('resize',reposition);window.addEventListener('scroll',reposition,true);
  new ResizeObserver(reposition).observe(bubble);
  function translate(){device.textContent=window.SloopI18n.t('view.device');expanded.textContent=window.SloopI18n.t('view.expanded');canvas.setAttribute('aria-label',t('screen'));
+  paletteToggle.title=t('colors');paletteToggle.setAttribute('aria-label',t('colors'));paletteHeading.textContent=t('colors');
   help.title=t('guide');help.setAttribute('aria-label',t('guide'));menuToggle.title=t('menu');menuToggle.setAttribute('aria-label',t('menu'));layoutToggle.textContent=t('layout');touchKeys.textContent=t('touchKeys');if(tour.open)renderStep();
   host.querySelectorAll('.native-dial').forEach(dial=>{dial.title=t('knobHelp');dial.setAttribute('aria-description',t('knobHelp'));});
  }
@@ -99,6 +117,7 @@ export function mountFirmwareView(host,api){
  function display(data){
   lastData=data;if(!shown)return;cancelAnimationFrame(pendingFrame);
   pendingFrame=requestAnimationFrame(()=>{
+   paintPalette(data.state.native.prefs[0]);
    data.pixels.forEach((swapped,i)=>{const p=(swapped>>8)|((swapped&255)<<8),q=i*4;pixels.data[q]=(p>>11)*255/31;pixels.data[q+1]=((p>>5)&63)*255/63;pixels.data[q+2]=(p&31)*255/31;pixels.data[q+3]=255;});ctx.putImageData(pixels,0,0);
    const s=data.state.status;window.SloopPlay.nativeStatus(s);state.textContent=`${t('track')} ${s[0]+1} · ${s[2]||s[4]?t('recording'):s[3]?t('armed'):s[1]?t('playing'):t('stopped')} · ${t('layer')} ${['PLAY','FX','EDIT','ARP','SEQ','SCL','GLO','SAVE'][s[5]]||'PLAY'}`;
    host.querySelectorAll('[data-native-kind="0"]').forEach(b=>{const k=+b.dataset.nativeId;b.classList.toggle('lit',!!(s[18]&(1<<k)));b.classList.toggle('backlit',!!(s[19]&(1<<k)));});
@@ -108,5 +127,6 @@ export function mountFirmwareView(host,api){
  window.addEventListener('blur',()=>{if(shown)releaseAll();});
  document.addEventListener('visibilitychange',()=>{if(document.hidden&&shown)releaseAll();});
  api.listen(display);
- return {show(on){shown=on;host.hidden=!on;window.SloopPlay.firmware(on?{panel:emit}:null);if(!on){closeTour(false);menu.open=false;releaseAll();cancelAnimationFrame(pendingFrame);}else{if(lastData)display(lastData);if(!tourStarted&&!document.cookie.split('; ').includes('sloop_simulator_tour_v1=seen'))requestAnimationFrame(()=>{if(shown)startTour();});}}};
+ const maybeTour=()=>{if(shown&&!tourStarted&&!document.cookie.split('; ').includes('sloop_simulator_tour_v1=seen'))startTour();};
+ return {show(on){shown=on;host.hidden=!on;window.SloopPlay.firmware(on?{panel:emit}:null);dockKeyboard();if(!on){clearTimeout(bootTimer);splash.hidden=true;host.removeAttribute('aria-busy');closeTour(false);menu.open=false;releaseAll();cancelAnimationFrame(pendingFrame);}else{if(lastData)display(lastData);if(!booted){booted=true;splash.hidden=false;host.setAttribute('aria-busy','true');bootTimer=setTimeout(()=>{splash.hidden=true;host.removeAttribute('aria-busy');maybeTour();},1000);}else requestAnimationFrame(maybeTour);}}};
 }

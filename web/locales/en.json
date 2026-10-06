@@ -1,4 +1,5 @@
 {
+  "native.colors": "Device colors",
   "site.octave_down": "Octave down",
   "site.oct": "Oct−",
   "site.octave_up": "Octave up",
@@ -161,13 +162,13 @@
   "native.tour.welcome.title": "Meet FM-1 Simulator",
   "native.tour.welcome.body": "Play Sloop in your browser using its actual firmware interface. This tour points out the controls one step at a time.\n\nYou can close it anytime. To see it again, select the ? help icon beside the hamburger menu at the top right of this panel.",
   "native.tour.layout.title": "Choose your layout",
-  "native.tour.layout.body": "Open ☰ → Layout to choose Device or Expanded. Device follows the FM-1 control arrangement. Expanded makes the screen larger while keeping the same controls.\n\nTurn on FM-1 Touch Keys in the same menu for the illuminated capsule styling on this same full-width piano keyboard. Turn it off to return to the piano keyboard.",
+  "native.tour.layout.body": "Open ☰ → Layout to choose Device or Expanded. Device combines the FM-1 controls and its 27-key keyboard in one panel. Expanded enlarges the screen and restores the full-width keyboard dock with extra notes.\n\nIn Expanded, turn on FM-1 Touch Keys in the same menu for the illuminated capsule styling on this same full-width piano keyboard. Turn it off to return to the piano keyboard.",
   "native.tour.sound.title": "Choose a sound",
   "native.tour.sound.body": "From the home screen, ALGORITHM selects the track, PRESETS selects its sound, and SELECT sets tempo. MASTER adjusts browser volume.\n\nThe screen shows the current page and what each control does.",
   "native.tour.knobs.title": "Turn and fine tune",
   "native.tour.knobs.body": "Drag a knob up or down. Hold Shift for slower, precise adjustments. You can also focus a knob and use the arrow keys or mouse wheel; Shift prevents firmware acceleration.\n\nKNOB 1–4 follow the labels on the screen. Tap ENV or LFO to open their pages.",
   "native.tour.keyboard.title": "Play the keyboard",
-  "native.tour.keyboard.body": "Click, touch, or slide across the bottom keyboard. Enable typing and follow its QWERTY labels to play from your computer keyboard.\n\nFirmware shortcuts use the central 27-key bank: 16 white keys counted from the starting F (F3 by default) through G two octaves above. Extra keys outside that bank play notes.",
+  "native.tour.keyboard.body": "Click, touch, or slide across the keyboard beneath the controls (Device) or at the bottom of the window (Expanded). Enable typing and follow its QWERTY labels to play from your computer keyboard.\n\nFirmware shortcuts use the central 27-key bank: 16 white keys counted from the starting F (F3 by default) through G two octaves above. Extra keys outside that bank play notes.",
   "native.tour.layers.title": "Tap pages, hold layers",
   "native.tour.layers.body": "Tap a function button to open its pages. Hold FX, EDIT, ARP, SEQ, SCL, GLO or SAVE while using keys or knobs.\n\nHold a layer button and tap HOME to lock it; HOME or another layer releases it. FX plays effects, ARP rolls, SEQ edits steps, SCL selects the key, and GLO controls the mix. EDIT with OCT−/OCT+ undoes/redoes.",
   "native.tour.record.title": "Record a take",
@@ -175,6 +176,14 @@
   "native.tour.song.title": "Arrange sections",
   "native.tour.song.body": "Hold SAVE: white keys 1–4 recall sections A–D; 5–8 store them (repeat to overwrite). White key 13 toggles song playback, 14 arms song recording, and 16 opens the song page.\n\nTapping SAVE opens the arranger from the track/drum pages, saves the arrangement on the song page, or opens SAVE pages elsewhere.",
   "native.tour.finish.title": "Ready to play",
-  "native.tour.finish.body": "Hold HOME for settings. In menus, PRESETS moves, KNOB 1 changes values, OCT+ confirms and OCT− returns. Browser sessions autosave projects, presets, song order and settings.\n\nUSB audio input and hardware calibration need a physical FM-1. External MIDI keyboard input is not yet wired into the browser synth.\n\nReplay this tour anytime with the ? icon beside the ☰ menu.",
-  "native.touchKeys": "FM-1 Touch Keys"
+  "native.tour.finish.body": "Hold HOME for settings. In menus, PRESETS moves, KNOB 1 changes values, OCT+ confirms and OCT− returns. Browser sessions autosave projects, presets, song order and settings.\n\nUSB audio input and hardware calibration need a physical FM-1. Use Enable USB-MIDI input above the panel, then choose your controller to play through its MIDI channels.\n\nReplay this tour anytime with the ? icon beside the ☰ menu.",
+  "native.touchKeys": "FM-1 Touch Keys",
+  "midi.enable": "Enable USB-MIDI input",
+  "midi.input": "MIDI input",
+  "midi.none": "None",
+  "midi.ready": "MIDI input active. Uses the controller’s MIDI channels; sustain pedal is supported.",
+  "midi.choose": "Choose a MIDI input to play the browser synth.",
+  "midi.empty": "No MIDI inputs found. Connect a USB-MIDI controller.",
+  "midi.unavailable": "MIDI input is unavailable. Use Chrome or Edge over HTTPS or localhost.",
+  "midi.denied": "MIDI access was not granted. Check browser permissions and try again."
 }

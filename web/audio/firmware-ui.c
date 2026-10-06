@@ -58,6 +58,8 @@ static void browser_ui_init(void) {
 API void fw_tick(void) {ui_input();ui_leds();ui_draw();sections_flush();}
 API uint16_t *fw_screen(void) {return screen;}
 API void fw_event(unsigned kind,unsigned id,int value) {
+    /* Browser shortcut for the existing HOME > COLOR setting. */
+    if(kind==5&&id<NPALETTES){settings.palette=id;palette_set(id);ui.force=1;return;}
     /* Calibration waits for GPIO edges in a blocking loop. Browser peripherals
        have fixed labels, so acknowledge this hardware-only action explicitly. */
     if(kind==0&&id==B_OCTUP&&value&&ui.menu==1&&ui.menu_sel==MI_PANEL){

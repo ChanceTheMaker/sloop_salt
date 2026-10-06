@@ -175,3 +175,30 @@ equal half-height keys in two rows: black keys above, white keys below. Capsule 
 respond to pressed notes and native firmware LEDs. The preference is stored in
 `sloop.fm1TouchKeys`; the styling applies only to FM-1 Simulator. Recessed
 surrounds group the function and octave buttons, with extra spacing below knobs.
+
+Device now attaches the shared keyboard to the simulator chassis and limits it
+to the 27 hardware keys (F3–G5 at the default octave). Its equal-width,
+equal-height capsules occupy two rows. Expanded restores the existing extended
+bottom dock and its saved capsule/collapse preferences. Layout changes release
+held notes. The simulator shows the original Sloop splash artwork, build version
+and Felucca credit for one second on its first startup, before the tutorial.
+
+External USB-MIDI input: select Enable USB-MIDI input above either browser mode,
+grant permission, then choose an input. This uses separate Web MIDI input
+listeners with sysex disabled and never opens a hardware output. Notes and
+velocity retain their MIDI channels: channels 1–3 select synth tracks 1–3;
+the configured drum channel (default 10) plays drums; other channels follow the
+selected track. CC64 sustain and CC120/123 note release are handled locally.
+Pitch bend, other CCs, program changes and MIDI clock are not implemented in
+the current browser input path. Disconnect, port changes, mode changes, stop,
+blur and page hiding release controller notes. Test coverage includes mocked
+USB input with actual AudioWorklet sound; physical-controller testing remains
+to be done. Web MIDI permission and port semantics follow the
+[Web MIDI specification](https://www.w3.org/TR/webmidi/).
+
+The circular swatch next to the simulator hamburger opens all five native
+COLOR palettes: Green, Amber, Cyan, Red and Mono. The browser-only palette
+event applies the existing firmware setting and redraw; it neither changes
+firmware sources nor invents a hardware command. Selection mirrors native
+preferences, including menu changes, export/import and reload. The help icon
+alone is borderless. Palette browser checks cover every choice and persistence.

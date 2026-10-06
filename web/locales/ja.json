@@ -1,4 +1,5 @@
 {
+  "native.colors": "デバイスの配色",
   "ui.language": "言語",
   "ui.installerTitle": "Sloop [salt] インストーラー",
   "ui.editorTitle": "Sloop [salt] スタジオ",
@@ -161,13 +162,13 @@
   "native.tour.welcome.title": "FM-1 Simulator へようこそ",
   "native.tour.welcome.body": "Sloop の実際のファームウェア画面を使ってブラウザーで演奏できます。このツアーで操作を順番に紹介します。\n\nいつでも閉じられます。再表示するには、パネル右上の ☰ メニューの隣にある ? ヘルプを選んでください。",
   "native.tour.layout.title": "レイアウトを選ぶ",
-  "native.tour.layout.body": "☰ → レイアウトから Device または Expanded を選べます。Device は FM-1 本体の操作配置、Expanded は同じ操作で画面を大きく表示します。\n\n同じメニューの FM-1 タッチ鍵盤をオンにすると、全幅ピアノ鍵盤の音域と配置を保ったまま、光るカプセル形の見た目に切り替わります。オフにすると元の見た目に戻ります。",
+  "native.tour.layout.body": "☰ → レイアウトから Device または Expanded を選べます。Device は FM-1 の操作部と27鍵を一つのパネルにまとめます。Expanded は画面を大きくし、追加の音域を持つ全幅鍵盤をウィンドウ下部に表示します。\n\nExpanded では同じメニューの FM-1 タッチ鍵盤で光るカプセル形の見た目に切り替えられます。",
   "native.tour.sound.title": "音色を選ぶ",
   "native.tour.sound.body": "ホーム画面では ALGORITHM でトラック、PRESETS で音色、SELECT でテンポを選びます。MASTER はブラウザーの音量です。\n\n現在のページと各操作の役割は画面に表示されます。",
   "native.tour.knobs.title": "ノブと微調整",
   "native.tour.knobs.body": "ノブを上下にドラッグします。Shift を押しながら動かすと細かく調整できます。ノブにフォーカスすると矢印キーやホイールも使えます。Shift はファームウェアの加速を無効にします。\n\nKNOB 1～4 は画面のラベルに従います。ENV や LFO をタップしてページを開きます。",
   "native.tour.keyboard.title": "鍵盤で演奏",
-  "native.tour.keyboard.body": "下の鍵盤をクリック、タッチ、またはなぞって演奏します。タイピングを有効にすると、鍵盤の QWERTY 表示に従ってパソコンから演奏できます。\n\nファームウェアのショートカットは中央の27鍵を使います。白鍵16個は開始音 F（初期値 F3）から2オクターブ上の G まで数えます。その外側の鍵盤は音を鳴らします。",
+  "native.tour.keyboard.body": "Device では操作部の下、Expanded ではウィンドウ下部の鍵盤をクリック、タッチ、またはなぞって演奏します。タイピングを有効にすると、QWERTY 表示に従ってパソコンから演奏できます。\n\nファームウェアのショートカットは27鍵を使います。白鍵16個は開始音 F（初期値 F3）から2オクターブ上の G まで数えます。Expanded の追加鍵盤も演奏できます。",
   "native.tour.layers.title": "タップと長押し",
   "native.tour.layers.body": "機能ボタンをタップするとページが開きます。FX、EDIT、ARP、SEQ、SCL、GLO、SAVE を押しながら鍵盤やノブを操作します。\n\nレイヤーボタンを押しながら HOME をタップすると固定、HOME または別のレイヤーで解除します。FX はエフェクト、ARP はロール、SEQ はステップ、SCL はキー、GLO はミックスです。EDIT と OCT−/OCT+ で元に戻す／やり直します。",
   "native.tour.record.title": "演奏を録音",
@@ -175,6 +176,14 @@
   "native.tour.song.title": "セクションを並べる",
   "native.tour.song.body": "SAVE を押しながら白鍵1～4でセクション A～D を呼び出し、5～8で保存します（再操作で上書き）。白鍵13で曲再生切替、14で曲録音待機、16で曲ページを開きます。\n\nSAVE のタップはトラック／ドラムページではアレンジャー、曲ページでは構成の保存、それ以外では SAVE ページを開きます。",
   "native.tour.finish.title": "演奏を始めましょう",
-  "native.tour.finish.body": "HOME 長押しで設定。メニューでは PRESETS で移動、KNOB 1 で変更、OCT+ で決定、OCT− で戻ります。プロジェクト、プリセット、曲順、設定はブラウザーに自動保存されます。\n\nUSB オーディオ入力と本体の校正には実機が必要です。ブラウザー音源への外部 MIDI 鍵盤入力は未対応です。\n\n☰ メニューの隣の ? からいつでもツアーを再表示できます。",
-  "native.touchKeys": "FM-1 タッチ鍵盤"
+  "native.tour.finish.body": "HOME 長押しで設定。メニューでは PRESETS で移動、KNOB 1 で変更、OCT+ で決定、OCT− で戻ります。プロジェクト、プリセット、曲順、設定はブラウザーに自動保存されます。\n\nUSB オーディオ入力と本体の校正には実機が必要です。パネル上部で USB-MIDI 入力を有効にし、コントローラーを選ぶと MIDI チャンネルを使って演奏できます。\n\n☰ メニューの隣の ? からいつでもツアーを再表示できます。",
+  "native.touchKeys": "FM-1 タッチ鍵盤",
+  "midi.enable": "USB-MIDI 入力を有効にする",
+  "midi.input": "MIDI 入力",
+  "midi.none": "なし",
+  "midi.ready": "MIDI 入力が有効です。コントローラーの MIDI チャンネルを使います。サステインペダルにも対応。",
+  "midi.choose": "ブラウザー音源を演奏する MIDI 入力を選んでください。",
+  "midi.empty": "MIDI 入力がありません。USB-MIDI コントローラーを接続してください。",
+  "midi.unavailable": "MIDI 入力は利用できません。HTTPS または localhost で Chrome / Edge を使ってください。",
+  "midi.denied": "MIDI アクセスが許可されませんでした。ブラウザーの権限を確認して再試行してください。"
 }

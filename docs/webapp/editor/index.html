@@ -215,9 +215,12 @@
         <output id="audio-position" aria-live="off"></output>
         <button id="audio-export" type="button" data-i18n="audio.export">Export session</button>
         <button id="audio-import" type="button" data-i18n="audio.import">Import session</button>
+        <button id="midi-enable" type="button" data-i18n="midi.enable">Enable USB-MIDI input</button>
+        <label><span data-i18n="midi.input">MIDI input</span><select id="midi-input" disabled><option value="" data-i18n="midi.none">None</option></select></label>
         <input id="audio-file" type="file" accept=".json,application/json" hidden>
       </div>
       <p id="audio-status" role="status" data-i18n="audio.help"></p>
+      <p id="midi-status" role="status"></p>
       <canvas id="audio-scope" height="70" role="img" data-i18n-aria-label="audio.scope" aria-label="Browser audio waveform"></canvas>
     </section>
     <nav class="tabs" id="tabs" role="tablist">
@@ -4570,11 +4573,13 @@ $("connect").addEventListener("click", () => {
   if (dev) { wantConnected = false; disconnect(); } else connect();
 });
 function audioControls(enabled) {
+  externalMIDI?.release();$('midi-enable').disabled=!enabled;
   for (const id of ['audio-play','audio-stop','audio-export','audio-import']) $(id).disabled = !enabled;
   if (!enabled) setEditorView(false).catch(report);
 }
-let firmwareView;
+let firmwareView, externalMIDI;
 async function setEditorView(on) {
+  externalMIDI?.release();
   if(on && (!dev || !browserMode || busy))return;
   window.SloopPlay.release();
   if(on && !firmwareView){
@@ -4625,6 +4630,30 @@ async function switchSource(source){
  finally{switchingSource=false;for(const button of $('audio-mode').children)button.disabled=false;}
 }
 $('browser-start').addEventListener('click',()=>switchSource('studio'));
+const midiText=key=>window.SloopI18n.t('midi.'+key);
+function midiInputs(ports){
+ const selected=externalMIDI.port?.id||'',select=$('midi-input');
+ select.replaceChildren(new Option(midiText('none'),''),...ports.map(p=>new Option(p.name||p.id,p.id)));
+ select.value=selected;select.disabled=!ports.length;
+ $('midi-status').textContent=midiText(selected?'ready':ports.length?'choose':'empty');
+}
+$('midi-enable').addEventListener('click',async()=>{
+ $('midi-enable').disabled=true;
+ try{
+  if(!navigator.requestMIDIAccess){$('midi-status').textContent=midiText('unavailable');return;}
+  await browserSynth.start();
+  if(!externalMIDI){const {MIDIInput}=await import('./midi-input.js');externalMIDI=new MIDIInput({send:bytes=>browserSynth?.midi(bytes),enabled:()=>browserMode&&!!dev&&!document.hidden&&browserSynth?.context?.state==='running',changed:midiInputs});}
+  await externalMIDI.connect();
+ }catch(error){$('midi-status').textContent=midiText('denied');}
+ finally{$('midi-enable').disabled=!browserMode||!dev;}
+});
+$('midi-input').addEventListener('change',()=>{externalMIDI?.select($('midi-input').value);$('midi-status').textContent=midiText($('midi-input').value?'ready':'choose');});
+window.SloopI18n.onChange(()=>{if(externalMIDI?.access)midiInputs([...externalMIDI.access.inputs.values()].filter(p=>p.state==='connected'));});
+window.addEventListener('blur',()=>externalMIDI?.release());
+window.addEventListener('pagehide',()=>externalMIDI?.release());
+document.addEventListener('visibilitychange',()=>{if(document.hidden)externalMIDI?.release();});
+$('play-stop').addEventListener('click',()=>externalMIDI?.release());
+$('audio-stop').addEventListener('click',()=>externalMIDI?.release());
 $('view-firmware').addEventListener('click',()=>switchSource('firmware'));
 $('device-mode').addEventListener('click',()=>switchSource('fm1'));
 $('audio-play').addEventListener('click', async () => { try {await browserSynth.start();browserSynth.transport(1);}catch(e){report(e);} });
