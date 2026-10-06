@@ -53,6 +53,11 @@ try{
  await page.locator('.native-menu>summary').click();
  const key=page.locator('#play-keys button').first(),second=page.locator('#play-keys button:not(.black)').nth(1);
  const firstBox=await key.boundingBox(),secondBox=await second.boundingBox();
+ const checkRows=async()=>assert.ok(await page.locator('#play-keys').evaluate(e=>{
+  const keys=[...e.querySelectorAll('button')],upper=keys.filter(k=>k.classList.contains('black')).map(k=>k.getBoundingClientRect()),lower=keys.filter(k=>!k.classList.contains('black')).map(k=>k.getBoundingClientRect());
+  return [...upper,...lower].every(r=>r.height===72)&&Math.max(...upper.map(r=>r.bottom))<Math.min(...lower.map(r=>r.top));
+ }),'equal half-height keys, black row above white row');
+ await checkRows();
  const finish=element=>{const s=getComputedStyle(element);return [s.background,s.color,s.boxShadow,s.borderWidth];};
  const idleFinish=await key.evaluate(finish);
  await page.mouse.move(firstBox.x+firstBox.width/2,firstBox.y+firstBox.height-15);await page.mouse.down();
@@ -66,6 +71,7 @@ try{
  await page.reload({waitUntil:'domcontentloaded'});await page.locator('#view-firmware').click();await page.locator('.native-screen').waitFor({state:'visible'});
  assert.ok(await page.locator('body').evaluate(e=>e.classList.contains('fm1-touch-keys')),'touch preference survives reload');
  await page.setViewportSize({width:390,height:844});
+ await checkRows();
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
  await page.screenshot({path:'build/screenshots/fm1-touch-mobile.png'});
  await page.locator('#browser-start').click();await page.locator('#firmware-view').waitFor({state:'hidden'});
