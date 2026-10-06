@@ -10,10 +10,12 @@ export function mountFirmwareView(host,api){
  const state=make('p',{className:'native-status'});state.setAttribute('aria-live','off');
  const screen=make('div',{className:'native-display'});screen.append(canvas,state);
  const encoders=make('div',{className:'native-encoders'}),panel=make('div',{className:'native-buttons'}),piano=make('div',{className:'native-piano'});
+ const dock=make('section',{className:'native-keyboard-dock'}),bar=make('div',{className:'native-keyboard-bar'}),title=make('strong'),tray=make('button',{type:'button'});
+ piano.id='native-play-keys';tray.setAttribute('aria-controls',piano.id);bar.append(title,tray);dock.append(bar,piano);
  const guide=make('details',{className:'native-guide'}),summary=make('summary'),instructions=make('p');guide.append(summary,instructions);
  const controls=make('div',{className:'native-controls'});controls.append(encoders,panel);
  const body=make('div',{className:'native-body'});body.append(screen,controls);
- layout.append(device,expanded);host.replaceChildren(layout,body,piano,guide);
+ layout.append(device,expanded);host.replaceChildren(layout,body,guide,dock);
  let shown=false,pendingFrame,lastData;const owners=new Map(),held=new Map(),pointers=new Set();
  const emit=(kind,id,value)=>api.panel(kind,id,value);
  function paintHeld(){for(const b of host.querySelectorAll('[data-native-kind]'))b.setAttribute('aria-pressed',String(held.has(b.dataset.nativeKind+':'+b.dataset.nativeId)));}
@@ -57,7 +59,12 @@ export function mountFirmwareView(host,api){
  });
  const choose=mode=>{host.dataset.layout=mode;device.setAttribute('aria-pressed',String(mode==='device'));expanded.setAttribute('aria-pressed',String(mode==='expanded'));};
  device.onclick=()=>choose('device');expanded.onclick=()=>choose('expanded');choose('device');
- function translate(){device.textContent=window.SloopI18n.t('view.device');expanded.textContent=window.SloopI18n.t('view.expanded');canvas.setAttribute('aria-label',t('screen'));summary.textContent=t('guide');instructions.textContent=t('instructions');}
+ function translate(){device.textContent=window.SloopI18n.t('view.device');expanded.textContent=window.SloopI18n.t('view.expanded');canvas.setAttribute('aria-label',t('screen'));summary.textContent=t('guide');instructions.textContent=t('instructions');
+  title.textContent=window.SloopI18n.t('play.title');dock.setAttribute('aria-label',title.textContent);
+  tray.textContent=piano.hidden?'▴ '+window.SloopI18n.t('ui.showKeyboard'):'▾';tray.setAttribute('aria-expanded',String(!piano.hidden));tray.title=window.SloopI18n.t(piano.hidden?'ui.showKeyboard':'ui.minimizeKeyboard');tray.setAttribute('aria-label',tray.title);
+ }
+ tray.onclick=()=>{releaseAll();piano.hidden=!piano.hidden;dock.classList.toggle('collapsed',piano.hidden);translate();};
+ new ResizeObserver(()=>document.documentElement.style.setProperty('--native-keyboard-height',Math.ceil(dock.getBoundingClientRect().height)+'px')).observe(dock);
  translate();window.SloopI18n.onChange(translate);
  const ctx=canvas.getContext('2d',{alpha:false}),pixels=ctx.createImageData(240,240);
  function display(data){
@@ -71,7 +78,7 @@ export function mountFirmwareView(host,api){
   });
  }
  window.addEventListener('keydown',e=>{
-  if(!shown||e.ctrlKey||e.metaKey||e.altKey||e.isComposing||e.target.closest('input,select,textarea,[contenteditable=true]'))return;
+  if(!shown||piano.hidden||e.ctrlKey||e.metaKey||e.altKey||e.isComposing||e.target.closest('input,select,textarea,[contenteditable=true]'))return;
   const k=codes.indexOf(e.code);if(k<0)return;e.preventDefault();e.stopImmediatePropagation();if(!e.repeat)press('qwerty:'+e.code,2,k);
  },true);
  window.addEventListener('keyup',e=>{if(shown&&codes.includes(e.code)){e.preventDefault();e.stopImmediatePropagation();release('qwerty:'+e.code);}},true);

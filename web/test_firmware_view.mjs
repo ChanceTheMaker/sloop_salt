@@ -28,6 +28,8 @@ try{
  await page.waitForFunction(()=>document.querySelector('.native-status').textContent.includes('Stopped'));
  assert.equal(await page.locator('.native-buttons button').count(),14);assert.equal(await page.locator('.native-dial').count(),7);
  assert.equal(await page.locator('.native-piano button').count(),27);
+ const checkDock=async()=>assert.ok(await page.locator('.native-keyboard-dock').evaluate(e=>{const r=e.getBoundingClientRect();return Math.abs(r.left)<1&&Math.abs(r.right-innerWidth)<1&&Math.abs(r.bottom-innerHeight)<1;}),'keyboard spans viewport and stays at bottom');
+ await checkDock();
  assert.ok(await page.locator('.native-screen').evaluate(c=>c.getContext('2d').getImageData(0,0,240,240).data.some((v,i)=>i%4!==3&&v>0)));
  await page.getByRole('button',{name:'Expanded',exact:true}).click();assert.equal(await page.locator('#firmware-view').getAttribute('data-layout'),'expanded');
  await page.getByRole('button',{name:'Device',exact:true}).click();assert.equal(await page.locator('#tabs').isVisible(),false);
@@ -64,6 +66,10 @@ try{
  await touch.send('Input.dispatchTouchEvent',{type:'touchCancel',touchPoints:[]});
  assert.equal(await page.locator('.native-piano [aria-pressed=true]').count(),0,'touch cancellation releases notes');
  await touch.detach();console.log('Native mouse/touch sliding, black keys, re-entry and shared note ownership passed');
+ await page.getByRole('button',{name:'Minimize keyboard',exact:true}).click();
+ assert.equal(await page.locator('.native-piano').isVisible(),false);
+ await checkDock();await page.getByRole('button',{name:'Show keyboard',exact:true}).click();
+ assert.equal(await page.locator('.native-piano').isVisible(),true);
  await button('REC').click();await page.waitForFunction(()=>document.querySelector('.native-status').textContent.includes('armed'));
  await page.keyboard.down('a');await page.waitForTimeout(1300);await page.keyboard.up('a');await button('REC').click();
  await page.waitForFunction(()=>document.querySelector('.native-status').textContent.includes('Playing'));
@@ -76,7 +82,7 @@ try{
  await page.getByRole('button',{name:'KNOB 4 +',exact:true}).click();await page.getByRole('button',{name:'KNOB 4 +',exact:true}).click();
  const banked=await exportSession();assert.ok(banked.bank[0],'native user bank saved on audio thread');
  console.log('Native free recording and focus-loss release passed');
- await page.setViewportSize({width:390,height:1000});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'mobile fits');
+ await page.setViewportSize({width:390,height:1000});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'mobile fits');await checkDock();
  await mkdir('build/screenshots',{recursive:true});await page.screenshot({path:'build/screenshots/native-firmware-mobile.png',fullPage:true});
  await page.setViewportSize({width:1440,height:1100});await button('HOME').click();await page.waitForTimeout(100);
  await page.screenshot({path:'build/screenshots/native-firmware-desktop.png',fullPage:true});
