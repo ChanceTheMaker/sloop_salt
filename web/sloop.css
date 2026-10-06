@@ -59,7 +59,7 @@ body { margin:0; }
   .top { grid-template-columns:minmax(0,1fr); }
   .browser { grid-template-columns:minmax(0,1fr); }
   .browser > div { flex-wrap:wrap; }
-  .tabs button { min-width:70px; }
+  .tabs button { min-width:max-content; }
   .panel { padding:8px 0; }
 }
 

@@ -41,7 +41,7 @@ if(typeof document!=='undefined') (()=>{
  const codes=['KeyA','KeyW','KeyS','KeyE','KeyD','KeyR','KeyF','KeyG','KeyY','KeyH','KeyU','KeyJ','KeyK','KeyO','KeyL','KeyP','Semicolon'];
  const black=n=>[1,3,6,8,10].includes(n%12);
  const name=n=>['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'][n%12]+(Math.floor(n/12)-1);
- let device=null, lastRoute='', pending=false, layout='';
+ let device=null, lastRoute='', pending=false, layout='', focusedNote=null;
  const pointers=new Set(), keyboard=new SloopKeyboard(renderState);
  const base=()=>12*(+$('play-octave').value+1)+5;
  const drums=()=>device?.track===3&&$('play-channel').value==='auto';
@@ -54,6 +54,9 @@ if(typeof document!=='undefined') (()=>{
   const connected=!!keyboard.output&&keyboard.output.state!=='disconnected';
   const held=new Set([...keyboard.held.values(),...keyboard.deferred]);
   $('play-keys').querySelectorAll('button').forEach(b=>{b.disabled=!connected||pitch(+b.dataset.note)==null;b.setAttribute('aria-pressed',String(held.has(pitch(+b.dataset.note))));});
+  const keys=[...$('play-keys').querySelectorAll('button:not(:disabled)')];
+  const tabKey=keys.find(b=>+b.dataset.note===focusedNote)||keys.find(b=>+b.dataset.note===base())||keys[0];
+  for(const b of $('play-keys').children)b.tabIndex=b===tabKey?0:-1;
   $('play-sustain').disabled=$('play-stop').disabled=!connected;
   $('play-sustain').setAttribute('aria-pressed',String(keyboard.sustain));
   $('play-help').textContent=I.t(!connected?'play.connect':device?.mock?'play.mock':drums()?'play.drums':'play.help');
@@ -80,6 +83,7 @@ if(typeof document!=='undefined') (()=>{
    whites++;
   }
   const key=`${first}:${last}:${start}:${drums()}`;if(resize&&layout===key)return;layout=key;
+  const restoreFocus=$('play-keys').contains(document.activeElement);
   $('play-keys').replaceChildren();$('play-keys').style.setProperty('--white-keys',whites);
   let w=0;
   for(let note=first;note<=last;note++){
@@ -94,6 +98,7 @@ if(typeof document!=='undefined') (()=>{
   }
   $('play-oct-down').disabled=+$('play-octave').value<=-1;$('play-oct-up').disabled=+$('play-octave').value>=7;
   renderState();
+  if(restoreFocus)$('play-keys').querySelector('[tabindex="0"]')?.focus({preventScroll:true});
  }
  function down(source,note){const n=pitch(+note);if(n!=null)keyboard.press(source,n,+$('play-velocity').value);}
  for(let i=-1;i<=7;i++)$('play-octave').add(new Option('F'+i,i));$('play-octave').value='3';
@@ -105,6 +110,21 @@ if(typeof document!=='undefined') (()=>{
  $('play-typing').addEventListener('change',release);
  $('play-sustain').addEventListener('click',()=>keyboard.setSustain(!keyboard.sustain));
  $('play-stop').addEventListener('click',release);
+ $('play-keys').addEventListener('focusin',e=>{
+  const b=e.target.closest('button[data-note]');if(!b)return;
+  focusedNote=+b.dataset.note;renderState();
+ });
+ $('play-keys').addEventListener('focusout',()=>{
+  keyboard.release('button:Space');keyboard.release('button:Enter');
+ });
+ $('play-keys').addEventListener('keydown',e=>{
+  if(e.altKey||e.ctrlKey||e.metaKey||!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;
+  const keys=[...$('play-keys').querySelectorAll('button:not(:disabled)')],index=keys.indexOf(e.target);
+  if(index<0)return;
+  e.preventDefault();e.stopPropagation();
+  const next=e.key==='Home'?0:e.key==='End'?keys.length-1:Math.max(0,Math.min(keys.length-1,index+(e.key==='ArrowRight'?1:-1)));
+  keys[next].focus({preventScroll:true});
+ });
  $('play-keys').addEventListener('pointerdown',e=>{
   const b=e.target.closest('button[data-note]');if(!b||b.disabled||(e.pointerType==='mouse'&&e.button!==0))return;
   e.preventDefault();b.focus({preventScroll:true});b.setPointerCapture(e.pointerId);pointers.add(e.pointerId);down('pointer:'+e.pointerId,b.dataset.note);

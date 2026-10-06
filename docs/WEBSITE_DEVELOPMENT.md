@@ -81,5 +81,24 @@ screenshots from the actual mock editor; `node web/test_landing.mjs` checks it.
 The original SLOOP logo is reused in Studio with its background rectangle removed
 in the website copy only. `[Salt]` and the shaker follow it. Original logo assets
 and firmware remain untouched.
-The suffix uses rounded vector lettering matched to the original logo's 12-unit
-monoline strokes; it is no longer typeset in the theme's display font.
+The lowercase `[salt]` suffix uses rounded vector lettering matched to the
+original logo's 12-unit monoline strokes. The website SVG trims the empty space
+after the logo while preserving the visible artwork's size.
+
+## Keyboard access and localization
+
+The piano has one Tab stop. Left/Right moves between notes, Home/End selects the
+first/last visible note, and Space/Enter plays the focused note even when QWERTY
+is disabled. Moving focus releases notes owned by Space/Enter while preserving
+independent pointer/QWERTY ownership and the sustain setting. Resizing preserves
+piano focus when keys are rebuilt. Screen-reader instructions explain navigation.
+
+The Studio and unlinked backup headers, navigation, page titles and piano help
+follow the existing English/Japanese picker. Native musical names and firmware
+values remain unchanged. The original public homepage retains its own language
+handling. Additional languages from the Felucca reference are not yet ported.
+
+`node web/test_accessibility.mjs` covers Tab/arrow navigation, focus cleanup,
+mixed pointer/QWERTY ownership, language selection/persistence and Japanese labels
+at 1440/390/320 pixels in standard and full-width layouts. Narrow tabs size to
+their labels so translated text cannot overlap adjacent buttons.

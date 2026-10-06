@@ -1,7 +1,7 @@
 {
   "ui.language": "言語",
-  "ui.installerTitle": "Sloop [Salt] installer",
-  "ui.editorTitle": "Sloop [Salt] Studio",
+  "ui.installerTitle": "Sloop [salt] インストーラー",
+  "ui.editorTitle": "Sloop [salt] スタジオ",
   "ui.websiteSettings": "サイトの設定",
   "ui.websiteTheme": "サイトのテーマ",
   "ui.soundControls": "音色コントロール",
@@ -82,5 +82,15 @@
   "landing.chopTitle": "新しいリズムを見つける",
   "landing.chop": "CHOPで録音を切り分け、スライスを選んでFM-1へ送信。",
   "landing.saveTitle": "作品を手元に",
-  "landing.save": "ローカル音色ライブラリ、機器のプロジェクト、完全バックアップと復元。"
+  "landing.save": "ローカル音色ライブラリ、機器のプロジェクト、完全バックアップと復元。",
+  "nav.website": "ウェブサイト",
+  "nav.install": "インストール",
+  "nav.manual": "マニュアル",
+  "nav.studio": "スタジオ",
+  "nav.themes": "テーマ",
+  "nav.features": "機能",
+  "brand.editorKicker": "FM-1 / ライブ・グルーヴボックス",
+  "brand.installerKicker": "FM-1 / カスタムファームウェア",
+  "brand.tagline": "3つのシンセと1つのドラムマシンで、あなたの音楽を",
+  "play.navigation": "鍵盤: 左右キーで移動、Home/Endで最初/最後の鍵へ。SpaceまたはEnterを押している間は演奏。Tabで鍵盤から移動します。"
 }
