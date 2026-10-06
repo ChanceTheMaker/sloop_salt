@@ -10,10 +10,12 @@ export function mountFirmwareView(host,api){
  const screen=make('div',{className:'native-display'});screen.append(canvas,state);
  const encoders=make('div',{className:'native-encoders'}),panel=make('div',{className:'native-buttons'});
  const navigation=make('div',{className:'native-navigation'}),octaves=make('div',{className:'native-buttons native-octaves'});
- const guide=make('details',{className:'native-guide'}),summary=make('summary'),instructions=make('p');guide.append(summary,instructions);
+ const toolbar=make('div',{className:'native-toolbar'}),help=make('button',{type:'button',className:'native-help-button'},'?');
+ const menu=make('details',{className:'native-menu'}),menuToggle=make('summary',{},'☰'),submenu=make('details'),layoutToggle=make('summary');
+ submenu.append(layoutToggle,layout);menu.append(menuToggle,submenu);toolbar.append(help,menu);
  const controls=make('div',{className:'native-controls'});controls.append(encoders,panel);
  const body=make('div',{className:'native-body'});body.append(navigation,screen,controls);
- layout.append(device,expanded);host.replaceChildren(layout,body,guide);
+ layout.append(device,expanded);host.replaceChildren(toolbar,body);
  let shown=false,pendingFrame,lastData;const owners=new Map(),held=new Map();
  const emit=(kind,id,value)=>api.panel(kind,id,value);
  function paintHeld(){for(const b of host.querySelectorAll('[data-native-kind]'))b.setAttribute('aria-pressed',String(held.has(b.dataset.nativeKind+':'+b.dataset.nativeId)));}
@@ -46,8 +48,46 @@ export function mountFirmwareView(host,api){
  });
  navigation.append(octaves);
  const choose=mode=>{host.dataset.layout=mode;device.setAttribute('aria-pressed',String(mode==='device'));expanded.setAttribute('aria-pressed',String(mode==='expanded'));};
- device.onclick=()=>choose('device');expanded.onclick=()=>choose('expanded');choose('device');
- function translate(){device.textContent=window.SloopI18n.t('view.device');expanded.textContent=window.SloopI18n.t('view.expanded');canvas.setAttribute('aria-label',t('screen'));summary.textContent=t('guide');instructions.textContent=t('instructions');
+ device.onclick=()=>{choose('device');menu.open=false;};expanded.onclick=()=>{choose('expanded');menu.open=false;};choose('device');
+ document.addEventListener('pointerdown',e=>{if(!menu.contains(e.target))menu.open=false;});
+ menu.addEventListener('keydown',e=>{if(e.key==='Escape'){menu.open=false;menuToggle.focus();}});
+ const tour=make('dialog',{className:'native-tour'}),spotlight=make('div',{className:'native-tour-spotlight'}),bubble=make('div',{className:'native-tour-bubble'});
+ const progress=make('div',{className:'native-tour-progress'}),title=make('h2',{id:'native-tour-title'}),copy=make('p',{id:'native-tour-copy'}),actions=make('div',{className:'native-tour-actions'});
+ const skip=make('button',{type:'button'}),back=make('button',{type:'button'}),next=make('button',{type:'button'});
+ actions.append(skip,back,next);bubble.append(progress,title,copy,actions);tour.append(spotlight,bubble);document.body.append(tour);
+ tour.setAttribute('aria-labelledby',title.id);tour.setAttribute('aria-describedby',copy.id);
+ const steps=[['welcome',()=>help],['layout',()=>menuToggle],['sound',()=>navigation],['knobs',()=>encoders],['keyboard',()=>document.querySelector('.play-keyboard')],['layers',()=>panel],['record',()=>panel.children[11]],['song',()=>panel.children[7]],['finish',()=>help]];
+ let step=0,tourStarted=false,tourFrame;
+ function positionTour(){
+  if(!tour.open)return;
+  const r=steps[step][1]().getBoundingClientRect(),pad=12,w=innerWidth,h=innerHeight;
+  const left=Math.max(pad,Math.min(w-pad,r.left)),right=Math.max(left,Math.min(w-pad,r.right)),top=Math.max(pad,Math.min(h-pad,r.top)),bottom=Math.max(top,Math.min(h-pad,r.bottom));
+  Object.assign(spotlight.style,{left:left+'px',top:top+'px',width:(right-left)+'px',height:(bottom-top)+'px'});
+  const bh=bubble.offsetHeight,bw=bubble.offsetWidth,below=h-bottom>bh+28;
+  const x=Math.max(pad,Math.min(w-bw-pad,(left+right-bw)/2)),y=Math.max(pad,Math.min(h-bh-pad,below?bottom+20:top-bh-20));
+  Object.assign(bubble.style,{left:x+'px',top:y+'px'});bubble.dataset.arrow=below?'top':'bottom';
+  bubble.style.setProperty('--arrow-x',Math.max(24,Math.min(bw-24,(left+right)/2-x))+'px');
+ }
+ function renderStep(){
+  title.textContent=t('tour.'+steps[step][0]+'.title');copy.textContent=t('tour.'+steps[step][0]+'.body');progress.textContent=(step+1)+' / '+steps.length;
+  skip.textContent=t('tour.close');back.textContent=t('tour.back');next.textContent=t(step===steps.length-1?'tour.done':'tour.next');back.disabled=step===0;
+  steps[step][1]().scrollIntoView({block:'center',behavior:'instant'});positionTour();
+ }
+ function startTour(){
+  if(tour.open)return;releaseAll();window.SloopPlay.release();menu.open=false;tourStarted=true;
+  document.cookie='sloop_simulator_tour_v1=seen; Max-Age=31536000; Path=/; SameSite=Lax';
+  step=0;tour.showModal();renderStep();next.focus({preventScroll:true});
+ }
+ function closeTour(restore=true){if(tour.open)tour.close();if(restore&&shown)help.focus({preventScroll:true});}
+ help.onclick=startTour;skip.onclick=()=>closeTour();back.onclick=()=>{if(step){step--;renderStep();}};
+ next.onclick=()=>{if(step===steps.length-1)closeTour();else{step++;renderStep();}};
+ tour.addEventListener('cancel',e=>{e.preventDefault();closeTour();});
+ tour.addEventListener('keydown',e=>e.stopPropagation());tour.addEventListener('keyup',e=>e.stopPropagation());
+ const reposition=()=>{cancelAnimationFrame(tourFrame);tourFrame=requestAnimationFrame(positionTour);};
+ window.addEventListener('resize',reposition);window.addEventListener('scroll',reposition,true);
+ new ResizeObserver(reposition).observe(bubble);
+ function translate(){device.textContent=window.SloopI18n.t('view.device');expanded.textContent=window.SloopI18n.t('view.expanded');canvas.setAttribute('aria-label',t('screen'));
+  help.title=t('guide');help.setAttribute('aria-label',t('guide'));menuToggle.title=t('menu');menuToggle.setAttribute('aria-label',t('menu'));layoutToggle.textContent=t('layout');if(tour.open)renderStep();
   host.querySelectorAll('.native-dial').forEach(dial=>{dial.title=t('knobHelp');dial.setAttribute('aria-description',t('knobHelp'));});
  }
  translate();window.SloopI18n.onChange(translate);
@@ -64,5 +104,5 @@ export function mountFirmwareView(host,api){
  window.addEventListener('blur',()=>{if(shown)releaseAll();});
  document.addEventListener('visibilitychange',()=>{if(document.hidden&&shown)releaseAll();});
  api.listen(display);
- return {show(on){shown=on;host.hidden=!on;window.SloopPlay.firmware(on?{panel:emit}:null);if(!on){releaseAll();cancelAnimationFrame(pendingFrame);}else if(lastData)display(lastData);}};
+ return {show(on){shown=on;host.hidden=!on;window.SloopPlay.firmware(on?{panel:emit}:null);if(!on){closeTour(false);menu.open=false;releaseAll();cancelAnimationFrame(pendingFrame);}else{if(lastData)display(lastData);if(!tourStarted&&!document.cookie.split('; ').includes('sloop_simulator_tour_v1=seen'))requestAnimationFrame(()=>{if(shown)startTour();});}}};
 }

@@ -14,6 +14,7 @@ if(process.env.STUDIO_STATIC_DIR){
  });
 }
 const errors=[];page.on('pageerror',e=>errors.push(e.message));
+await page.addInitScript(()=>{document.cookie='sloop_simulator_tour_v1=seen; Path=/; SameSite=Lax';});
 try{
  await page.goto('http://127.0.0.1:8769/webapp/editor/',{waitUntil:'domcontentloaded',timeout:60000});
  await page.locator('.mode-tip').waitFor({state:'visible'});
@@ -35,7 +36,7 @@ try{
  await page.locator('#view-firmware').click();await page.locator('#firmware-view').waitFor({state:'visible',timeout:60000});
  assert.equal(await page.locator('#audio-mode [aria-pressed=true]').count(),1);
  assert.equal(await page.locator('#view-firmware').getAttribute('aria-pressed'),'true');
- await page.getByRole('button',{name:'Expanded',exact:true}).click();
+ await page.locator('.native-menu>summary').click();await page.locator('.native-menu>details>summary').click();await page.getByRole('button',{name:'Expanded',exact:true}).click();
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
  await page.locator('#browser-start').click();await page.locator('#firmware-view').waitFor({state:'hidden'});
  assert.equal(await page.locator('#browser-start').getAttribute('aria-pressed'),'true');

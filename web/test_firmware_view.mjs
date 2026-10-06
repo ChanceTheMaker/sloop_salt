@@ -16,6 +16,7 @@ if(process.env.STUDIO_STATIC_DIR){
  });
 }
 await page.addInitScript(()=>{
+ document.cookie='sloop_simulator_tour_v1=seen; Path=/; SameSite=Lax';
  navigator.requestMIDIAccess=()=>{throw Error('Unexpected hardware access');};
  const Context=window.AudioContext;window.AudioContext=class extends Context {createAnalyser(){const a=super.createAnalyser();window.testAnalyser=a;return a;}};
 });
@@ -41,10 +42,11 @@ try{
  assert.equal(Number(await page.locator('#audio-volume').inputValue()),volume+10,'Shift drag is eight times finer');
  assert.ok(await page.locator('.native-screen').evaluate(c=>c.getContext('2d').getImageData(0,0,240,240).data.some((v,i)=>i%4!==3&&v>0)));
  const screenWidth=async()=>(await page.locator('.native-screen').boundingBox()).width;
- const deviceWidth=await screenWidth();await page.getByRole('button',{name:'Expanded',exact:true}).click();assert.equal(await page.locator('#firmware-view').getAttribute('data-layout'),'expanded');
+ const chooseLayout=async name=>{await page.locator('.native-menu>summary').click();if(!await page.locator('.native-menu>details').evaluate(e=>e.open))await page.locator('.native-menu>details>summary').click();await page.getByRole('button',{name,exact:true}).click();};
+ const deviceWidth=await screenWidth();await chooseLayout('Expanded');assert.equal(await page.locator('#firmware-view').getAttribute('data-layout'),'expanded');
  assert.ok(await screenWidth()>deviceWidth*1.3,'Expanded visibly enlarges screen on desktop');
  await mkdir('build/screenshots',{recursive:true});await page.screenshot({path:'build/screenshots/simulator-expanded-desktop.png',fullPage:true});
- await page.getByRole('button',{name:'Device',exact:true}).click();assert.equal(await page.locator('#tabs').isVisible(),false);
+ await chooseLayout('Device');assert.equal(await page.locator('#tabs').isVisible(),false);
  const before=await exportSession();await button('ENV').click();
  await page.getByRole('button',{name:'KNOB 1',exact:true}).press('Shift+ArrowUp');
  const changed=await exportSession();assert.equal(changed.tracks[0].p[1],before.tracks[0].p[1]+1,'native encoder edit/export barrier');
@@ -102,9 +104,9 @@ try{
  const banked=await exportSession();assert.ok(banked.bank[0],'native user bank saved on audio thread');
  console.log('Native free recording and focus-loss release passed');
  await page.setViewportSize({width:390,height:1000});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'mobile fits');await checkDock();
- const mobileWidth=await screenWidth();await page.getByRole('button',{name:'Expanded',exact:true}).click();assert.ok(await screenWidth()>mobileWidth*1.5,'Expanded enlarges screen on mobile');assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+ const mobileWidth=await screenWidth();await chooseLayout('Expanded');assert.ok(await screenWidth()>mobileWidth*1.5,'Expanded enlarges screen on mobile');assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
  await page.screenshot({path:'build/screenshots/simulator-expanded-mobile.png',fullPage:true});
- await page.getByRole('button',{name:'Device',exact:true}).click();
+ await chooseLayout('Device');
  await mkdir('build/screenshots',{recursive:true});await page.screenshot({path:'build/screenshots/native-firmware-mobile.png',fullPage:true});
  await page.setViewportSize({width:1440,height:1100});await button('HOME').click();await page.waitForTimeout(100);
  await page.screenshot({path:'build/screenshots/native-firmware-desktop.png',fullPage:true});

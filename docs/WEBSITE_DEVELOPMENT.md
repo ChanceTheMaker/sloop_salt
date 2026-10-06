@@ -152,3 +152,18 @@ Master/Select above Presets/Algorithm and octave buttons at left, display in
 the middle, and four knobs over two six-button rows at right. Master adjusts
 the existing browser volume. Narrow screens wrap the right group below while
 keeping each physical control group intact. The playable keyboard stays docked.
+
+The panel's top-right hamburger contains a Layout submenu for Device/Expanded.
+The adjacent help button replays a nine-step, localized simulator tutorial with
+anchored bubbles, arrows, and control highlights. The first and last steps
+explain replay. It opens on the first simulator visit and stores only a local
+`sloop_simulator_tour_v1=seen` cookie (one year, SameSite=Lax, path `/`); closing
+it also counts as seen. It does not send tutorial state to a service.
+The tutorial replaces the old help accordion and corrects SAVE's page-dependent
+behavior, central-bank key numbering, and Shift fine tuning. Escape closes it,
+focus returns to Help, and short viewports can scroll the bubble's text.
+
+`web/test_simulator_tour.mjs` checks first-visit display, cookie persistence,
+manual replay, all steps, focus restoration, Escape, layout selection, and
+desktop/mobile/landscape bounds. The existing native simulator and play-mode
+tests also exercise the Layout submenu.
