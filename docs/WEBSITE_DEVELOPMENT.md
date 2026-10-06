@@ -66,3 +66,20 @@ descriptors, scale masks and slicer patterns match the target source, and graph
 edits use the same `userSet` path as native controls. SLOOP has no ARP REPEAT
 mode, so that Salt-only example was removed. Curves are illustrative, not audio
 measurements. `node web/test_widgets.mjs` checks target scale/pattern tables.
+
+## Original homepage and unlinked backup
+
+The owner chose to retain the upstream homepage. `web/index_pkg.html` and the
+public installer remain unchanged. The redesigned source is preserved separately
+as `web/salt_home_pkg.html`, generated at `/webapp/salt/`, with no public navigation
+link and a noindex directive. Local backup URL:
+http://127.0.0.1:8769/webapp/salt/
+
+The backup has the theme gallery, real SLOOP screen image, progress/retry UI and
+shared appearance settings. `node web/capture_themes.mjs` regenerates its thirteen
+screenshots from the actual mock editor; `node web/test_landing.mjs` checks it.
+The original SLOOP logo is reused in Studio with its background rectangle removed
+in the website copy only. `[Salt]` and the shaker follow it. Original logo assets
+and firmware remain untouched.
+The suffix uses rounded vector lettering matched to the original logo's 12-unit
+monoline strokes; it is no longer typeset in the theme's display font.

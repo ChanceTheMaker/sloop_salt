@@ -70,6 +70,17 @@ def main(pkg, version, out):
         notes = HERE / "beta_banner.html"
         banner = notes.read_text(encoding="utf-8") if notes.exists() else "<p><b>BETA</b></p>"
     html = html.replace("<!--BANNER-->", banner)
+    # Preserve the redesign as an unlinked alternative. The original installer
+    # remains the public entry point and continues using its original template.
+    alternate = (HERE / "salt_home_pkg.html").read_text(encoding="utf-8")
+    for mark in ("/*LIB*/", "/*META*/"):
+        if alternate.count(mark) != 1:
+            raise SystemExit(f"salt_home_pkg.html must contain {mark} once")
+    alternate = alternate.replace("/*LIB*/", lib).replace("/*META*/", meta)
+    alternate = alternate.replace("<!--STUDIO_GUIDE-->", guide_link).replace("<!--BANNER-->", banner)
+    salt = out / "webapp" / "salt"
+    salt.mkdir(parents=True, exist_ok=True)
+    (salt / "index.html").write_text(alternate, encoding="utf-8")
     for old in list(fw.glob("felucca-*.fwsc")) + list(fw.glob("sloop-*.fwsc")):   # one package: the current one
         old.unlink()
     (inst / "index.html").write_text(html, encoding="utf-8")
@@ -78,10 +89,11 @@ def main(pkg, version, out):
     for f in ("fukiai.ttf", "FUKIAI-LICENSE.txt"):
         if (HERE / f).exists():
             shutil.copy(HERE / f, ed / f)
-    for dest in (ed, inst):
-        for asset in ("skin.css", "skin.js", "interface.css", "sloop.css", "fonts.css", "i18n.js", "locales.js", "salt-shaker.png", "keyboard.js", "studio-widgets.js", "select-wheel.js", "site.js"):
+    for dest in (ed, salt):
+        for asset in ("skin.css", "skin.js", "interface.css", "sloop.css", "fonts.css", "i18n.js", "locales.js", "salt-shaker.png", "keyboard.js", "studio-widgets.js", "select-wheel.js", "site.js", "landing.css", "sloop-logo.svg"):
             shutil.copy(HERE / asset, dest / asset)
         shutil.copytree(HERE / "fonts", dest / "fonts", dirs_exist_ok=True)
+    shutil.copytree(HERE / "screenshots", salt / "screenshots", dirs_exist_ok=True)
     (out / "index.html").write_text(
         '<!doctype html><meta charset="utf-8"><title>SLOOP</title>'
         '<meta http-equiv="refresh" content="0; url=webapp/installer/">'
