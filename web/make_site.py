@@ -79,7 +79,7 @@ def main(pkg, version, out):
         if (HERE / f).exists():
             shutil.copy(HERE / f, ed / f)
     for dest in (ed, inst):
-        for asset in ("skin.css", "skin.js", "interface.css", "sloop.css", "fonts.css", "i18n.js", "locales.js", "salt-shaker.png"):
+        for asset in ("skin.css", "skin.js", "interface.css", "sloop.css", "fonts.css", "i18n.js", "locales.js", "salt-shaker.png", "keyboard.js"):
             shutil.copy(HERE / asset, dest / asset)
         shutil.copytree(HERE / "fonts", dest / "fonts", dirs_exist_ok=True)
     (out / "index.html").write_text(

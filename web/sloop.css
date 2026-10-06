@@ -25,3 +25,32 @@ body { margin:0; }
   .tabs button { min-width:70px; }
   .panel { padding:8px 0; }
 }
+
+  .play-keyboard { margin-top: 24px; border-top: 1px solid var(--fg); padding-top: 12px; }
+  .play-controls { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; margin: 8px 0; }
+  .play-controls label { display: inline-flex; align-items: center; gap: 6px; }
+  .play-controls input[type="range"] { width: 90px; }
+  .piano-scroll { overflow-x: auto; padding: 4px 0; }
+  .piano { position: relative; height: 132px; min-width: 720px; touch-action: none; user-select: none; }
+  .piano button { position: absolute; top: 0; height: 128px; width: calc(100% / 16); padding: 0 0 9px;
+    display: flex; flex-direction: column; justify-content: end; align-items: center; gap: 3px;
+    border: 1px solid var(--piano-black); border-radius: 0 0 4px 4px; background: var(--piano-white); color: var(--piano-black); touch-action: none; }
+  .piano button.black { z-index: 1; width: calc(60% / 16); height: 82px; background: var(--piano-black); color: var(--piano-white); }
+  .piano button[aria-pressed="true"] { background: var(--piano-active); color: var(--piano-white); box-shadow: inset 0 -5px var(--piano-black); }
+  .piano button:focus-visible { outline: 3px dashed var(--piano-active); outline-offset: 2px; }
+  .piano button:disabled { opacity: .55; cursor: default; }
+  .piano small { font-size: 10px; }
+
+.editor-page .piano { width:100%; min-width:0; }
+.editor-page .piano button { width:calc(100% / var(--white-keys,16)); }
+.editor-page .piano button.black { width:calc(60% / var(--white-keys,16)); }
+.editor-page .play-keyboard { margin:0; }
+.play-keyboard label { white-space:nowrap; }
+@media(max-width:600px) {
+ .editor-page .piano { height:94px; }
+ .editor-page .piano button { height:90px; font-size:8px; }
+ .editor-page .piano button.black { height:58px; }
+ .editor-page .play-controls { flex-wrap:wrap; gap:4px 8px; }
+ .editor-page .play-controls label { font-size:10px; }
+ .editor-page .play-controls input[type=range] { width:55px; }
+}

@@ -326,10 +326,28 @@
     </div>
   </section>
 
+  <section class="play-keyboard" aria-labelledby="play-title">
+    <span id="play-title" class="sr-only" data-i18n="play.title"></span>
+    <div class="play-controls">
+      <div class="octave-controls">
+        <button id="play-oct-down" type="button" aria-label="Octave down" data-i18n-aria-label="site.octave_down"><span data-i18n="site.oct">Oct−</span></button>
+        <button id="play-oct-up" type="button" aria-label="Octave up" data-i18n-aria-label="site.octave_up"><span data-i18n="site.octx">Oct+</span></button>
+        <label><span data-i18n="play.octave"></span><select id="play-octave"></select></label>
+      </div>
+      <label><span data-i18n="play.channel"></span><select id="play-channel"><option value="auto" data-i18n="play.follow">Follow track</option></select></label>
+      <label><span data-i18n="play.velocity"></span><input id="play-velocity" type="range" min="1" max="127" value="100"><output id="play-velocity-value">100</output></label>
+      <label><input id="play-typing" type="checkbox" checked><span data-i18n="play.typing"></span></label>
+      <button id="play-sustain" class="tog" aria-pressed="false" data-i18n="play.sustain" disabled></button>
+      <button id="play-stop" data-i18n="play.stop" disabled></button>
+    </div>
+    <div class="piano-scroll"><div class="piano" id="play-keys" role="group" aria-labelledby="play-title"></div></div>
+    <p id="play-help"></p>
+  </section>
   <footer>SLOOP, based on Felucca by Leo Kuroshita (@kurogedelic), <a href="https://hugelton.com" target="_blank" rel="noopener">Hügelton Instruments</a>. GPL-3.0.<br>
     <span data-t="foot"></span> M-VAVE and FM-1 are trademarks of their respective owners.<br>
     <a href="FUKIAI-LICENSE.txt" data-t="iconsCredit"></a></footer>
 </main>
+<script src="keyboard.js"></script>
 <script>
 "use strict";
 /*PROTO-BEGIN*/
@@ -2374,6 +2392,7 @@ async function connect() {
       keys: null, watch: false, bank: null };
     setLabel($("connect"), t("disconnect"));
     await load(dev);
+    syncPlay();
   } catch (e) {
     console.error(e);
     if (dev) {                                       /* not unplugged meanwhile (that says "lost") */
@@ -2387,6 +2406,7 @@ async function connect() {
 }
 
 function disconnect(reasonKey = "disconnected") {
+  window.SloopPlay.update(null);
   if (dev) {
     dev.link.close();
     dev.input.onmidimessage = null;
@@ -2514,7 +2534,13 @@ function buildUI() {
 }
 
 /* the track selector (v3): T1..T3 synth parts, T4 the drum track; the editor shows the selected one */
+function syncPlay() {
+  if (!dev?.dump) return;
+  const drum = dev.gdesc.find(d => d?.label === "CH" && d.min === 0 && d.max === 16);
+  window.SloopPlay.update({output:dev.output,track:dev.sel || 0,drumChannel:drum ? dev.dump.g[drum.id] : 10,lanes:DRUM_LANES,mock:MOCK});
+}
 function renderTrackbar() {
+  syncPlay();
   const box = $("trackbtns");
   const ntrk = hasTracks() ? dev.info.ntrk : 0;
   if (box.children.length !== ntrk || box.dataset.lang !== lang) {
@@ -2526,6 +2552,7 @@ function renderTrackbar() {
 }
 function selectTrack(i) {
   if (!dev || !hasTracks() || i === dev.sel) return;
+  window.SloopPlay.release();
   op(async () => {
     dev.sel = parse[CMD.TRACK](await rq(req.track(i))).sel;
     await afterSoundChange();
@@ -2682,7 +2709,9 @@ window.addEventListener("pointercancel", () => { dragging = null; });
 function userSet(s, id, v, final) {
   if (!dev) return;
   const k = key(s, id);
+  if (s && dev.gdesc[id]?.label === "CH") window.SloopPlay.release();
   (s ? dev.dump.g : dev.dump.p)[id] = v;
+  if (s && dev.gdesc[id]?.label === "CH") syncPlay();
   showValue(k, v, false);
   mixFromDump();
   let st = sets.get(k);

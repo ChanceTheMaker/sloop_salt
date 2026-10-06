@@ -1,0 +1,21 @@
+// SPDX-License-Identifier: GPL-3.0-only
+import assert from 'node:assert/strict';
+import vm from 'node:vm';
+import {readFileSync} from 'node:fs';
+const K=vm.runInNewContext(readFileSync(new URL('./keyboard.js',import.meta.url),'utf8')+';SloopKeyboard');
+const frames=[], k=new K();k.connect({send:bytes=>frames.push([...bytes])});k.setChannel(0);
+k.press('a',60,100);k.press('pointer',60,100);k.release('a');
+assert.deepEqual(frames,[[144,60,100]],'overlapping sources keep their shared pitch held');
+k.release('pointer');assert.deepEqual(frames.at(-1),[128,60,0]);
+frames.length=0;k.setSustain(true);k.press('a',60,100);k.release('a');assert.equal(frames.length,1);
+k.press('a',60,80);assert.deepEqual(frames.slice(-2),[[128,60,0],[144,60,80]],'pedalled pitch retriggers');
+k.release('a');k.setSustain(false);assert.deepEqual(frames.at(-1),[128,60,0]);
+frames.length=0;k.press('a',60,100);k.press('s',64,100);k.setSustain(true);k.release('a');k.setChannel(9);
+assert.deepEqual(frames.slice(-2).sort((a,b)=>a[1]-b[1]),[[128,60,0],[128,64,0]]);
+assert.equal(k.sustain,false);assert.equal(k.held.size,0);
+k.press('p',36,127);k.connect(null);assert.deepEqual(frames.at(-1),[137,36,0]);
+assert.equal(k.press('p',36,100),false);assert.equal(k.press('p',128,100),false);
+k.connect({send:bytes=>frames.push([...bytes])});k.press('a',70,100);k.setSustain(true);k.release('a');k.panic();
+assert.deepEqual(frames.at(-1),[137,70,0]);assert.equal(k.deferred.size,0);
+assert.ok(frames.every(f=>(f[0]&240)===128||(f[0]&240)===144),'only supported note messages');
+console.log('Keyboard: shared ownership, software sustain, retrigger, channel changes, disconnect, panic passed');

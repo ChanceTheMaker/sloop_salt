@@ -38,3 +38,18 @@ does not rebuild firmware. Preview generation must preserve package bytes.
 
 The existing English/Japanese support is retained, with source catalogs for new
 appearance controls in `web/locales/`; regenerate `web/locales.js` after edits.
+
+## Playable keyboard
+
+`node web/test_keyboard.mjs` checks shared note ownership, software sustain,
+retriggering and cleanup. Browser checks use `node web/test_studio.mjs` with
+`PLAYWRIGHT_MODULE` pointing to an installed Playwright module if it is not a
+local dependency. `BROWSER_CHANNEL` defaults to installed Edge.
+
+SLOOP's `seq.c` accepts note-on/off but ignores controller messages, so the web
+keyboard defers note-offs for sustain and explicitly releases its pitches for
+panic. No CC64/120/123 dependency is introduced. Follow-track routing uses a
+selected-track channel that differs from the configurable drum channel. On the
+drum track, white keys map to the editor's authoritative `DRUM_LANES` pitches and
+black keys repeat the lane on their left. Explicit MIDI channels remain available.
+The mock is silent; browser-only synthesis requires a separate SLOOP DSP port.
