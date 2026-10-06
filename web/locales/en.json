@@ -161,7 +161,7 @@
   "native.tour.welcome.title": "Meet FM-1 Simulator",
   "native.tour.welcome.body": "Play Sloop in your browser using its actual firmware interface. This tour points out the controls one step at a time.\n\nYou can close it anytime. To see it again, select the ? help icon beside the hamburger menu at the top right of this panel.",
   "native.tour.layout.title": "Choose your layout",
-  "native.tour.layout.body": "Open ☰ → Layout to choose Device or Expanded. Device follows the FM-1 control arrangement. Expanded makes the screen larger while keeping the same controls.",
+  "native.tour.layout.body": "Open ☰ → Layout to choose Device or Expanded. Device follows the FM-1 control arrangement. Expanded makes the screen larger while keeping the same controls.\n\nTurn on FM-1 Touch Keys in the same menu for the illuminated capsule styling on this same full-width piano keyboard. Turn it off to return to the piano keyboard.",
   "native.tour.sound.title": "Choose a sound",
   "native.tour.sound.body": "From the home screen, ALGORITHM selects the track, PRESETS selects its sound, and SELECT sets tempo. MASTER adjusts browser volume.\n\nThe screen shows the current page and what each control does.",
   "native.tour.knobs.title": "Turn and fine tune",
@@ -175,5 +175,6 @@
   "native.tour.song.title": "Arrange sections",
   "native.tour.song.body": "Hold SAVE: white keys 1–4 recall sections A–D; 5–8 store them (repeat to overwrite). White key 13 toggles song playback, 14 arms song recording, and 16 opens the song page.\n\nTapping SAVE opens the arranger from the track/drum pages, saves the arrangement on the song page, or opens SAVE pages elsewhere.",
   "native.tour.finish.title": "Ready to play",
-  "native.tour.finish.body": "Hold HOME for settings. In menus, PRESETS moves, KNOB 1 changes values, OCT+ confirms and OCT− returns. Browser sessions autosave projects, presets, song order and settings.\n\nUSB audio input and hardware calibration need a physical FM-1. External MIDI keyboard input is not yet wired into the browser synth.\n\nReplay this tour anytime with the ? icon beside the ☰ menu."
+  "native.tour.finish.body": "Hold HOME for settings. In menus, PRESETS moves, KNOB 1 changes values, OCT+ confirms and OCT− returns. Browser sessions autosave projects, presets, song order and settings.\n\nUSB audio input and hardware calibration need a physical FM-1. External MIDI keyboard input is not yet wired into the browser synth.\n\nReplay this tour anytime with the ? icon beside the ☰ menu.",
+  "native.touchKeys": "FM-1 Touch Keys"
 }

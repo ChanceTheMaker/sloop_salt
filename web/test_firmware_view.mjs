@@ -42,7 +42,7 @@ try{
  assert.equal(Number(await page.locator('#audio-volume').inputValue()),volume+10,'Shift drag is eight times finer');
  assert.ok(await page.locator('.native-screen').evaluate(c=>c.getContext('2d').getImageData(0,0,240,240).data.some((v,i)=>i%4!==3&&v>0)));
  const screenWidth=async()=>(await page.locator('.native-screen').boundingBox()).width;
- const chooseLayout=async name=>{await page.locator('.native-menu>summary').click();if(!await page.locator('.native-menu>details').evaluate(e=>e.open))await page.locator('.native-menu>details>summary').click();await page.getByRole('button',{name,exact:true}).click();};
+ const chooseLayout=async name=>{await page.locator('.native-menu>summary').click();if(!await page.locator('.native-menu-content>details').evaluate(e=>e.open))await page.locator('.native-menu-content>details>summary').click();await page.getByRole('button',{name,exact:true}).click();};
  const deviceWidth=await screenWidth();await chooseLayout('Expanded');assert.equal(await page.locator('#firmware-view').getAttribute('data-layout'),'expanded');
  assert.ok(await screenWidth()>deviceWidth*1.3,'Expanded visibly enlarges screen on desktop');
  await mkdir('build/screenshots',{recursive:true});await page.screenshot({path:'build/screenshots/simulator-expanded-desktop.png',fullPage:true});

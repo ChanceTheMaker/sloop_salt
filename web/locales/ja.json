@@ -161,7 +161,7 @@
   "native.tour.welcome.title": "FM-1 Simulator へようこそ",
   "native.tour.welcome.body": "Sloop の実際のファームウェア画面を使ってブラウザーで演奏できます。このツアーで操作を順番に紹介します。\n\nいつでも閉じられます。再表示するには、パネル右上の ☰ メニューの隣にある ? ヘルプを選んでください。",
   "native.tour.layout.title": "レイアウトを選ぶ",
-  "native.tour.layout.body": "☰ → レイアウトから Device または Expanded を選べます。Device は FM-1 本体の操作配置、Expanded は同じ操作で画面を大きく表示します。",
+  "native.tour.layout.body": "☰ → レイアウトから Device または Expanded を選べます。Device は FM-1 本体の操作配置、Expanded は同じ操作で画面を大きく表示します。\n\n同じメニューの FM-1 タッチ鍵盤をオンにすると、全幅ピアノ鍵盤の音域と配置を保ったまま、光るカプセル形の見た目に切り替わります。オフにすると元の見た目に戻ります。",
   "native.tour.sound.title": "音色を選ぶ",
   "native.tour.sound.body": "ホーム画面では ALGORITHM でトラック、PRESETS で音色、SELECT でテンポを選びます。MASTER はブラウザーの音量です。\n\n現在のページと各操作の役割は画面に表示されます。",
   "native.tour.knobs.title": "ノブと微調整",
@@ -175,5 +175,6 @@
   "native.tour.song.title": "セクションを並べる",
   "native.tour.song.body": "SAVE を押しながら白鍵1～4でセクション A～D を呼び出し、5～8で保存します（再操作で上書き）。白鍵13で曲再生切替、14で曲録音待機、16で曲ページを開きます。\n\nSAVE のタップはトラック／ドラムページではアレンジャー、曲ページでは構成の保存、それ以外では SAVE ページを開きます。",
   "native.tour.finish.title": "演奏を始めましょう",
-  "native.tour.finish.body": "HOME 長押しで設定。メニューでは PRESETS で移動、KNOB 1 で変更、OCT+ で決定、OCT− で戻ります。プロジェクト、プリセット、曲順、設定はブラウザーに自動保存されます。\n\nUSB オーディオ入力と本体の校正には実機が必要です。ブラウザー音源への外部 MIDI 鍵盤入力は未対応です。\n\n☰ メニューの隣の ? からいつでもツアーを再表示できます。"
+  "native.tour.finish.body": "HOME 長押しで設定。メニューでは PRESETS で移動、KNOB 1 で変更、OCT+ で決定、OCT− で戻ります。プロジェクト、プリセット、曲順、設定はブラウザーに自動保存されます。\n\nUSB オーディオ入力と本体の校正には実機が必要です。ブラウザー音源への外部 MIDI 鍵盤入力は未対応です。\n\n☰ メニューの隣の ? からいつでもツアーを再表示できます。",
+  "native.touchKeys": "FM-1 タッチ鍵盤"
 }

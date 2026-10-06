@@ -12,7 +12,11 @@ export function mountFirmwareView(host,api){
  const navigation=make('div',{className:'native-navigation'}),octaves=make('div',{className:'native-buttons native-octaves'});
  const toolbar=make('div',{className:'native-toolbar'}),help=make('button',{type:'button',className:'native-help-button'},'?');
  const menu=make('details',{className:'native-menu'}),menuToggle=make('summary',{},'☰'),submenu=make('details'),layoutToggle=make('summary');
- submenu.append(layoutToggle,layout);menu.append(menuToggle,submenu);toolbar.append(help,menu);
+ const menuContent=make('div',{className:'native-menu-content'}),touchKeys=make('button',{type:'button',className:'native-touch-toggle',role:'switch'});
+ let touchEnabled=false;try{touchEnabled=localStorage.getItem('sloop.fm1TouchKeys')==='true';}catch{}
+ const applyTouchKeys=()=>{touchKeys.setAttribute('aria-checked',String(touchEnabled));document.body.classList.toggle('fm1-touch-keys',touchEnabled);};
+ touchKeys.onclick=()=>{touchEnabled=!touchEnabled;applyTouchKeys();try{localStorage.setItem('sloop.fm1TouchKeys',String(touchEnabled));}catch{}};
+ submenu.append(layoutToggle,layout);menuContent.append(submenu,touchKeys);menu.append(menuToggle,menuContent);toolbar.append(help,menu);applyTouchKeys();
  const controls=make('div',{className:'native-controls'});controls.append(encoders,panel);
  const body=make('div',{className:'native-body'});body.append(navigation,screen,controls);
  layout.append(device,expanded);host.replaceChildren(toolbar,body);
@@ -87,7 +91,7 @@ export function mountFirmwareView(host,api){
  window.addEventListener('resize',reposition);window.addEventListener('scroll',reposition,true);
  new ResizeObserver(reposition).observe(bubble);
  function translate(){device.textContent=window.SloopI18n.t('view.device');expanded.textContent=window.SloopI18n.t('view.expanded');canvas.setAttribute('aria-label',t('screen'));
-  help.title=t('guide');help.setAttribute('aria-label',t('guide'));menuToggle.title=t('menu');menuToggle.setAttribute('aria-label',t('menu'));layoutToggle.textContent=t('layout');if(tour.open)renderStep();
+  help.title=t('guide');help.setAttribute('aria-label',t('guide'));menuToggle.title=t('menu');menuToggle.setAttribute('aria-label',t('menu'));layoutToggle.textContent=t('layout');touchKeys.textContent=t('touchKeys');if(tour.open)renderStep();
   host.querySelectorAll('.native-dial').forEach(dial=>{dial.title=t('knobHelp');dial.setAttribute('aria-description',t('knobHelp'));});
  }
  translate();window.SloopI18n.onChange(translate);

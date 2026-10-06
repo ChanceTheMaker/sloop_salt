@@ -6,8 +6,11 @@ body[data-editor-view=firmware] .panel,body[data-editor-view=firmware] #hint {di
 .native-toolbar {display:flex;justify-content:flex-end;align-items:center;gap:8px;position:relative;z-index:2}
 .native-toolbar .native-help-button,.native-menu>summary {box-sizing:border-box;display:grid;place-items:center;width:36px;height:36px;padding:0;border:1px solid #68717b;border-radius:9px;background:#242a31;color:#fff;font:20px/1 system-ui;cursor:pointer;list-style:none}
 .native-menu>summary::-webkit-details-marker {display:none}
-.native-menu>details {position:absolute;right:0;top:44px;width:190px;padding:10px;background:#20262d;color:#fff;border:1px solid #68717b;border-radius:12px;box-shadow:0 12px 32px #0009}
-.native-menu>details>summary {padding:8px;cursor:pointer;font:15px/1.5 system-ui}
+.native-menu-content {position:absolute;right:0;top:44px;width:230px;padding:10px;background:#20262d;color:#fff;border:1px solid #68717b;border-radius:12px;box-shadow:0 12px 32px #0009}
+.native-menu-content>details>summary {padding:8px;cursor:pointer;font:15px/1.5 system-ui}
+.native-menu .native-touch-toggle {display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;margin-top:8px;padding:12px 8px;background:#20262d;color:#fff;border:0;border-top:1px solid #68717b;border-radius:0;font:14px/1.5 system-ui;text-align:left;cursor:pointer}
+.native-touch-toggle::after {content:'';flex:none;width:34px;height:20px;border-radius:12px;background:radial-gradient(circle at 10px 10px,#fff 0 6px,transparent 7px),#606a76}
+.native-touch-toggle[aria-checked=true]::after {background:radial-gradient(circle at 24px 10px,#fff 0 6px,transparent 7px),#237fa3}
 .native-tour {position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:0;border:0;background:transparent;color:#f5f7fa;overflow:hidden}
 .native-tour::backdrop {background:#0008}
 .native-tour-spotlight {position:fixed;box-sizing:border-box;border:2px solid #7cd8ff;border-radius:12px;box-shadow:0 0 0 4px #7cd8ff22;pointer-events:none}
@@ -23,14 +26,14 @@ body[data-editor-view=firmware] .panel,body[data-editor-view=firmware] #hint {di
 .native-tour-actions button:first-child {margin-right:auto}.native-tour-actions button:last-child {background:#b6eaff;color:#102332;border-color:#b6eaff}
 .native-tour-actions button:disabled {opacity:.45;cursor:default}.native-tour :focus-visible {outline:3px solid #7cd8ff;outline-offset:3px}
 .native-body {display:grid;grid-template-columns:minmax(130px,.75fr) minmax(200px,1fr) minmax(340px,1.65fr);align-items:center;gap:24px;padding:16px 0}
-.native-navigation {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 8px}
+.native-navigation {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 8px}
 .native-octaves {grid-column:1/-1;order:4;grid-template-columns:repeat(2,minmax(0,1fr))!important;max-width:116px!important;margin-top:8px}
 .native-screen {display:block;width:100%;max-width:480px;aspect-ratio:1;image-rendering:pixelated;border:10px solid #050506;border-radius:6px;box-sizing:border-box;margin:auto}
 [data-layout=device] .native-screen {max-width:320px}
 #firmware-view[data-layout=expanded] {max-width:1280px}
 [data-layout=expanded] .native-body {grid-template-columns:minmax(130px,.65fr) minmax(320px,1.8fr) minmax(340px,1.3fr)}
 .native-status {text-align:center;min-height:2.8em;font-size:12px;color:#bec5cc}
-.native-encoders {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px 8px;margin-bottom:18px}
+.native-encoders {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px 8px;margin-bottom:30px}
 .native-encoder {display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;font-size:11px}
 .native-dial {position:relative;width:58px;height:58px;padding:0!important;border:3px solid #090a0c!important;border-radius:50%!important;touch-action:none;cursor:ns-resize;background:repeating-conic-gradient(#17191d 0deg 5deg,#34373c 6deg 9deg,#101114 10deg 14deg)!important;box-shadow:0 6px 7px #0009,0 1px 0 2px #494c50,inset 0 1px 2px #ffffff30!important;isolation:isolate}
 .native-dial::before {content:'';position:absolute;inset:5px;border-radius:50%;background:radial-gradient(ellipse at 35% 22%,#62666c,#303339 45%,#17191d 85%);box-shadow:inset 0 1px 2px #ffffff38,inset 0 -3px 5px #0008;border:1px solid #090a0c}
@@ -38,7 +41,7 @@ body[data-editor-view=firmware] .panel,body[data-editor-view=firmware] #hint {di
 .native-dial:hover {filter:brightness(1.13)}
 .native-dial:active {box-shadow:0 3px 5px #000b,0 1px 0 2px #595c60,inset 0 1px 2px #ffffff30!important}
 @media(prefers-reduced-motion:reduce){.native-dial::after {transition:none}}
-.native-buttons {display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;width:100%;max-width:352px;margin-inline:auto}
+.native-buttons {display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;width:100%;max-width:352px;margin-inline:auto;box-sizing:border-box;padding:7px;border:2px solid #050607;border-radius:9px;background:#27292c;box-shadow:0 1px 0 #6669,inset 0 0 0 1px #555,inset 0 2px 5px #0009}
 .native-buttons button {touch-action:none;padding:10px 5px!important;font:inherit}
 .native-buttons [aria-pressed=true] {background:#fff!important;color:#000!important}
 .native-buttons .recording {outline:2px solid #ff562f}
@@ -48,6 +51,18 @@ body[data-editor-view=firmware] .panel,body[data-editor-view=firmware] #hint {di
 body[data-editor-view=firmware] .play-keyboard:not(.collapsed) {width:100%;max-width:none}
 body[data-editor-view=firmware] .piano button.native-guide {outline:2px solid var(--accent);outline-offset:-3px}
 body[data-editor-view=firmware] .piano button.native-lit {background:var(--accent);color:var(--ink)}
-@media(max-width:780px){#firmware-view {padding:12px}.native-body {grid-template-columns:minmax(110px,.7fr) minmax(150px,1fr);gap:16px 10px}.native-controls {grid-column:1/-1}.native-screen {border-width:5px}.native-encoders {gap:8px}.native-buttons {gap:5px;font-size:11px}.native-navigation {gap:12px 4px}.native-encoder {font-size:9px}.native-encoder>div button {padding:3px 7px!important}}
+/* Capsule finish on the existing responsive piano layout and note range. */
+body[data-editor-view=firmware].fm1-touch-keys .piano-scroll {border-radius:20px;background:#292b2d;box-shadow:inset 0 0 0 2px #08090a,inset 0 0 0 3px #64676a}
+body[data-editor-view=firmware].fm1-touch-keys .piano {height:150px}
+body[data-editor-view=firmware].fm1-touch-keys .piano button {top:0;width:calc(100% / var(--white-keys,16) - 6px);height:144px;margin-left:3px;padding:0 0 10px;border:2px solid #070809;border-radius:999px;background:linear-gradient(100deg,#151719,#303337,#16181a);color:#dce0e4;box-shadow:inset 0 0 0 1px #505358,0 2px 2px #0008;font:10px/1.2 system-ui;transform:none}
+body[data-editor-view=firmware].fm1-touch-keys .piano button.black {top:0;width:calc(60% / var(--white-keys,16));height:90px;margin-left:0;padding-bottom:8px;background:linear-gradient(100deg,#080a0b,#202326,#080a0b)}
+body[data-editor-view=firmware].fm1-touch-keys .piano button::before {content:'';position:absolute;top:7px;left:calc(50% - 2px);width:4px;height:16px;border-radius:4px;background:#c0c7ca;box-shadow:0 0 2px #fff6}
+body[data-editor-view=firmware].fm1-touch-keys .piano button[aria-pressed=true],body[data-editor-view=firmware].fm1-touch-keys .piano button.native-lit {background:linear-gradient(100deg,#263b37,#48675b,#263b37);color:#fff;box-shadow:inset 0 0 0 1px #91c7b3,0 0 9px #9effc84d}
+body[data-editor-view=firmware].fm1-touch-keys .piano button[aria-pressed=true]::before,body[data-editor-view=firmware].fm1-touch-keys .piano button.native-lit::before {background:#e2ffeb;box-shadow:0 0 5px #c1ffd6,0 0 12px #7affb4}
+body[data-editor-view=firmware].fm1-touch-keys .piano button.native-guide {outline:1px solid #b6c9cf;outline-offset:1px}
+body[data-editor-view=firmware].fm1-touch-keys .piano button:focus-visible {outline:2px solid #74dcff;outline-offset:2px}
+body[data-editor-view=firmware].fm1-touch-keys .piano small {font:9px/1.2 system-ui}
+@media(max-width:600px){body[data-editor-view=firmware].fm1-touch-keys .piano button {width:calc(100% / var(--white-keys,16) - 3px);margin-left:1.5px;border-width:1px;font-size:7px}body[data-editor-view=firmware].fm1-touch-keys .piano button.black {width:calc(60% / var(--white-keys,16));margin-left:0}body[data-editor-view=firmware].fm1-touch-keys .piano small {font-size:8px}}
+@media(max-width:780px){#firmware-view {padding:12px}.native-body {grid-template-columns:minmax(110px,.7fr) minmax(150px,1fr);gap:22px 10px}.native-controls {grid-column:1/-1}.native-screen {border-width:5px}.native-encoders {gap:8px}.native-buttons {gap:5px;font-size:11px}.native-navigation {gap:20px 4px}.native-encoder {font-size:9px}.native-encoder>div button {padding:3px 7px!important}}
 @media(min-width:781px) and (max-width:1050px){[data-layout=expanded] .native-body {grid-template-columns:minmax(130px,.6fr) minmax(320px,1.4fr)}[data-layout=expanded] .native-controls {grid-column:1/-1}}
 @media(max-width:780px){[data-layout=expanded] .native-body {grid-template-columns:minmax(0,1fr)}[data-layout=expanded] .native-display {grid-row:1}[data-layout=expanded] .native-navigation {grid-template-columns:repeat(4,minmax(0,1fr));gap:14px 8px}}

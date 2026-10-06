@@ -36,7 +36,7 @@ try{
  await page.locator('#view-firmware').click();await page.locator('#firmware-view').waitFor({state:'visible',timeout:60000});
  assert.equal(await page.locator('#audio-mode [aria-pressed=true]').count(),1);
  assert.equal(await page.locator('#view-firmware').getAttribute('aria-pressed'),'true');
- await page.locator('.native-menu>summary').click();await page.locator('.native-menu>details>summary').click();await page.getByRole('button',{name:'Expanded',exact:true}).click();
+ await page.locator('.native-menu>summary').click();await page.locator('.native-menu-content>details>summary').click();await page.getByRole('button',{name:'Expanded',exact:true}).click();
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
  await page.locator('#browser-start').click();await page.locator('#firmware-view').waitFor({state:'hidden'});
  assert.equal(await page.locator('#browser-start').getAttribute('aria-pressed'),'true');

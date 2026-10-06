@@ -167,3 +167,10 @@ focus returns to Help, and short viewports can scroll the bubble's text.
 manual replay, all steps, focus restoration, Escape, layout selection, and
 desktop/mobile/landscape bounds. The existing native simulator and play-mode
 tests also exercise the Layout submenu.
+
+The hamburger also offers FM-1 Touch Keys, an optional capsule finish on the
+existing responsive piano keyboard. It preserves the extended note range,
+QWERTY mapping, key placement, sliding, and note ownership. Capsule light strips
+respond to pressed notes and native firmware LEDs. The preference is stored in
+`sloop.fm1TouchKeys`; the styling applies only to FM-1 Simulator. Recessed
+surrounds group the function and octave buttons, with extra spacing below knobs.
