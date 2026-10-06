@@ -218,3 +218,7 @@ archive for the published source commit. Keep the original installer and
 firmware packages intact. Verify deployed HTML, JS, CSS, WASM and firmware
 against the published artifacts after the Pages build succeeds. This does not
 merge the stacked feature PRs into main.
+
+Owner-authorized shared GA4 analytics: see `web/ANALYTICS.md`. The build adds only
+the optional analytics stylesheet/script to the original installer page; its
+template, update logic and firmware bytes remain unchanged.
