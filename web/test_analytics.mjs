@@ -30,7 +30,7 @@ try {
   await page.locator('.analytics-banner [data-choice=denied]').click();
   assert.equal(await page.evaluate(()=>localStorage.getItem('sloop.web.analyticsConsent')),'denied');
   await page.reload({waitUntil:'networkidle'});assert.equal(tags.length,1,'decline prevents tag loading');
-  if(await page.locator('.settings-menu>summary').count())await page.locator('.settings-menu>summary').click();
+  if(await page.locator('.settings-menu>summary').isVisible())await page.locator('.settings-menu>summary').click();
   await page.locator('.analytics-menu-button').click();
   await page.locator('.analytics-choice [data-choice=granted]').click();
   await page.waitForFunction(()=>!!document.querySelector('script[src*="googletagmanager"]'));
