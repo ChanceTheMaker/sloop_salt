@@ -228,7 +228,7 @@ template, update logic and firmware bytes remain unchanged.
 
 Branch `feat/standalone-fm1` follows the completed website checkpoint
 `website-overhaul-2026-10-06` (source `1f20ea4`). The existing Sloop Pages site
-remains unchanged. The new publication is https://chancethemaker.github.io/fm1-simulator/.
+remains unchanged. The new publication is https://chancethemaker.github.io/sloop-fm1-sim/.
 Its separate repository holds the generated editor at the root plus LICENSE,
 release metadata and the complete corresponding source archive.
 

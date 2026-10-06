@@ -13,17 +13,17 @@ try {
    const url=new URL(route.request().url());
    if(url.hostname==='www.googletagmanager.com'){tags.push(url.href);return route.fulfill({contentType:'text/javascript',body:''});}
    if(!['chancethemaker.github.io','127.0.0.1'].includes(url.hostname))return route.abort();
-   const pathname=url.pathname.replace(/^\/fm1-simulator/,'');
+   const pathname=url.pathname.replace(/^\/sloop-fm1-sim/,'');
    const path=resolve(root,'.'+pathname+(pathname.endsWith('/')?'index.html':''));
    if(!path.startsWith(root+sep))return route.abort();
    try{await route.fulfill({path});}catch{await route.fulfill({status:404,body:''});}
   });
   console.log('Checking '+area);
-  const url=`https://chancethemaker.github.io/fm1-simulator/webapp/${area}/?private=secret`;
+  const url=`https://chancethemaker.github.io/sloop-fm1-sim/webapp/${area}/?private=secret`;
   await page.goto(url,{waitUntil:'networkidle'});
   assert.equal(tags.length,1);assert.ok(tags[0].endsWith(id));
   const config=await page.evaluate(()=>[...window.dataLayer].find(a=>a[0]==='config')[2]);
-  assert.equal(config.cookie_prefix,'sloop');assert.equal(config.cookie_path,'/fm1-simulator/');
+  assert.equal(config.cookie_prefix,'sloop');assert.equal(config.cookie_path,'/sloop-fm1-sim/');
   assert.ok(!config.page_location.includes('?'));assert.equal(config.allow_google_signals,false);
   await page.locator('.analytics-banner').waitFor({state:'visible'});
   assert.ok(await page.locator('.analytics-banner').evaluate(e=>{const r=e.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth&&r.top>=0&&r.bottom<=innerHeight;}));
