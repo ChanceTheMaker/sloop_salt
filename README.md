@@ -271,6 +271,18 @@ Open it from the [installer page](https://isod89.github.io/sloop-fm1/) (or the [
 
 The protocol is documented in [web/EDITOR_PROTOCOL.md](web/EDITOR_PROTOCOL.md).
 
+### Play in the browser
+
+The Sloop [salt] editor also offers **Play in browser**: play its nine synth engines
+and drum kits with QWERTY, mouse or touch, without connecting an FM-1. Edit sounds,
+mix four tracks, build sequences and load your own samples. Browser volume and
+the live waveform sit above the Studio tabs.
+
+Browser sessions save locally. Use **Export session** to keep a portable copy of
+your tracks, project slots, user presets and samples; these files are separate
+from FM-1 backups. **Use FM-1** stops browser audio and returns to device mode.
+See [browser synth usage and setup](web/audio/README.md).
+
 ## Compatibility
 
 | | |
