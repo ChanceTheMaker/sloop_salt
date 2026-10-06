@@ -3,7 +3,7 @@
 (() => {
   const root = document.documentElement;
   const I18N = window.SloopI18n;
-  const themes = [['stage', 'Stage Red'], ['matrix', 'Matrix'], ['dx', 'Vintage DX7'], ['modeld', 'Model D Walnut'],
+  const themes = [['sloop', 'SLOOP Original'], ['stage', 'Stage Red'], ['matrix', 'Matrix'], ['dx', 'Vintage DX7'], ['modeld', 'Model D Walnut'],
     ['chocolate', 'Chocolate Factory'], ['vapor', 'Vaporwave'], ['midnight', 'Midnight Studio'],
     ['space', 'Space Mission'], ['bauhaus', 'Bauhaus'], ['ocean', 'Ocean Lab'], ['arcade', 'Arcade \u201984'], ['hicon', 'High Contrast']];
   const read = (key, fallback) => { try { return localStorage.getItem(key) || fallback; } catch { return fallback; } };
@@ -13,7 +13,7 @@
     save('sloop.web.skin', requested.get('theme'));
     if (['light','dark'].includes(requested.get('mode'))) save('sloop.web.mode', requested.get('mode'));
   }
-  root.dataset.skin = themes.some(([id]) => id === read('sloop.web.skin')) ? read('sloop.web.skin') : 'stage';
+  root.dataset.skin = themes.some(([id]) => id === read('sloop.web.skin')) ? read('sloop.web.skin') : 'sloop';
   if (themes.some(([id]) => id === requested.get('theme'))) { root.dataset.skin = requested.get('theme'); }
   root.dataset.defaultControls = read('sloop.web.controls') === 'sliders' ? 'sliders' : 'knobs';
   root.dataset.mode = themes.some(([id]) => id === requested.get('theme')) && ['light','dark'].includes(requested.get('mode')) ? requested.get('mode') : read('sloop.web.mode') === 'light' ? 'light' : 'dark';

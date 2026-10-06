@@ -1,6 +1,38 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
 /* SLOOP integration of the Felucca Salt chassis. Device layout stays authoritative. */
 body { margin:0; }
+/* Native firmware palette: neutral black surfaces and four persistent track colors. */
+:root[data-skin=sloop] {
+ --bg:#0c0d0f; --fg:#f2f2f2; --dim:#a5a5ad; --line:#39393f;
+ --desk:#060708; --chassis:#18191d; --chassis-dark:#090a0c; --panel:#17181c;
+ --accent:#ff873f; --ink:#160a02; --lcd:#f2f2f2; --lcd-bg:#050608;
+ --button:#303138; --edge:#202126; --shell-text:#f2f2f2; --badge-fg:#f2f2f2;
+ --faceplate:linear-gradient(115deg,#23242a,#090a0d); --wordmark:'Orbitron'; --wordmark-weight:700;
+ --knob-top:#62666a; --knob-bottom:#181a1d; --piano-active:#287cff;
+}
+:root[data-skin=sloop][data-mode=light] {
+ --bg:#f4f4f2; --fg:#151518; --dim:#52525a; --line:#b8b8bf; --panel:#e4e4e6;
+ --desk:#d1d1d5; --chassis:#dadadd; --chassis-dark:#bcbcc2; --button:#d4d4d8;
+ --accent:#a53b00; --ink:#fff; --lcd:#151518; --lcd-bg:#fff; --badge-fg:#151518;
+ --faceplate:linear-gradient(115deg,#f6f6f8,#d3d3d9);
+}
+[data-skin=sloop] .masthead { border-bottom:4px solid; border-image:linear-gradient(90deg,#287cff 0 25%,#1ecc70 25% 50%,#ffc618 50% 75%,#ff621a 75%) 1; }
+[data-skin=sloop] #trackbtns button:nth-child(1) { --track:#287cff; }
+[data-skin=sloop] #trackbtns button:nth-child(2) { --track:#1ecc70; }
+[data-skin=sloop] #trackbtns button:nth-child(3) { --track:#ffc618; }
+[data-skin=sloop] #trackbtns button:nth-child(4) { --track:#ff621a; }
+[data-skin=sloop] #trackbtns button { border-bottom:3px solid var(--track); }
+[data-skin=sloop] #trackbtns button[aria-pressed=true] { background:var(--track); color:#050505; }
+[data-skin=sloop] .group { border-top:3px solid var(--line); }
+[data-skin=sloop] .group:nth-child(4n+1) { border-top-color:#287cff; }
+[data-skin=sloop] .group:nth-child(4n+2) { border-top-color:#1ecc70; }
+[data-skin=sloop] .group:nth-child(4n+3) { border-top-color:#ffc618; }
+[data-skin=sloop] .group:nth-child(4n) { border-top-color:#ff621a; }
+.groups { align-items:start; }
+.group .studio-widget { grid-column:1 / -1; }
+.sloop-blank { display:none; grid-column:span var(--spare-columns); height:86px; align-self:center; pointer-events:none; }
+[data-controls=knobs] .sloop-blank { display:grid; }
+.back-to-top { bottom:calc(var(--keyboard-height,0px) + 16px); right:24px; }
 .salt-mark { display:block; background:currentColor; mask:url("salt-shaker.png") center / contain no-repeat; transform:scaleX(-1); }
 .brand-home .salt-mark { flex:0 0 1.15em; width:1.15em; height:1.15em; }
 .brand-home { color:inherit; text-decoration:none; }

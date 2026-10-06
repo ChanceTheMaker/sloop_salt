@@ -347,6 +347,8 @@
     <span data-t="foot"></span> M-VAVE and FM-1 are trademarks of their respective owners.<br>
     <a href="FUKIAI-LICENSE.txt" data-t="iconsCredit"></a></footer>
 </main>
+<button id="back-to-top" class="back-to-top" type="button" hidden data-i18n-aria-label="nav.backToTop" aria-label="Back to top">↑</button>
+<script src="studio-widgets.js"></script><script src="select-wheel.js"></script><script src="site.js"></script>
 <script src="keyboard.js"></script>
 <script>
 "use strict";
@@ -2233,6 +2235,7 @@ const t = (k) => TEXT[lang][k] ?? k;
 let lastKey = null, lastArg = "";
 function sayK(k, arg = "") { lastKey = k; lastArg = arg; $("status").textContent = t(k) + arg; }
 function applyLang() {
+  refreshWidgets();
   document.documentElement.lang = lang;
   document.querySelectorAll("[data-t]").forEach((e) => setLabel(e, t(e.dataset.t)));
 
@@ -2598,7 +2601,40 @@ function updateBrowser() {
 
 function visible(d) { return d && d.max > d.min && d.label !== "-"; }
 
+let studioWidgets = [];
+let widgetsPending = false;
+function refreshWidgets() {
+  if (widgetsPending) return;
+  widgetsPending = true;
+  queueMicrotask(() => { widgetsPending = false; if (dev?.dump) for (const widget of studioWidgets) widget.update(); });
+}
+function addStudioWidget(section, kind, filterIds) {
+  if (!window.SloopWidgets) return;
+  const session = dev;
+  const widget = window.SloopWidgets.mount(kind, {
+    read: id => session.dump.p[id],
+    format: id => fmtValue(session.pdesc[id], session.dump.p[id]).filter(Boolean).join(" "),
+    t: name => window.SloopI18n.t('widgets.' + name), filterIds,
+    begin: id => { if (dev === session) dragging = key(0, id); },
+    end: () => { dragging = null; },
+    reset: id => {
+      if (dev !== session) return;
+      const c = ctl.get(key(0,id));
+      if (c) { c.input.value = String(c.desc.def); userSet(0,id,c.desc.def,true); }
+    },
+    write: (id, value) => {
+      if (dev !== session) return;
+      const c = ctl.get(key(0, id));
+      if (!c) return;
+      value = Math.max(c.desc.min, Math.min(c.desc.max, Math.round(value)));
+      c.input.value = String(value);
+      userSet(0, id, value, true);
+    },
+  });
+  section.append(widget.element); studioWidgets.push(widget);
+}
 function buildGroups() {
+  studioWidgets = [];
   ctl.clear();
   dev.built = dev.dump.engine;
   /* Sound: the selected track's parameters; Sequencer: its pattern settings; Settings: globals and drums */
@@ -2606,15 +2642,36 @@ function buildGroups() {
   const { info } = dev;
   if (info.pcount === EXPECT.pcount && info.gcount === EXPECT.gcount && info.pe0 === EXPECT.pe0) {
     for (const g of LAYOUT(info.pe0)) {
-      const div = el("div", { class: "group control-bank" }, el("h2", { ic: HEAD_IC[g.t], text: g.engine ? `EDIT ${info.engines[dev.dump.engine] || ""}` : g.t }));
-      for (const [title, s, ids] of g.pages) {
-        const rows = ids.map((id) => paramRow(s, id)).filter(Boolean);
+      for (const [index, [title, scope, ids]] of g.pages.entries()) {
+        const rows = ids.map(id => paramRow(scope,id)).filter(Boolean);
         if (!rows.length) continue;
-        const tt = g.engine && (dev.titles[dev.dump.engine] || [])[g.pages.findIndex((x) => x[0] === title)];
-        if (g.pages.length > 1) div.append(el("h3", { ic: PAGE_IC[tt || title], text: tt || title }));
-        div.append(...rows);
+        const page = g.engine ? (dev.titles[dev.dump.engine] || [])[index] || title : title;
+        const heading = g.engine ? `${info.engines[dev.dump.engine]} / ${page}` : g.t === page ? page : `${g.t} / ${page}`;
+        const div = el("div", {class:"group control-bank"}, el("h2", {ic:PAGE_IC[page] || HEAD_IC[g.t],text:heading}), ...rows);
+        div.dataset.page = page;
+        groups[g.tab || "groups"].push(div);
+        // Only attach diagrams when every relevant descriptor matches this SLOOP layout.
+        const match = (id,label) => dev.pdesc[id]?.label === label;
+        let kind = null, filterIds;
+        if (page === "ENV" && [1,2,3,4].every((id,i)=>match(id,["ATK","DEC","SUS","REL"][i]))) kind="env";
+        if (page === "LFO" && match(10,"WAVE") && dev.pdesc[10].names.join() === "SIN,TRI,SAW,SQR,S&H") kind="lfo";
+        if (page === "SCL" && match(25,"ROOT") && match(26,"SCL") && dev.pdesc[26].names.length === 16) kind="scale";
+        if (page === "ARP" && match(17,"MODE") && dev.pdesc[17].names.join() === "OFF,UP,DN,UPDN,RND,ORD") kind="arp";
+        if (page === "SLICER" && match(45,"SLCR") && match(46,"PAT") && dev.pdesc[46].max===16) kind="slicer";
+        if (scope===0 && g.engine) {
+          const cut=ids.find(id=>match(id,"CUT")&&dev.pdesc[id].min===0&&dev.pdesc[id].max===127);
+          const res=ids.find(id=>match(id,"RES")&&dev.pdesc[id].min===0&&dev.pdesc[id].max===127);
+          if(cut!=null&&res!=null){kind="filter";filterIds=[cut,res];}
+        }
+        if(kind)addStudioWidget(div,kind,filterIds);
+        if(rows.length<4) {
+          const plate=el("div",{class:"sloop-blank","aria-hidden":"true"});plate.inert=true;
+          plate.style.setProperty('--spare-columns',4-rows.length);
+          const metal=el("span",{class:"hardware-panel"+(page==='LEVEL'?' hardware-grille':'')});
+          for(let i=0;i<4;i++)metal.append(el("span",{class:"hardware-fastener"}));
+          plate.append(metal);div.append(plate);
+        }
       }
-      groups[g.tab || "groups"].push(div);
     }
   } else {
     /* unknown firmware layout: everything in id order */
@@ -2691,6 +2748,7 @@ function showValue(k, v, force) {
   c.out.textContent = unit ? `${txt} ${unit}` : txt;
   if (force || !touched(k)) c.input.value = String(v);
   window.SloopSkin.sync(c.input);
+  refreshWidgets();
 }
 /* the user is working on this control: polling and pushes must not move it */
 function touched(k) {
