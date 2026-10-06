@@ -64,7 +64,10 @@ API void fw_event(unsigned kind,unsigned id,int value) {
         ui.menu=0;go_home();ui_message("BROWSER PANEL FIXED");return;
     }
     if(kind==0&&id<NB){uint32_t bit=1u<<panel.btn[id];if(value){if(!(fm1_in.buttons&bit))edges_btn|=bit;fm1_in.buttons|=bit;}else fm1_in.buttons&=~bit;}
-    if(kind==1&&id<NE)encs[panel.enc[id]]+=clamp(value,-127,127);
+    if((kind==1||kind==4)&&id<NE){
+        if(kind==4)ui.enc_t[id]=fm1_ticks()-61000u*FM1_TICKS_PER_US;
+        encs[panel.enc[id]]+=clamp(value,-127,127);
+    }
     if(kind==2&&id<27){if(value)fm1_in.notes|=1u<<id;else fm1_in.notes&=~(1u<<id);}
     if(kind==3){song.octave=clamp(value,-4,4);ui.force=1;}
 }

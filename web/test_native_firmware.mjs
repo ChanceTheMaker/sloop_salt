@@ -93,6 +93,12 @@ function machine(){
  console.log('Native user preset save/load/erase, arranger knobs, settings and recording panic passed');
 }
 {
+ const m=machine();m.tap(B.ENV);m.e.synth_target(0);m.e.synth_param(1,20);
+ for(let i=0;i<4;i++)m.event(4,3,1);
+ assert.equal(m.state().tracks[0].p[1],24,'fine turns bypass native encoder acceleration');
+ console.log('Native fine tuning uses exact parameter increments');
+}
+{
  const m=machine();m.frame();const pixels=new Uint16Array(m.e.memory.buffer,m.e.fw_screen(),240*240);assert.ok(pixels.some(x=>x));
  await mkdir('build/screenshots',{recursive:true});const rgb=Buffer.alloc(240*240*3);pixels.forEach((s,i)=>{const p=(s>>8)|((s&255)<<8);rgb[i*3]=(p>>11)*255/31;rgb[i*3+1]=((p>>5)&63)*255/63;rgb[i*3+2]=(p&31)*255/31;});
  await writeFile('build/screenshots/native-screen.ppm',Buffer.concat([Buffer.from('P6\n240 240\n255\n'),rgb]));

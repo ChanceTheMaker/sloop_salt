@@ -103,7 +103,9 @@ Firmware has Device and Expanded layouts of the same native panel: a live
 original UI, layer, preset, project and arranger modules without changing them.
 The framebuffer, scope and key/button lights come from that native code.
 
-Drag knobs vertically, focus them for arrows/wheel, or use their −/+ buttons.
+Drag knobs vertically; hold Shift for fine tuning. Focus a knob for arrow keys
+or the wheel; Shift bypasses native encoder acceleration. Expanded enlarges
+the display column on desktop and gives the screen a full row on mobile.
 Tap functions for pages; hold FX, EDIT, ARP, SEQ, SCL, GLO or SAVE while playing
 keys or adjusting knobs. Hold a layer and tap HOME to lock it. EDIT + OCT−/OCT+
 undoes/redoes. Firmware and Studio use the same themed bottom keyboard, note

@@ -33,22 +33,22 @@ export function mountFirmwareView(host,api){
  ['MASTER','SELECT','ALGORITHM','PRESETS','KNOB 1','KNOB 2','KNOB 3','KNOB 4'].forEach((name,index)=>{
   const id=index-1;
   const wrap=make('div',{className:'native-encoder'}),label=make('span',{},name),dial=make('button',{type:'button',className:'native-dial'});
-  let angle=0;const change=n=>{if(id<0)api.volume(n);else emit(1,id,n);angle=(angle+n*8)%360;dial.style.setProperty('--knob-angle',angle+'deg');};
-  dial.setAttribute('aria-label',name);const minus=make('button',{type:'button'},'−'),plus=make('button',{type:'button'},'+');
-  minus.setAttribute('aria-label',name+' −');plus.setAttribute('aria-label',name+' +');minus.onclick=()=>change(-1);plus.onclick=()=>change(1);
+  let angle=0;const change=(n,fine=false)=>{if(id<0)api.volume(n);else emit(fine?4:1,id,n);angle=(angle+n*8)%360;dial.style.setProperty('--knob-angle',angle+'deg');};
+  dial.setAttribute('aria-label',name);
   let drag=null;
-  dial.addEventListener('pointerdown',e=>{if(e.button)return;drag={id:e.pointerId,y:e.clientY};dial.setPointerCapture(e.pointerId);dial.focus();e.preventDefault();});
-  dial.addEventListener('pointermove',e=>{if(drag?.id!==e.pointerId)return;const step=e.shiftKey?12:4,n=Math.trunc((drag.y-e.clientY)/step);if(n){change(n);drag.y-=n*step;}});
+  dial.addEventListener('pointerdown',e=>{if(e.button)return;drag={id:e.pointerId,y:e.clientY,fine:e.shiftKey};dial.setPointerCapture(e.pointerId);dial.focus();e.preventDefault();});
+  dial.addEventListener('pointermove',e=>{if(drag?.id!==e.pointerId)return;if(drag.fine!==e.shiftKey){drag.fine=e.shiftKey;drag.y=e.clientY;return;}const step=e.shiftKey?32:4,n=Math.trunc((drag.y-e.clientY)/step);if(n){change(n,e.shiftKey);drag.y-=n*step;}});
   for(const event of ['pointerup','pointercancel','lostpointercapture'])dial.addEventListener(event,()=>{drag=null;});
-  dial.addEventListener('keydown',e=>{const n={ArrowUp:1,ArrowRight:1,ArrowDown:-1,ArrowLeft:-1}[e.key];if(n){e.preventDefault();change(n*(e.shiftKey?10:1));}});
-  dial.addEventListener('wheel',e=>{if(document.activeElement!==dial)return;e.preventDefault();change(e.deltaY<0?1:-1);},{passive:false});
-  const adjust=make('div');adjust.append(minus,plus);wrap.append(label,dial,adjust);
+  dial.addEventListener('keydown',e=>{const n={ArrowUp:1,ArrowRight:1,ArrowDown:-1,ArrowLeft:-1}[e.key];if(n){e.preventDefault();change(n,e.shiftKey);}});
+  dial.addEventListener('wheel',e=>{if(document.activeElement!==dial)return;e.preventDefault();if(e.deltaY)change(e.deltaY<0?1:-1,e.shiftKey);},{passive:false});
+  wrap.append(label,dial);
   if(id<3){wrap.style.order=String(id<1?id+1:id===2?2:3);navigation.append(wrap);}else encoders.append(wrap);
  });
  navigation.append(octaves);
  const choose=mode=>{host.dataset.layout=mode;device.setAttribute('aria-pressed',String(mode==='device'));expanded.setAttribute('aria-pressed',String(mode==='expanded'));};
  device.onclick=()=>choose('device');expanded.onclick=()=>choose('expanded');choose('device');
  function translate(){device.textContent=window.SloopI18n.t('view.device');expanded.textContent=window.SloopI18n.t('view.expanded');canvas.setAttribute('aria-label',t('screen'));summary.textContent=t('guide');instructions.textContent=t('instructions');
+  host.querySelectorAll('.native-dial').forEach(dial=>{dial.title=t('knobHelp');dial.setAttribute('aria-description',t('knobHelp'));});
  }
  translate();window.SloopI18n.onChange(translate);
  const ctx=canvas.getContext('2d',{alpha:false}),pixels=ctx.createImageData(240,240);
