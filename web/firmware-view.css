@@ -1,0 +1,38 @@
+/* SPDX-License-Identifier: GPL-3.0-only */
+.view-switch {display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;margin:.75rem 0}
+body[data-editor-view=firmware] #tabs,body[data-editor-view=firmware] #trackbar,
+body[data-editor-view=firmware] .panel,body[data-editor-view=firmware] #hint {display:none!important}
+#firmware-view {max-width:850px;margin:1rem auto 2rem;padding:clamp(12px,3vw,30px);background:#050607;color:#eee;border:1px solid #34373a;border-radius:10px;font-family:monospace;box-shadow:0 8px 30px #0005}
+#firmware-view button,#firmware-view select,#firmware-view input {font:inherit;color:inherit;accent-color:#eee}
+#firmware-view button,#firmware-view select,#firmware-view input[type=number] {background:#101214;border:1px solid #43484d;border-radius:3px}
+.fw-toolbar {display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1rem}
+.fw-toolbar h2 {font:700 clamp(20px,4vw,36px) monospace;margin:0;color:#fff}
+.fw-toolbar label {display:flex;align-items:center;gap:.5rem}.fw-toolbar input {width:5em;padding:.4rem}
+.fw-tracks {display:grid;gap:7px}.fw-track {display:grid;grid-template-columns:1.7em 1fr;gap:.3rem .6rem;text-align:left;padding:12px!important;color:var(--track-color)!important;border-color:var(--track-color)!important;min-width:0}
+.fw-track[aria-pressed=true] {background:color-mix(in srgb,var(--track-color) 17%,#050607)!important;outline:2px solid var(--track-color);outline-offset:1px}
+.fw-track strong {grid-row:span 2;font-size:2rem;align-self:center}.fw-track>span {overflow:hidden;text-overflow:ellipsis}.fw-strip {display:grid;grid-template-columns:repeat(16,1fr);gap:4px}
+.fw-strip i {height:5px;background:#35383b}.fw-strip i.on {background:var(--track-color)}.fw-strip i.playing {background:#fff;box-shadow:0 0 4px #fff}
+.fw-sound {display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:1.2rem 0}.fw-sound label {min-width:0}.fw-sound select {width:100%;padding:.5rem}
+.fw-pages {display:flex;gap:6px;flex-wrap:wrap;margin:1rem 0}.fw-pages button {padding:.5rem!important}.fw-pages [aria-pressed=true] {background:#eee!important;color:#050607!important}
+.fw-controls {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;min-height:130px}
+.fw-control {display:flex;flex-direction:column;align-items:center;gap:8px;min-width:0;text-align:center}.fw-control:nth-child(4n+1){color:#287cff}.fw-control:nth-child(4n+2){color:#1ecc70}.fw-control:nth-child(4n+3){color:#ffc618}.fw-control:nth-child(4n+4){color:#ff621a}
+.fw-control output {font-size:clamp(12px,2.5vw,18px);white-space:nowrap}.fw-control input {width:100%;min-width:0;accent-color:currentColor!important}
+.fw-dial {display:block;position:relative;width:42px;height:42px;border:2px solid currentColor;border-radius:50%;opacity:.9;pointer-events:none;transform:rotate(var(--turn,-135deg))}
+.fw-dial::after {content:'';position:absolute;left:calc(50% - 1px);top:4px;width:2px;height:13px;background:currentColor}
+.fw-help {font:13px/1.5 system-ui;color:#aeb5bc;margin:1rem 0 0}
+.fw-layouts {display:flex;gap:8px;justify-content:center;margin-bottom:20px}
+.fw-layouts button {padding:8px 15px!important}.fw-layouts [aria-pressed=true] {border-color:#eee!important}
+.fw-screen {padding:12px;border:1px solid #34373a;border-radius:3px;background:#000}
+.fw-controls {margin-top:24px}
+#firmware-view[data-layout=device] {max-width:650px}
+[data-layout=device] .fw-screen {max-width:370px;margin:auto}
+[data-layout=device] .fw-track {padding:8px!important}
+[data-layout=device] .fw-toolbar h2 {font-size:23px}
+[data-layout=device] .fw-track strong {font-size:1.4rem}
+[data-layout=device] .fw-controls {min-height:80px;gap:8px}
+[data-layout=device] .fw-control {font-size:11px}
+[data-layout=device] .fw-control output {font-size:13px}
+[data-layout=device] .fw-pages {justify-content:center}
+#firmware-view .fw-track:disabled {opacity:.65}
+#firmware-view :focus-visible {outline:3px solid white;outline-offset:3px}
+@media(max-width:480px){.fw-controls {gap:7px}.fw-control {font-size:12px}.fw-strip {gap:2px}.fw-track {padding:9px!important}}
