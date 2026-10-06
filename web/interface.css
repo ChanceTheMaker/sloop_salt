@@ -213,7 +213,7 @@ h2 { font-family:var(--ui-font); }
 .editor-page .play-keyboard.collapsed { padding:6px 12px; border-radius:10px 10px 0 0; }
 .editor-page .play-keyboard.collapsed .play-controls { margin:0; }
 .editor-page .play-keyboard.collapsed .keyboard-tray { font-size:11px; }
-footer { color:var(--dim); font:11px/1.8 var(--ui-font); margin-top:22px; }
+footer { color:var(--dim); font:11px/1.8 var(--ui-font); margin-top:22px; text-align:center; }
 footer a { text-underline-offset:3px; }
 .hint { border:1px solid var(--line); border-radius:10px; color:var(--dim); }
 /* The finish follows each skin's personality without sacrificing legibility. */
@@ -936,3 +936,8 @@ footer a { text-underline-offset:3px; }
 
 #browser-transport[hidden] { display:none; }
 #browser-transport { margin:10px 0; }
+
+.mode-tip .mode-tip-copy {margin:0;padding:3px 22px 3px 2px;text-align:left;max-height:calc(100dvh - 70px);overflow-y:auto}
+.mode-tip-choice + .mode-tip-choice {margin-top:13px;padding-top:13px;border-top:1px solid color-mix(in srgb,var(--ink) 18%,transparent)}
+.mode-tip-choice strong {display:block;margin-bottom:4px;font-weight:800;font-size:14px}
+.mode-tip-choice span {display:block;font-weight:400;line-height:1.5}

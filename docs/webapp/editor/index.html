@@ -199,7 +199,7 @@
       <button id="connect" data-t="connect" data-ic="port_usb_c"></button>
       <div id="audio-mode" class="audio-mode" role="group" aria-label="Sound source" data-i18n-aria-label="audio.source">
         <button id="device-mode" type="button" aria-pressed="true" data-i18n-title="audio.tipFM1" title="Connect and edit your FM-1 over USB. Sound comes from the hardware.">FM-1</button>
-        <button id="view-firmware" type="button" aria-pressed="false" data-i18n="view.firmware" data-i18n-title="audio.tipFirmware" title="Play in your browser using firmware-style pages, with Device and Expanded layouts. No FM-1 needed.">Firmware</button>
+        <button id="view-firmware" type="button" aria-pressed="false" data-i18n="view.firmware" data-i18n-title="audio.tipFirmware" title="Play in your browser using the FM-1 Simulator, with Device and Expanded layouts. No FM-1 needed.">FM-1 Simulator</button>
         <button id="browser-start" type="button" aria-pressed="false" data-i18n="audio.browser" data-i18n-title="audio.tipStudio" title="Play and edit in your browser with the full Skeuomorph editor. Shares the same session as Firmware mode.">Browser Studio</button>
       </div>
       <span id="version" class="dim"></span>
@@ -215,9 +215,12 @@
         <output id="audio-position" aria-live="off"></output>
         <button id="audio-export" type="button" data-i18n="audio.export">Export session</button>
         <button id="audio-import" type="button" data-i18n="audio.import">Import session</button>
+        <button id="midi-enable" type="button" data-i18n="midi.enable">Enable USB-MIDI input</button>
+        <label><span data-i18n="midi.input">MIDI input</span><select id="midi-input" disabled><option value="" data-i18n="midi.none">None</option></select></label>
         <input id="audio-file" type="file" accept=".json,application/json" hidden>
       </div>
       <p id="audio-status" role="status" data-i18n="audio.help"></p>
+      <p id="midi-status" role="status"></p>
       <canvas id="audio-scope" height="70" role="img" data-i18n-aria-label="audio.scope" aria-label="Browser audio waveform"></canvas>
     </section>
     <nav class="tabs" id="tabs" role="tablist">
@@ -231,7 +234,7 @@
     </nav>
     <div class="trackbar" id="trackbar" hidden><span class="dim" data-t="track"></span><span class="seg" id="trackbtns" role="group"></span></div>
   </header>
-  <section id="firmware-view" hidden aria-label="Firmware view"></section>
+  <section id="firmware-view" hidden aria-label="FM-1 Simulator"></section>
   <p class="hint" id="hint" hidden></p>
 
   <section class="panel" id="p-sound" data-tab="sound" data-dev hidden>
@@ -368,7 +371,8 @@
     <p id="play-help"></p>
     <p id="play-navigation" class="sr-only" data-i18n="play.navigation"></p>
   </section>
-  <footer>SLOOP, based on Felucca by Leo Kuroshita (@kurogedelic), <a href="https://hugelton.com" target="_blank" rel="noopener">Hügelton Instruments</a>. GPL-3.0.<br>
+  <footer>SLOOP firmware by isod89, based on Felucca by Leo Kuroshita (@kurogedelic), <a href="https://hugelton.com" target="_blank" rel="noopener">Hügelton Instruments</a>. GPL-3.0.<br>
+    Sloop [salt] website, browser simulator &amp; editor enhancements by <a href="https://github.com/ChanceTheMaker" target="_blank" rel="noopener">Chance Roth (ChanceTheMaker)</a>.<br>
     <span data-t="foot"></span> M-VAVE and FM-1 are trademarks of their respective owners.<br>
     <a href="FUKIAI-LICENSE.txt" data-t="iconsCredit"></a></footer>
 </main>
@@ -4569,24 +4573,29 @@ $("connect").addEventListener("click", () => {
   if (dev) { wantConnected = false; disconnect(); } else connect();
 });
 function audioControls(enabled) {
+  externalMIDI?.release();$('midi-enable').disabled=!enabled;
   for (const id of ['audio-play','audio-stop','audio-export','audio-import']) $(id).disabled = !enabled;
-  if (!enabled) setEditorView(false);
+  if (!enabled) setEditorView(false).catch(report);
 }
-let firmwareView;
+let firmwareView, externalMIDI;
 async function setEditorView(on) {
+  externalMIDI?.release();
   if(on && (!dev || !browserMode || busy))return;
   window.SloopPlay.release();
   if(on && !firmwareView){
     const {mountFirmwareView}=await import('./firmware-view.js');
     firmwareView=mountFirmwareView($('firmware-view'),{
-      state:()=>dev&&browserMode?{sel:dev.sel,dump:dev.dump,pdesc:dev.pdesc,gdesc:dev.gdesc,
-        names:dev.names,engines:dev.info.engines,kitNames:dev.kitNames||dev.pdesc[50]?.names||[],
-        tracks:browserSynth.virtual.state.tracks,positions:browserSynth.positions||[],playing:browserSynth.playing,busy:!!busy}:null,
-      set:(scope,id,value)=>{if(!busy)userSet(scope,id,value,true);},
-      select:selectTrack,preset:choosePreset,format:fmtValue
+      panel:(kind,id,value)=>browserSynth.panel(kind,id,value),release:()=>browserSynth?.releasePanel(),
+      volume:steps=>{const control=$('audio-volume');control.value=Math.max(0,Math.min(100,+control.value+steps));browserSynth.volume(+control.value/100);},
+      listen:callback=>{browserSynth.onNative=callback;}
     });
   }
   if(on && (!dev || !browserMode))return;
+  if(browserSynth?.context?.state==='running'){
+    const was=browserSynth.firmwareActive;
+    await browserSynth.firmware(on);
+    if(was&&!on&&dev&&browserMode){await load(dev);syncPlay();}
+  }
   document.body.dataset.editorView=on?'firmware':'skeuomorph';
   $('view-firmware').setAttribute('aria-pressed',String(on));
   $('browser-start').setAttribute('aria-pressed',String(browserMode&&!on));
@@ -4621,6 +4630,30 @@ async function switchSource(source){
  finally{switchingSource=false;for(const button of $('audio-mode').children)button.disabled=false;}
 }
 $('browser-start').addEventListener('click',()=>switchSource('studio'));
+const midiText=key=>window.SloopI18n.t('midi.'+key);
+function midiInputs(ports){
+ const selected=externalMIDI.port?.id||'',select=$('midi-input');
+ select.replaceChildren(new Option(midiText('none'),''),...ports.map(p=>new Option(p.name||p.id,p.id)));
+ select.value=selected;select.disabled=!ports.length;
+ $('midi-status').textContent=midiText(selected?'ready':ports.length?'choose':'empty');
+}
+$('midi-enable').addEventListener('click',async()=>{
+ $('midi-enable').disabled=true;
+ try{
+  if(!navigator.requestMIDIAccess){$('midi-status').textContent=midiText('unavailable');return;}
+  await browserSynth.start();
+  if(!externalMIDI){const {MIDIInput}=await import('./midi-input.js');externalMIDI=new MIDIInput({send:bytes=>browserSynth?.midi(bytes),enabled:()=>browserMode&&!!dev&&!document.hidden&&browserSynth?.context?.state==='running',changed:midiInputs});}
+  await externalMIDI.connect();
+ }catch(error){$('midi-status').textContent=midiText('denied');}
+ finally{$('midi-enable').disabled=!browserMode||!dev;}
+});
+$('midi-input').addEventListener('change',()=>{externalMIDI?.select($('midi-input').value);$('midi-status').textContent=midiText($('midi-input').value?'ready':'choose');});
+window.SloopI18n.onChange(()=>{if(externalMIDI?.access)midiInputs([...externalMIDI.access.inputs.values()].filter(p=>p.state==='connected'));});
+window.addEventListener('blur',()=>externalMIDI?.release());
+window.addEventListener('pagehide',()=>externalMIDI?.release());
+document.addEventListener('visibilitychange',()=>{if(document.hidden)externalMIDI?.release();});
+$('play-stop').addEventListener('click',()=>externalMIDI?.release());
+$('audio-stop').addEventListener('click',()=>externalMIDI?.release());
 $('view-firmware').addEventListener('click',()=>switchSource('firmware'));
 $('device-mode').addEventListener('click',()=>switchSource('fm1'));
 $('audio-play').addEventListener('click', async () => { try {await browserSynth.start();browserSynth.transport(1);}catch(e){report(e);} });
@@ -4632,15 +4665,15 @@ $('audio-export').addEventListener('click', async () => {
   while(d&&d===dev&&browserMode&&(busy||!d.link.idle)&&performance.now()<deadline)await sleep(20);
   if(!d||d!==dev||!browserMode)return;
   if(busy||!d.link.idle){sayK('busy');return;}
-  download(`sloop-session-${today()}.json`, JSON.parse(browserSynth.export()));
+  try{download(`sloop-session-${today()}.json`, JSON.parse(await browserSynth.export()));}catch(error){report(error);}
 });
 $('audio-import').addEventListener('click', () => $('audio-file').click());
 $('audio-file').addEventListener('change', async e => {
   const file=e.target.files[0];e.target.value='';if(!file||!dev||!browserMode||busy)return;
   if(file.size>3000000){sayK('error',window.SloopI18n.t('audio.invalidSession'));return;}
   if(!confirm(window.SloopI18n.t('audio.replaceSession')))return;
-  busy++;audioControls(false);
-  try {window.SloopPlay.release();await browserSynth.import(await file.text());await load(dev);syncPlay();}
+  busy++;
+  try {await setEditorView(false);audioControls(false);window.SloopPlay.release();await browserSynth.import(await file.text());await load(dev);syncPlay();}
   catch(error){sayK('error',window.SloopI18n.t('audio.invalidSession'));console.error(error);}
   finally {busy--;audioControls(!!dev);}
 });
@@ -4649,13 +4682,13 @@ document.addEventListener('visibilitychange', () => { if(document.hidden && brow
 // Adapted from Chance Roth's Felucca Salt sound-source introduction (GPL-3.0).
 const modeTip=document.createElement('aside');
 modeTip.className='mode-tip';modeTip.hidden=true;modeTip.setAttribute('role','status');
-const tipCopy=document.createElement('p'),tipClose=document.createElement('button');
+const tipCopy=document.createElement('div'),tipClose=document.createElement('button');
 tipClose.type='button';tipClose.textContent='×';modeTip.append(tipCopy,tipClose);document.body.append(modeTip);
 const tipKey='sloop.web.soundSourceTipDismissed';let tipDismissed=false;
 try {tipDismissed=localStorage.getItem(tipKey)==='1';} catch (_) {}
 function positionModeTip(){
  if(modeTip.hidden)return;
- const anchor=$('audio-mode').getBoundingClientRect(),width=Math.min(330,innerWidth-24);
+ const anchor=$('audio-mode').getBoundingClientRect(),width=Math.min(370,innerWidth-24);
  modeTip.style.width=width+'px';
  modeTip.style.visibility=anchor.bottom<=0||anchor.top>=innerHeight?'hidden':'visible';
  const beside=anchor.right+14+width<=innerWidth-12;
@@ -4665,7 +4698,7 @@ function positionModeTip(){
  modeTip.style.top=Math.max(12,Math.min(innerHeight-modeTip.offsetHeight-12,beside?anchor.top+anchor.height/2-modeTip.offsetHeight/2:anchor.bottom+14))+'px';
  modeTip.style.setProperty('--tip-arrow-x',Math.max(18,Math.min(width-18,anchor.left+anchor.width/2-left))+'px');
 }
-function renderModeTip(){tipCopy.textContent=window.SloopI18n.t('audio.sourceTip');tipClose.setAttribute('aria-label',window.SloopI18n.t('audio.dismissTip'));positionModeTip();}
+function renderModeTip(){tipCopy.className='mode-tip-copy';tipCopy.replaceChildren(...window.SloopI18n.t('audio.sourceTip').split('\n').map(line=>{const row=document.createElement('div'),heading=document.createElement('strong'),copy=document.createElement('span'),split=line.search(/[:\uFF1A]/);row.className='mode-tip-choice';heading.textContent=line.slice(0,split);copy.textContent=line.slice(split+1).trim();row.append(heading,copy);return row;}));tipClose.setAttribute('aria-label',window.SloopI18n.t('audio.dismissTip'));positionModeTip();}
 function dismissModeTip(){tipDismissed=true;modeTip.hidden=true;try{localStorage.setItem(tipKey,'1');}catch(_){} }
 tipClose.onclick=dismissModeTip;$('audio-mode').addEventListener('click',dismissModeTip);
 document.addEventListener('keydown',e=>{if(e.key==='Escape')dismissModeTip();});

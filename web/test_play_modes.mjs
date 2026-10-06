@@ -1,10 +1,20 @@
 // SPDX-License-Identifier: GPL-3.0-only
 import assert from 'node:assert/strict';
 import {pathToFileURL} from 'node:url';
+import {resolve,sep} from 'node:path';
 const {chromium}=await import(pathToFileURL(process.env.PLAYWRIGHT_MODULE).href);
 const browser=await chromium.launch({headless:true,channel:'msedge'});
 const page=await browser.newPage({viewport:{width:390,height:900}});
+if(process.env.STUDIO_STATIC_DIR){
+ const root=resolve(process.env.STUDIO_STATIC_DIR);
+ await page.route('http://127.0.0.1:8769/**',async route=>{
+  const pathname=decodeURIComponent(new URL(route.request().url()).pathname),path=resolve(root,'.'+pathname+(pathname.endsWith('/')?'index.html':''));
+  if(!path.startsWith(root+sep))return route.fulfill({status:403,body:''});
+  try{await route.fulfill({path});}catch{await route.fulfill({status:404,body:''});}
+ });
+}
 const errors=[];page.on('pageerror',e=>errors.push(e.message));
+await page.addInitScript(()=>{document.cookie='sloop_simulator_tour_v1=seen; Path=/; SameSite=Lax';});
 try{
  await page.goto('http://127.0.0.1:8769/webapp/editor/',{waitUntil:'domcontentloaded',timeout:60000});
  await page.locator('.mode-tip').waitFor({state:'visible'});
@@ -12,8 +22,10 @@ try{
  assert.match(await page.locator('#device-mode').getAttribute('title'),/hardware/);
  assert.match(await page.locator('#view-firmware').getAttribute('title'),/Device and Expanded/);
  assert.match(await page.locator('#browser-start').getAttribute('title'),/Skeuomorph/);
- assert.deepEqual(await page.locator('#audio-mode button').allTextContents(),['FM-1','Firmware','Browser Studio']);
+ assert.deepEqual(await page.locator('#audio-mode button').allTextContents(),['FM-1','FM-1 Simulator','Browser Studio']);
  assert.match(await page.locator('.mode-tip').textContent(),/Both browser modes share/);
+ assert.deepEqual(await page.locator('.mode-tip-choice strong').allTextContents(),['FM-1','FM-1 Simulator','Browser Studio']);
+ assert.equal(await page.locator('.mode-tip-choice strong').first().evaluate(e=>getComputedStyle(e).fontWeight),'800');
  assert.equal(await page.locator('#device-mode').getAttribute('aria-pressed'),'true');
  assert.equal(await page.locator('#audio-mode [aria-pressed=true]').count(),1);
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));

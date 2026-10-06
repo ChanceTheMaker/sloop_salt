@@ -282,13 +282,14 @@ Browser sessions save locally. Use **Export session** to keep a portable copy of
 your tracks, project slots, user presets and samples; these files are separate
 from FM-1 backups. **FM-1** stops browser audio and returns to device mode.
 
-The three-state switch selects **FM-1**, **Firmware**, or **Browser Studio**.
-Firmware offers compact Device and larger Expanded layouts with four colored
-tracks and firmware parameter pages. Browser Studio is the full Skeuomorph
-editor. Both browser views share sounds, samples and the same session. The
-Firmware view currently supports parameter editing and playback; use Browser
-Studio for step editing, samples and projects. Hold-button layers and live
-recording are not yet available in the browser.
+The three-state switch selects **FM-1**, **FM-1 Simulator**, or **Browser Studio**.
+Firmware runs Sloop's native screen and controls in compact Device and larger
+Expanded layouts: hold-button layers, step editing, rolls, punch-in effects,
+undo/redo, free/tempo recording with count-in, section storage and the song
+arranger. Its 27 keys support QWERTY, mouse and touch. Browser Studio is the
+full Skeuomorph editor, including sample upload. Both browser views share
+sounds, samples, user presets, projects and the same autosaved session.
+USB audio and physical panel calibration require an FM-1.
 See [browser synth usage and setup](web/audio/README.md).
 
 ## Compatibility

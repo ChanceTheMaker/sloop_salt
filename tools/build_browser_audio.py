@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 """Build SLOOP's browser DSP without building or modifying an FM-1 package.
 
-Requires Zig 0.13.0 (zig cc). Pass --zig or set ZIG to its executable.
+Requires Python with Pillow and Zig 0.13.0 (zig cc). Pass --zig or set ZIG to its executable.
 """
 import argparse
 import os
@@ -18,14 +18,16 @@ gen = ROOT / 'build/browser-audio/gen'
 gen.mkdir(parents=True, exist_ok=True)
 for script, header in [('gen_tables.py', 'felucca_tables.h'),
                        ('gen_samples.py', 'felucca_samples.h'),
-                       ('gen_drumkits.py', 'felucca_drumkits.h')]:
+                       ('gen_drumkits.py', 'felucca_drumkits.h'),
+                       ('gen_font.py','felucca_font.h'),('gen_icons.py','felucca_icons.h')]:
     subprocess.run([sys.executable, str(ROOT/'tools'/script), str(gen/header)], cwd=ROOT, check=True)
 exports = ['synth_init','synth_target','synth_select','synth_engine','synth_param',
            'synth_global','synth_midi','synth_render','synth_step','synth_drum_step',
            'synth_transport','synth_playing','synth_position','synth_panic','synth_solo',
            'synth_sample_buffer','synth_sample_apply','engine_count','param_count',
            'global_count','preset_count','preset_name','preset_value','engine_name',
-           'descriptor_value','descriptor_text']
+           'descriptor_value','descriptor_text','fw_tick','fw_screen','fw_event','fw_release',
+           'fw_buffer','fw_layout','fw_commit']
 env = {**os.environ, 'ZIG_GLOBAL_CACHE_DIR': str(ROOT/'build/zig-cache'),
        'ZIG_LOCAL_CACHE_DIR': str(ROOT/'build/zig-local-cache')}
 subprocess.run([args.zig, 'cc', '-target', 'wasm32-freestanding', '-O2', '-fno-builtin',

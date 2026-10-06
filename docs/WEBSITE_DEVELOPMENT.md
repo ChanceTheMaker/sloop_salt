@@ -116,3 +116,105 @@ use a separate validated format and IndexedDB namespace.
 
 Build and validation commands, source attribution, supported browser features
 and remaining hardware/mobile checks are recorded in `web/audio/README.md`.
+
+## Native Firmware mode
+
+`feat/native-firmware-mode` follows `feat/firmware-view` in the draft PR stack.
+It replaces the first parameter-page approximation with the repository's native
+framebuffer renderer, panel/layer input, recording, preset/project and arranger
+modules compiled into the browser WASM. Only browser adapters and website files
+change; `firmware/`, the public homepage, hardware protocol and packaged firmware
+remain unchanged.
+
+Native input runs on the audio thread with ordered events. Snapshot/mode barriers
+wait behind pending edits; native state bridges to the existing browser session.
+Song playback exports/autosaves the original working loop rather than replacing
+it with the currently playing section. Browser Studio refreshes its descriptors,
+bank and project slots after leaving Firmware mode. Hardware calibration is
+handled explicitly by the adapter because the physical routine waits on GPIO.
+
+Validation: native tests cover layers/lock release, drum step velocity and
+ratchets, undo/redo, free and tempo recording, count-in, section/song playback,
+SONG REC, user presets, settings and session restoration. Edge tests verify the
+real WASM/worklet, framebuffer, QWERTY audio, recording, bank persistence, shared
+edits, import/export/reload, mobile layout and mode switching. Static request
+routing in tests avoids intermittent localhost resets while executing the exact
+built assets. Real mobile audio and hardware listening parity remain unverified.
+
+Firmware mode now reuses the existing Felucca-derived keyboard component and
+theme rules, including its responsive extended keys, note labels, toolbar,
+sustain, collapse and sliding. A browser-only adapter routes its central bank
+to native panel keys and synchronizes octave controls; extended notes and
+explicit MIDI channel routing retain the browser synth MIDI path.
+
+The panel follows the [FM-1 front-panel reference](https://www.rackears.io/products/m-vave-fm-1):
+Master/Select above Presets/Algorithm and octave buttons at left, display in
+the middle, and four knobs over two six-button rows at right. Master adjusts
+the existing browser volume. Narrow screens wrap the right group below while
+keeping each physical control group intact. The playable keyboard stays docked.
+
+The panel's top-right two-icon switch selects Device/Expanded directly, with
+localized tooltips and pressed states.
+The adjacent help button replays a nine-step, localized simulator tutorial with
+anchored bubbles, arrows, and control highlights. The first and last steps
+explain replay. It opens on the first simulator visit and stores only a local
+`sloop_simulator_tour_v1=seen` cookie (one year, SameSite=Lax, path `/`); closing
+it also counts as seen. It does not send tutorial state to a service.
+The tutorial replaces the old help accordion and corrects SAVE's page-dependent
+behavior, central-bank key numbering, and Shift fine tuning. Escape closes it,
+focus returns to Help, and short viewports can scroll the bubble's text.
+
+`web/test_simulator_tour.mjs` checks first-visit display, cookie persistence,
+manual replay, all steps, focus restoration, Escape, layout selection, and
+desktop/mobile/landscape bounds. The existing native simulator and play-mode
+tests also exercise the layout switch.
+
+In Expanded, the device-color popup also offers FM-1 Touch Keys, an optional capsule finish on the
+existing responsive piano keyboard. It preserves the extended note range,
+QWERTY mapping, horizontal note order, sliding, and note ownership. Capsules have
+equal half-height keys in two rows: black keys above, white keys below. Capsule light strips
+respond to pressed notes and native firmware LEDs. The preference is stored in
+`sloop.fm1TouchKeys`; the styling applies only to FM-1 Simulator. Recessed
+surrounds group the function and octave buttons, with extra spacing below knobs.
+
+Device now attaches the shared keyboard to the simulator chassis and limits it
+to the 27 hardware keys (F3–G5 at the default octave). Its equal-width,
+equal-height capsules occupy two rows. Expanded restores the existing extended
+bottom dock and its saved capsule/collapse preferences. Layout changes release
+held notes. The simulator shows the original Sloop splash artwork, build version
+and Felucca credit for one second on its first startup, before the tutorial.
+
+External USB-MIDI input: select Enable USB-MIDI input above either browser mode,
+grant permission, then choose an input. This uses separate Web MIDI input
+listeners with sysex disabled and never opens a hardware output. Notes and
+velocity retain their MIDI channels: channels 1–3 select synth tracks 1–3;
+the configured drum channel (default 10) plays drums; other channels follow the
+selected track. CC64 sustain and CC120/123 note release are handled locally.
+Pitch bend, other CCs, program changes and MIDI clock are not implemented in
+the current browser input path. Disconnect, port changes, mode changes, stop,
+blur and page hiding release controller notes. Test coverage includes mocked
+USB input with actual AudioWorklet sound; physical-controller testing remains
+to be done. Web MIDI permission and port semantics follow the
+[Web MIDI specification](https://www.w3.org/TR/webmidi/).
+
+The circular swatch opens six physical FM-1 finishes: Black, Black / Green,
+White / Blue, Orange, Purple and White / Gray. Shell, button pad and key colors
+are photo-derived approximations, based on the [FM-1 product listing](https://ctmusicshop.com/product/midi-keyboards-synthesizers-m-vave-fm-1-pocket-fm-synthesizer/)
+and [product photos](https://www.elektronauts.com/t/m-vave-fm-1/252170).
+Black/Pure Black listing names are represented by one black finish. Original
+dark knobs are retained, matching the photos. Selection is cosmetic and persists
+under `sloop.fm1Finish`; Orange is the default when no valid saved finish exists.
+It does not change native display COLOR preferences or
+exported sessions. The help icon alone is borderless. Browser tests cover all
+finishes, shell recoloring, reload persistence and unchanged native preferences.
+The first-run sound-source notice separates its three choices with bold labels.
+
+GitHub Pages publication (authorized 2026-10-06):
+`https://chancethemaker.github.io/sloop_salt/`, with Studio at
+`webapp/editor/`. Like the owner's Felucca site, the deployment uses a dedicated
+`gh-pages` branch with static files at its root. Publish the committed `docs/`
+site, excluding this development document, together with LICENSE and a source
+archive for the published source commit. Keep the original installer and
+firmware packages intact. Verify deployed HTML, JS, CSS, WASM and firmware
+against the published artifacts after the Pages build succeeds. This does not
+merge the stacked feature PRs into main.

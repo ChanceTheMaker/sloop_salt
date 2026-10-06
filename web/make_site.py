@@ -86,10 +86,20 @@ def main(pkg, version, out):
     (inst / "index.html").write_text(html, encoding="utf-8")
     shutil.copy(pkg, fw / name)
     shutil.copy(HERE / "editor.html", ed / "index.html")
-    for asset in ("firmware-view.js", "firmware-view.css"):
+    # Reuse the firmware's original splash artwork and build version.
+    import base64
+    from xml.sax.saxutils import escape
+    logo = base64.b64encode((HERE.parent / "assets/logo/sloop-splash.png").read_bytes()).decode("ascii")
+    (ed / "sloop-boot.svg").write_text(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 240 240">'
+        '<rect width="240" height="240" fill="black"/>'
+        f'<image href="data:image/png;base64,{logo}" x="10" y="10" width="220" height="176"/>'
+        f'<text x="120" y="213" text-anchor="middle" fill="#c4c4cc" font-family="monospace" font-size="12">{escape(version)}</text>'
+        '<text x="120" y="231" text-anchor="middle" fill="#606068" font-family="monospace" font-size="12">based on felucca</text></svg>', encoding="utf-8")
+    for asset in ("firmware-view.js", "firmware-view.css", "midi-input.js"):
         shutil.copy(HERE / asset, ed / asset)
     (ed / "audio").mkdir(exist_ok=True)
-    for asset in ("browser.js", "worklet.js", "session.js", "engine.wasm"):
+    for asset in ("browser.js", "worklet.js", "session.js", "native-state.js", "engine.wasm"):
         shutil.copy(HERE / "audio" / asset, ed / "audio" / asset)
     for f in ("fukiai.ttf", "FUKIAI-LICENSE.txt"):
         if (HERE / f).exists():

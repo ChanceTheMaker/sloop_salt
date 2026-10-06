@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
 import {catalogFrom} from './audio/browser.js';
+import {NativeState} from './audio/native-state.js';
 const module=await WebAssembly.compile(await readFile(new URL('./audio/engine.wasm',import.meta.url)));
 assert.deepEqual(WebAssembly.Module.imports(module),[],'no hardware/runtime imports');
 const catalog=catalogFrom(module);
@@ -43,10 +44,10 @@ assert.ok(seq.synth_position(0)>0);seq.synth_panic();energy(seq,1);assert.equal(
 // Exercise actual worklet resampling at both common device sample rates.
 for(const sampleRate of [44100,48000]) {
  let Processor;const messages=[];
- const sandbox={WebAssembly,Int32Array,Uint8Array,Math,JSON,sampleRate,
+ const sandbox={WebAssembly,Int32Array,Uint8Array,Math,JSON,sampleRate,NativeState,
   AudioWorkletProcessor:class {constructor(){this.port={postMessage:data=>messages.push(data)};}},
   registerProcessor:(name,klass)=>{assert.equal(name,'sloop-dsp');Processor=klass;}};
- vm.runInNewContext(await readFile(new URL('./audio/worklet.js',import.meta.url),'utf8'),sandbox);
+ vm.runInNewContext((await readFile(new URL('./audio/worklet.js',import.meta.url),'utf8')).replace(/^import .*;$/m,''),sandbox);
  const p=new Processor({processorOptions:{module}});preset(p.engine,0);p.engine.synth_midi(0x90,60,100);
  let sum=0;
  for(let i=0;i<100;i++){const channels=[new Float32Array(128),new Float32Array(128)];p.process([], [channels]);for(const c of channels)for(const x of c){assert.ok(Number.isFinite(x)&&Math.abs(x)<=1);sum+=Math.abs(x);}}
