@@ -14,21 +14,27 @@ export function mountFirmwareView(host,api){
  const controls=make('div',{className:'native-controls'});controls.append(encoders,panel);
  const body=make('div',{className:'native-body'});body.append(screen,controls);
  layout.append(device,expanded);host.replaceChildren(layout,body,piano,guide);
- let shown=false,pendingFrame,lastData;const owners=new Map(),held=new Map();
+ let shown=false,pendingFrame,lastData;const owners=new Map(),held=new Map(),pointers=new Set();
  const emit=(kind,id,value)=>api.panel(kind,id,value);
  function paintHeld(){for(const b of host.querySelectorAll('[data-native-kind]'))b.setAttribute('aria-pressed',String(held.has(b.dataset.nativeKind+':'+b.dataset.nativeId)));}
  function release(owner){const key=owners.get(owner);if(!key)return;owners.delete(owner);const n=held.get(key)-1;if(n)held.set(key,n);else{held.delete(key);const [kind,id]=key.split(':').map(Number);emit(kind,id,0);}paintHeld();}
- function press(owner,kind,id){release(owner);const key=kind+':'+id;owners.set(owner,key);held.set(key,(held.get(key)||0)+1);if(held.get(key)===1)emit(kind,id,1);paintHeld();}
- function releaseAll(){owners.clear();held.clear();api.release();paintHeld();}
+ function press(owner,kind,id){const key=kind+':'+id;if(owners.get(owner)===key)return;release(owner);owners.set(owner,key);held.set(key,(held.get(key)||0)+1);if(held.get(key)===1)emit(kind,id,1);paintHeld();}
+ function releaseAll(){pointers.clear();owners.clear();held.clear();api.release();paintHeld();}
  function wire(button,kind,id){
   button.dataset.nativeKind=kind;button.dataset.nativeId=id;button.setAttribute('aria-pressed','false');
-  button.addEventListener('pointerdown',e=>{if(e.button&&e.pointerType==='mouse')return;e.preventDefault();button.focus({preventScroll:true});button.setPointerCapture(e.pointerId);press('pointer:'+e.pointerId,kind,id);});
-  for(const name of ['pointerup','pointercancel','lostpointercapture'])button.addEventListener(name,e=>release('pointer:'+e.pointerId));
+  button.addEventListener('pointerdown',e=>{if(e.button&&e.pointerType==='mouse')return;e.preventDefault();button.focus({preventScroll:true});button.setPointerCapture(e.pointerId);if(kind===2)pointers.add(e.pointerId);press('pointer:'+e.pointerId,kind,id);});
+  for(const name of ['pointerup','pointercancel','lostpointercapture'])button.addEventListener(name,e=>{pointers.delete(e.pointerId);release('pointer:'+e.pointerId);});
   button.addEventListener('keydown',e=>{if(['Space','Enter'].includes(e.code)){e.preventDefault();if(!e.repeat)press('button:'+e.code,kind,id);}});
   button.addEventListener('keyup',e=>{if(['Space','Enter'].includes(e.code)){e.preventDefault();release('button:'+e.code);}});
   button.addEventListener('focusout',()=>{release('button:Space');release('button:Enter');});
   button.addEventListener('click',e=>{if(e.detail===0){const owner='assistive:'+kind+':'+id;press(owner,kind,id);setTimeout(()=>release(owner),50);}});
  }
+ piano.addEventListener('pointermove',e=>{
+  if(!pointers.has(e.pointerId))return;
+  const key=document.elementFromPoint(e.clientX,e.clientY)?.closest('[data-native-kind="2"]');
+  if(key&&piano.contains(key))press('pointer:'+e.pointerId,2,Number(key.dataset.nativeId));
+  else release('pointer:'+e.pointerId);
+ });
  buttons.forEach((name,id)=>{const b=make('button',{type:'button'},name);wire(b,0,id);panel.append(b);});
  const keys=[];let white=0;
  for(let id=0;id<27;id++){
