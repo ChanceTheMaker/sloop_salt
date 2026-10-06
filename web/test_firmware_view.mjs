@@ -2,60 +2,67 @@
 import assert from 'node:assert/strict';
 import {pathToFileURL} from 'node:url';
 import {mkdir,readFile} from 'node:fs/promises';
+import {resolve,sep} from 'node:path';
 const {chromium}=await import(pathToFileURL(process.env.PLAYWRIGHT_MODULE).href);
 const browser=await chromium.launch({headless:true,channel:'msedge'});
 const page=await browser.newPage({viewport:{width:1440,height:1100}}),errors=[];
-page.on('pageerror',e=>errors.push(e.message));page.setDefaultTimeout(60000);
-page.on('requestfailed',r=>console.error('Request failed:',r.url(),r.failure()));
+page.on('pageerror',e=>errors.push(e.message));page.setDefaultTimeout(30000);
+if(process.env.STUDIO_STATIC_DIR){
+ const root=resolve(process.env.STUDIO_STATIC_DIR);
+ await page.route('http://127.0.0.1:8769/**',async route=>{
+  const pathname=decodeURIComponent(new URL(route.request().url()).pathname),path=resolve(root,'.'+pathname+(pathname.endsWith('/')?'index.html':''));
+  if(!path.startsWith(root+sep))return route.fulfill({status:403,body:''});
+  try{await route.fulfill({path});}catch{await route.fulfill({status:404,body:''});}
+ });
+}
 await page.addInitScript(()=>{
  navigator.requestMIDIAccess=()=>{throw Error('Unexpected hardware access');};
  const Context=window.AudioContext;window.AudioContext=class extends Context {createAnalyser(){const a=super.createAnalyser();window.testAnalyser=a;return a;}};
 });
+const button=name=>page.locator('.native-buttons').getByRole('button',{name,exact:true});
+const exportSession=async()=>{const event=page.waitForEvent('download');await page.locator('#audio-export').click();return JSON.parse(await readFile(await (await event).path(),'utf8'));};
+const signal=()=>page.waitForFunction(()=>{const a=new Float32Array(testAnalyser.fftSize);testAnalyser.getFloatTimeDomainData(a);return a.some(v=>Math.abs(v)>.001);});
 try{
- console.log('Loading editor');
  await page.goto('http://127.0.0.1:8769/webapp/editor/',{waitUntil:'domcontentloaded',timeout:60000});
- await page.locator('#browser-start').click();await page.waitForFunction(()=>!document.getElementById('connect').disabled&&document.querySelector('#play-keys button:not(:disabled)'));
- await page.locator('#view-firmware').click();await page.locator('.fw-track').first().waitFor({state:'visible'});
- console.log('Firmware audio started');
- await page.getByRole('button',{name:'Expanded',exact:true}).click();
- assert.equal(await page.locator('#firmware-view').getAttribute('data-layout'),'expanded');
- await page.getByRole('button',{name:'Device',exact:true}).click();
- assert.equal(await page.locator('#tabs').isVisible(),false);
- await page.locator('.fw-pages button').getByText('ENV',{exact:true}).click();
- await page.locator('.fw-control input[aria-label=ATK]').fill('42');
+ await page.locator('#view-firmware').click();await page.locator('.native-screen').waitFor({state:'visible'});
+ await page.waitForFunction(()=>document.querySelector('.native-status').textContent.includes('Stopped'));
+ assert.equal(await page.locator('.native-buttons button').count(),14);assert.equal(await page.locator('.native-dial').count(),7);
+ assert.equal(await page.locator('.native-piano button').count(),27);
+ assert.ok(await page.locator('.native-screen').evaluate(c=>c.getContext('2d').getImageData(0,0,240,240).data.some((v,i)=>i%4!==3&&v>0)));
+ await page.getByRole('button',{name:'Expanded',exact:true}).click();assert.equal(await page.locator('#firmware-view').getAttribute('data-layout'),'expanded');
+ await page.getByRole('button',{name:'Device',exact:true}).click();assert.equal(await page.locator('#tabs').isVisible(),false);
+ const before=await exportSession();await button('ENV').click();
+ await page.getByRole('button',{name:'KNOB 1 +',exact:true}).click();
+ const changed=await exportSession();assert.equal(changed.tracks[0].p[1],before.tracks[0].p[1]+1,'native encoder edit/export barrier');
  await page.locator('#browser-start').click();
- await page.waitForFunction(()=>document.querySelector('#groups input[aria-label=ATK]').value==='42');
+ await page.waitForFunction(v=>document.querySelector('#groups input[aria-label=ATK]')?.value===String(v),changed.tracks[0].p[1]);
  await page.locator('#view-firmware').click();
- await page.locator('.fw-track').nth(1).click();
- await page.waitForFunction(()=>document.querySelectorAll('.fw-track')[1].getAttribute('aria-pressed')==='true');
- await page.locator('.fw-sound select').first().selectOption('2');
- await page.waitForFunction(()=>document.querySelector('.fw-sound select').value==='2'&&!document.querySelector('.fw-sound select').disabled);
- await page.locator('.fw-sound select').first().evaluate(e=>e.blur());
- await page.keyboard.down('a');
- await page.waitForFunction(()=>{const a=new Float32Array(testAnalyser.fftSize);testAnalyser.getFloatTimeDomainData(a);return a.some(v=>Math.abs(v)>.001);});
- await page.keyboard.up('a');
- console.log('Shared state and keyboard audio passed');
- for(const name of ['TRACKS','ENV','ENV DEST','LFO','LFO DEST','FX','SCL','ARP','ARP 2','EDIT','EDIT 2','SEQ','VOICE','SLICER']){
-  await page.locator('.fw-pages button').getByText(name,{exact:true}).click();
-  assert.ok(await page.locator('.fw-control').count()<=4);
- }
- await page.locator('.fw-track').nth(3).click();
- await page.waitForFunction(()=>document.querySelectorAll('.fw-track')[3].getAttribute('aria-pressed')==='true');
- await page.locator('.fw-pages button').getByText('EDIT',{exact:true}).click();
- await page.waitForFunction(()=>document.querySelectorAll('.fw-control').length===1);
- assert.equal(await page.locator('.fw-sound select').first().isDisabled(),true);
- await page.locator('.fw-track').first().click();
- await page.waitForFunction(()=>document.querySelectorAll('.fw-track')[0].getAttribute('aria-pressed')==='true'&&!document.querySelectorAll('.fw-track')[0].disabled);
- await page.locator('.fw-pages button').getByText('TRACKS',{exact:true}).click();
- assert.equal(await page.locator('.fw-control input').last().getAttribute('aria-label'),'PAN');
- await page.setViewportSize({width:390,height:1000});
- assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'mobile fits');
- await page.setViewportSize({width:1440,height:1100});await page.evaluate(()=>scrollTo(0,0));await page.waitForTimeout(500);
- await mkdir('build/screenshots',{recursive:true});await page.screenshot({path:'build/screenshots/firmware-view.png',fullPage:true});
- const downloaded=page.waitForEvent('download');await page.locator('#audio-export').click();
- const saved=JSON.parse(await readFile(await (await downloaded).path(),'utf8'));
- assert.equal(saved.tracks[0].p[1],42);assert.equal(saved.tracks[1].engine,2);
+ await page.evaluate(()=>document.activeElement?.blur());await page.keyboard.down('a');await signal();await page.keyboard.up('a');
+ console.log('Native canvas, encoders, shared state and QWERTY audio passed');
+ await button('REC').click();await page.waitForFunction(()=>document.querySelector('.native-status').textContent.includes('armed'));
+ await page.keyboard.down('a');await page.waitForTimeout(1300);await page.keyboard.up('a');await button('REC').click();
+ await page.waitForFunction(()=>document.querySelector('.native-status').textContent.includes('Playing'));
+ await page.locator('#audio-stop').click();const recorded=await exportSession();assert.ok(recorded.tracks[0].step.some(s=>s.n),'real free recording');
+ await button('FX').focus();await page.keyboard.down('Space');await page.waitForTimeout(200);
+ await page.keyboard.down('a');await page.evaluate(()=>window.dispatchEvent(new Event('blur')));await page.keyboard.up('a');await page.keyboard.up('Space');
+ await page.waitForFunction(()=>!document.querySelector('.native-buttons [aria-pressed=true]')&&!document.querySelector('.native-piano [aria-pressed=true]'));
+ await page.waitForFunction(()=>document.querySelector('.native-status').textContent.includes('Layer PLAY'));
+ await button('ENV').click();await button('SAVE').click();await button('SAVE').click();
+ await page.getByRole('button',{name:'KNOB 4 +',exact:true}).click();await page.getByRole('button',{name:'KNOB 4 +',exact:true}).click();
+ const banked=await exportSession();assert.ok(banked.bank[0],'native user bank saved on audio thread');
+ console.log('Native free recording and focus-loss release passed');
+ await page.setViewportSize({width:390,height:1000});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'mobile fits');
+ await mkdir('build/screenshots',{recursive:true});await page.screenshot({path:'build/screenshots/native-firmware-mobile.png',fullPage:true});
+ await page.setViewportSize({width:1440,height:1100});await button('HOME').click();await page.waitForTimeout(100);
+ await page.screenshot({path:'build/screenshots/native-firmware-desktop.png',fullPage:true});
  await page.locator('#device-mode').click();await page.locator('#firmware-view').waitFor({state:'hidden'});
- assert.equal(await page.locator('#tabs').isVisible(),true);assert.deepEqual(errors,[]);
- console.log('Firmware view: shared parameters, tracks, engines, audio, pages, drums, export, mobile and device exit passed.');
-}catch(error){console.error('Editor status:',await page.locator('#status').textContent(),errors);throw error;}finally{await browser.close();}
+ await page.reload({waitUntil:'domcontentloaded'});await page.locator('#view-firmware').click();await page.locator('.native-screen').waitFor({state:'visible'});
+ const restored=await exportSession();assert.deepEqual(restored.tracks[0].step,recorded.tracks[0].step);assert.deepEqual(restored.native,recorded.native);
+ assert.deepEqual(restored.bank,banked.bank,'native user bank survives reload');
+ page.on('dialog',d=>d.accept());
+ const imported=structuredClone(restored);imported.tracks[0].p[1]=67;
+ await page.locator('#audio-file').setInputFiles({name:'session.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(imported))});
+ await page.waitForFunction(()=>document.querySelector('#groups input[aria-label=ATK]')?.value==='67');
+ await page.locator('#view-firmware').click();assert.equal((await exportSession()).tracks[0].p[1],67);
+ assert.deepEqual(errors,[]);console.log('Native mobile, session reload/import/export and mode switching passed');
+}catch(error){console.error('Editor status:',await page.locator('#status').textContent(),errors);await page.screenshot({path:'build/native-failure.png',fullPage:true});throw error;}finally{await browser.close();}

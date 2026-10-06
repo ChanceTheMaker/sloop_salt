@@ -31,7 +31,15 @@ export class BrowserSynth {
      this.gain=context.createGain();this.gain.gain.value=0.35;
      this.analyser=context.createAnalyser();this.analyser.fftSize=2048;
      this.node.connect(this.gain).connect(context.destination);this.gain.connect(this.analyser);
-     this.node.port.onmessage=({data})=>{if(data.type==='transport'){this.playing=data.playing;this.positions=data.positions;this.onTransport?.(data);}};
+     this.node.port.onmessage=({data})=>{
+       if(data.type==='transport'){this.playing=data.playing;this.positions=data.positions;this.onTransport?.(data);}
+       if(data.type==='native'){
+         const {status,...state}=data.state;this.nativeStatus=status;this.nativePixels=data.pixels;this.nativeProject=data.project;
+         if(this.virtual){Object.assign(this.virtual.state,state);const signature=JSON.stringify(state);
+           if(signature!==this.nativeSignature){this.nativeSignature=signature;this.scheduleSave();}}
+         this.onNative?.(data);this.nativePending?.get(data.id)?.(data);this.nativePending?.delete(data.id);
+       }
+     };
      this.node.onprocessorerror=()=>{this.gain.gain.value=0;this.onError?.(new Error(window.SloopI18n.t('audio.failed')));};
    }catch(error){await context.close();this.context=null;throw error;}
  }
@@ -52,20 +60,44 @@ export class BrowserSynth {
    this.sync(state);this.samples(state);return this.virtual;
  }
  sync(state) {
+    if(this.firmwareActive||this.firmwareChanging)return;
    const data={type:'state',sel:state.sel,solo:state.solo,g:state.g,tracks:state.tracks.map(t=>({engine:t.engine,p:t.p,step:t.step,dstep:t.dstep}))};
    const signature=JSON.stringify(data);if(signature===this.signature)return;
    this.signature=signature;this.node.port.postMessage(data);
  }
  samples(state) {state.smp.forEach((s,slot)=>this.node.port.postMessage({type:'sample',slot,bytes:s.flash}));}
  midi(bytes){this.node?.port.postMessage({type:'midi',bytes:Array.from(bytes)});}
+ panel(kind,id,value){if(this.firmwareActive)this.node?.port.postMessage({type:'panel',event:[kind,id,value]});}
+ releasePanel(){this.node?.port.postMessage({type:'releasePanel'});}
+ async firmware(on){
+   if(this.firmwareChanging)await this.firmwareChanging;
+   if(!!this.firmwareActive===on)return;
+   this.firmwareActive=on;this.nativePending??=new Map();const id=(this.nativeId||0)+1;this.nativeId=id;
+   const state=on?session.snapshot(this.virtual.state):null;if(state)delete state.smp;
+   this.firmwareChanging=new Promise((resolve,reject)=>{
+     const timer=setTimeout(()=>{this.nativePending.delete(id);reject(new Error('Firmware mode did not respond'));},5000);
+     this.nativePending.set(id,data=>{clearTimeout(timer);resolve(data);});
+     this.node.port.postMessage({type:'firmware',on,state,id});
+   });
+    try{await this.firmwareChanging;this.firmwareChanging=null;this.signature=null;if(!on)this.sync(this.virtual.state);await this.save();}
+   finally{this.firmwareChanging=null;}
+ }
  transport(op){this.node?.port.postMessage({type:'transport',op});}
  panic(){this.node?.port.postMessage({type:'panic'});}
  volume(value){this.gain?.gain.setTargetAtTime(Math.max(0,Math.min(1,value)),this.context.currentTime,0.015);}
  scheduleSave(){clearTimeout(this.saveTimer);this.saveTimer=setTimeout(()=>this.save(),300);}
- async save(){if(!this.virtual)return;clearTimeout(this.saveTimer);try{await session.save(session.snapshot(this.virtual.state));this.onStorage?.(true);}catch{this.onStorage?.(false);}}
- export(){return JSON.stringify(session.snapshot(this.virtual.state));}
- async import(text){const state=session.validate(JSON.parse(text));this.panic();Object.assign(this.virtual.state,state);this.sync(state);this.samples(state);await this.save();}
- async stop(){this.panic();await this.save();if(this.context?.state==='running')await this.context.suspend();}
+  async save(){if(!this.virtual)return;clearTimeout(this.saveTimer);try{await session.save(session.snapshot({...this.virtual.state,...this.nativeProject}));this.onStorage?.(true);}catch{this.onStorage?.(false);}}
+  async export(){
+    if(this.firmwareChanging)await this.firmwareChanging;
+    if(this.firmwareActive){
+      const id=++this.nativeId;
+      await new Promise((resolve,reject)=>{const timer=setTimeout(()=>{this.nativePending.delete(id);reject(new Error('Firmware snapshot timed out'));},5000);
+        this.nativePending.set(id,data=>{clearTimeout(timer);resolve(data);});this.node.port.postMessage({type:'nativeSnapshot',id});});
+    }
+    return JSON.stringify(session.snapshot({...this.virtual.state,...this.nativeProject}));
+  }
+  async import(text){const state=session.validate(JSON.parse(text));await this.firmware(false);this.panic();delete this.virtual.state.native;Object.assign(this.virtual.state,state);this.sync(state);this.samples(state);await this.save();}
+ async stop(){if(this.firmwareActive)await this.firmware(false);this.panic();await this.save();if(this.context?.state==='running')await this.context.suspend();}
  async close(){await this.stop();await this.context?.close();this.context=null;this.node=null;this.virtual=null;this.signature=null;}
  showScope(canvas) {
    cancelAnimationFrame(this.scopeFrame);const ctx=canvas.getContext('2d'),samples=new Float32Array(2048);

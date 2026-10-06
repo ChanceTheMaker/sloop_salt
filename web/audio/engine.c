@@ -3,6 +3,7 @@
  * Felucca browser port. DSP is compiled directly from this repository.
  * No USB, flash, display, updater or other hardware driver is linked. */
 #include <stdint.h>
+#define FELUCCA_ARRANGER 1
 #include "felucca_tables.h"
 #include "../../firmware/src/libc.c"
 static struct { volatile uint32_t notes, buttons; } fm1_in;
@@ -20,8 +21,10 @@ static uint8_t browser_samples[3][0x14000];
 #define MQ 256u
 static uint32_t midi_in_q[MQ], mi_r, mi_w;
 static void midi_out_event(uint32_t p) { (void)p; }
+#include "../../firmware/src/arranger.c"
 #include "../../firmware/src/seq.c"
 #define API __attribute__((visibility("default")))
+#include "firmware-ui.c"
 static int32_t output[CTL * 2];
 static uint64_t frames;
 static unsigned target;
@@ -34,6 +37,7 @@ API void synth_init(void) {
     song.master_q12=4096;
     memset(browser_samples,255,sizeof browser_samples);
     for(unsigned k=0;k<3;k++) smp_user_scan(k);
+    browser_ui_init();
 }
 API void synth_target(unsigned k) { if(k<NTRK) target=k; }
 API void synth_select(unsigned k) { if(k<NTRK) song.sel=k; }
@@ -66,7 +70,8 @@ API void synth_drum_step(unsigned i,unsigned on,unsigned lvl,unsigned rat) {
 }
 API void synth_transport(unsigned op) { if(op==2){transport_req=0;seq_stop();}else if(op==1)transport_req=1; }
 API void synth_panic(void) {
-    transport_req=0;seq_stop();panic_req=0;mi_r=mi_w;
+      transport_req=0;seq_stop();panic_req=0;mi_r=mi_w;
+      ft_on=ft_closed=0;ft_n=0;rec_wait=ci_on=rec_go=0;song.rec=0;srec=0;
     memset(midi_sel_on,0,sizeof midi_sel_on);
     for(unsigned k=0;k<NTRK;k++) {
         track_t *t=&trk[k];trk_all_off(t);t->nheld=0;t->arp_phys=0;t->arp_note=0;
@@ -78,7 +83,7 @@ API unsigned synth_playing(void) {return song.playing;}
 API unsigned synth_position(unsigned k) {return k<NTRK?trk[k].seq_idx:0;}
 API uint8_t *synth_sample_buffer(unsigned k) {return k<3?browser_samples[k]:0;}
 API void synth_sample_apply(unsigned k) {if(k<3){panic_req=15;smp_user_scan(k);}}
-API int32_t *synth_render(void) {fm1_ms=(uint32_t)(frames*1000/FS);mix_block(output,CTL);frames+=CTL;return output;}
+API int32_t *synth_render(void) {fm1_ms=(uint32_t)(frames*1000/FS);mix_block(output,CTL);for(unsigned i=1;i<CTL;i+=2)scope_buf[scope_w++&(SCOPE_N-1u)]=(int16_t)output[2*i];frames+=CTL;return output;}
 API unsigned engine_count(void) {return NENGINES;}
 API unsigned param_count(void) {return P_COUNT;}
 API unsigned global_count(void) {return G_COUNT;}

@@ -4570,7 +4570,7 @@ $("connect").addEventListener("click", () => {
 });
 function audioControls(enabled) {
   for (const id of ['audio-play','audio-stop','audio-export','audio-import']) $(id).disabled = !enabled;
-  if (!enabled) setEditorView(false);
+  if (!enabled) setEditorView(false).catch(report);
 }
 let firmwareView;
 async function setEditorView(on) {
@@ -4579,14 +4579,16 @@ async function setEditorView(on) {
   if(on && !firmwareView){
     const {mountFirmwareView}=await import('./firmware-view.js');
     firmwareView=mountFirmwareView($('firmware-view'),{
-      state:()=>dev&&browserMode?{sel:dev.sel,dump:dev.dump,pdesc:dev.pdesc,gdesc:dev.gdesc,
-        names:dev.names,engines:dev.info.engines,kitNames:dev.kitNames||dev.pdesc[50]?.names||[],
-        tracks:browserSynth.virtual.state.tracks,positions:browserSynth.positions||[],playing:browserSynth.playing,busy:!!busy}:null,
-      set:(scope,id,value)=>{if(!busy)userSet(scope,id,value,true);},
-      select:selectTrack,preset:choosePreset,format:fmtValue
+      panel:(kind,id,value)=>browserSynth.panel(kind,id,value),release:()=>browserSynth?.releasePanel(),
+      listen:callback=>{browserSynth.onNative=callback;}
     });
   }
   if(on && (!dev || !browserMode))return;
+  if(browserSynth?.context?.state==='running'){
+    const was=browserSynth.firmwareActive;
+    await browserSynth.firmware(on);
+    if(was&&!on&&dev&&browserMode){await load(dev);syncPlay();}
+  }
   document.body.dataset.editorView=on?'firmware':'skeuomorph';
   $('view-firmware').setAttribute('aria-pressed',String(on));
   $('browser-start').setAttribute('aria-pressed',String(browserMode&&!on));
@@ -4632,15 +4634,15 @@ $('audio-export').addEventListener('click', async () => {
   while(d&&d===dev&&browserMode&&(busy||!d.link.idle)&&performance.now()<deadline)await sleep(20);
   if(!d||d!==dev||!browserMode)return;
   if(busy||!d.link.idle){sayK('busy');return;}
-  download(`sloop-session-${today()}.json`, JSON.parse(browserSynth.export()));
+  try{download(`sloop-session-${today()}.json`, JSON.parse(await browserSynth.export()));}catch(error){report(error);}
 });
 $('audio-import').addEventListener('click', () => $('audio-file').click());
 $('audio-file').addEventListener('change', async e => {
   const file=e.target.files[0];e.target.value='';if(!file||!dev||!browserMode||busy)return;
   if(file.size>3000000){sayK('error',window.SloopI18n.t('audio.invalidSession'));return;}
   if(!confirm(window.SloopI18n.t('audio.replaceSession')))return;
-  busy++;audioControls(false);
-  try {window.SloopPlay.release();await browserSynth.import(await file.text());await load(dev);syncPlay();}
+  busy++;
+  try {await setEditorView(false);audioControls(false);window.SloopPlay.release();await browserSynth.import(await file.text());await load(dev);syncPlay();}
   catch(error){sayK('error',window.SloopI18n.t('audio.invalidSession'));console.error(error);}
   finally {busy--;audioControls(!!dev);}
 });

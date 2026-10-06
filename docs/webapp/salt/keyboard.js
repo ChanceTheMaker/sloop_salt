@@ -135,7 +135,8 @@ if(typeof document!=='undefined') (()=>{
   if(b)down('pointer:'+e.pointerId,b.dataset.note);else keyboard.release('pointer:'+e.pointerId);
  });
  for(const type of ['pointerup','pointercancel','lostpointercapture'])window.addEventListener(type,e=>{pointers.delete(e.pointerId);keyboard.release('pointer:'+e.pointerId);});
- window.addEventListener('keydown',e=>{
+  window.addEventListener('keydown',e=>{
+  if(document.body.dataset.editorView==='firmware')return;
   if(e.repeat||e.ctrlKey||e.metaKey||e.altKey||e.isComposing||document.querySelector('.play-keyboard.collapsed'))return;
   const b=e.target.closest?.('#play-keys button[data-note]');
   if(b&&['Space','Enter'].includes(e.code)){e.preventDefault();down('button:'+e.code,b.dataset.note);return;}

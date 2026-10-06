@@ -1,8 +1,8 @@
 # Sloop browser synth
 
 Choose **Browser Studio** or **Firmware**, or open `?browser=1` and press **Start audio**.
-No FM-1 or MIDI permission is needed. QWERTY, pointer and touch playing use the
-same keyboard as device mode. **FM-1** stops browser playback and returns to
+No FM-1 or MIDI permission is needed. Both browser views support QWERTY,
+pointer and touch. **FM-1** stops browser playback and returns to
 the device connection screen.
 
 The browser engine compiles this repository's SLOOP 2.3 DSP: nine synth engines,
@@ -30,7 +30,7 @@ reports that and session export remains available.
 
 ## Build and architecture
 
-Requires Python and Zig 0.13.0. Build without a firmware toolchain:
+Requires Python with Pillow and Zig 0.13.0. Build without a firmware toolchain:
 
 ```sh
 python tools/build_browser_audio.py --zig /path/to/zig
@@ -63,7 +63,10 @@ and LICENSING.md. Keep the corresponding source and build scripts with releases.
 ```sh
 node web/test_audio_engine.mjs
 node web/test_browser_session.mjs
+node web/test_native_firmware.mjs
 node web/test_browser_synth.mjs
+node web/test_firmware_view.mjs
+node web/test_play_modes.mjs
 ```
 
 The browser test uses the existing preview at `http://127.0.0.1:8769/webapp/editor/`
@@ -81,30 +84,46 @@ native preset parity, malformed import rejection and sample byte preservation.
 
 The tested browser is desktop Edge; mobile layouts are simulated. Real-device
 mobile performance, listening comparisons against an FM-1, and other browsers
-still need testing. Browser live-recording/arranger controls, external MIDI
-input, USB audio and hardware settings are not added by this port. Editing
-patterns and playing the four-track sequence are supported. No FM6 engine is
+still need testing. External MIDI input, USB audio and physical panel calibration
+require separate hardware integration. Browser Firmware mode includes the
+native musical controls, recording and arranger. No FM6 engine is
 present because it is not a SLOOP engine. AudioWorklet needs HTTPS or localhost;
 opening the HTML directly as a local file is insufficient.
 
 ## Browser views
 
 The three-state play-mode switch offers FM-1 (hardware), Firmware (browser
-audio with a compact device-inspired interface), and Browser Studio (the full
+audio with the native firmware interface), and Browser Studio (the full
 Skeuomorph editor). An anchored introduction explains these options once;
 dismissal is stored under `sloop.web.soundSourceTipDismissed`.
 
-Firmware has Device and Expanded layouts of the same controls. Four colored
-track rows display patterns and the running playhead; its pages use the native
-parameter IDs, descriptors, ranges and value formatting. Track/preset changes
-and edits go through the existing editor protocol adapter. Switching browser
-views keeps the same AudioContext, samples, project and autosaved session.
-The shared keyboard and transport remain available in both views.
+Firmware has Device and Expanded layouts of the same native panel: a live
+240×240 screen, seven encoders, fourteen function buttons and all 27 keys.
+`firmware-ui.c` provides browser display/input peripherals and compiles the
+original UI, layer, preset, project and arranger modules without changing them.
+The framebuffer, scope and key/button lights come from that native code.
 
-This is a browser interpretation of the firmware pages, not the firmware's
-framebuffer UI running in the browser. Hold-button layers, live recording and
-arranger controls still require a subsequent UI/input port. Step editing,
-sample management and projects are available in Browser Studio.
+Drag knobs vertically, focus them for arrows/wheel, or use their −/+ buttons.
+Tap functions for pages; hold FX, EDIT, ARP, SEQ, SCL, GLO or SAVE while playing
+keys or adjusting knobs. Hold a layer and tap HOME to lock it. EDIT + OCT−/OCT+
+undoes/redoes. The keyboard shows every QWERTY mapping; the lower Z–/ row covers
+the last ten notes. Focus loss releases all held controls.
 
-`node web/test_firmware_view.mjs` checks shared edits, track/sound selection,
-audible QWERTY input, page controls, layouts, export and hardware-mode exit.
+REC opens the free/tempo, length and note/count-in controls. In a free take,
+REC closes the loop and PLAY cancels it. Hold REC to clear a track. Hold SAVE
+and use white keys 1–4 to recall sections, 5–8 to store them (repeat to overwrite),
+13 for song playback, 14 for song recording, and 16 for the arranger. The song
+page knobs edit entry, section, bars and length. Hold HOME for settings.
+
+Native RAM project slots, user presets, song order and settings are autosaved
+with the browser session; “SAVED (RAM)” on the native screen still reaches
+browser storage. During song playback, saved sessions retain the original
+working loop. Export waits for queued panel edits. Switching to Browser Studio
+stops playback and refreshes all shared controls, presets and project slots.
+Use Browser Studio for sample upload. Firmware menus retain their native
+English labels; surrounding help is available in English and Japanese.
+
+Native tests cover layers, step ratchets, undo/redo, free/tempo recording,
+count-in, presets, sections, arranger playback and settings. Edge tests cover
+the live canvas, audible QWERTY input, recording, shared edits, focus release,
+mobile layout, session export/import/reload and the three-way mode switch.

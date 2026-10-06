@@ -89,7 +89,7 @@ def main(pkg, version, out):
     for asset in ("firmware-view.js", "firmware-view.css"):
         shutil.copy(HERE / asset, ed / asset)
     (ed / "audio").mkdir(exist_ok=True)
-    for asset in ("browser.js", "worklet.js", "session.js", "engine.wasm"):
+    for asset in ("browser.js", "worklet.js", "session.js", "native-state.js", "engine.wasm"):
         shutil.copy(HERE / "audio" / asset, ed / "audio" / asset)
     for f in ("fukiai.ttf", "FUKIAI-LICENSE.txt"):
         if (HERE / f).exists():

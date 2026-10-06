@@ -132,7 +132,7 @@
   "view.preset": "プリセット / キット",
   "view.pages": "ファームウェアのパラメータページ",
   "view.drums": "ドラム",
-  "view.help": "トラックとページを選び、4つのパラメータを編集します。下の鍵盤で演奏できます。ステップ、サンプル、プロジェクトはBrowser Studioで編集します。ボタン長押しレイヤーとリアルタイム録音は未対応です。",
+  "view.help": "実機と同じパネルで長押しレイヤー、ステップ編集、録音、ソングを操作できます。両ブラウザーモードでセッションを共有します。",
   "view.device": "デバイス",
   "view.expanded": "拡張",
   "view.layout": "Firmwareレイアウト",
@@ -142,5 +142,14 @@
   "audio.dismissTip": "音源のヒントを閉じる",
   "audio.tipFM1": "USBでFM-1を接続・編集します。音は機器から出ます。",
   "audio.tipFirmware": "機器風のページでブラウザー演奏。DeviceとExpandedのレイアウトを選べます。FM-1は不要です。",
-  "audio.tipStudio": "Skeuomorphエディターの全機能でブラウザー演奏・編集。Firmwareモードと同じセッションを共有します。"
+  "audio.tipStudio": "Skeuomorphエディターの全機能でブラウザー演奏・編集。Firmwareモードと同じセッションを共有します。",
+  "native.screen": "Sloopファームウェア画面",
+  "native.guide": "ファームウェアパネルの使い方",
+  "native.track": "トラック",
+  "native.recording": "録音中",
+  "native.armed": "録音待機",
+  "native.playing": "再生中",
+  "native.stopped": "停止",
+  "native.layer": "レイヤー",
+  "native.instructions": "ALGORITHMでトラック、PRESETSで音色、SELECTでテンポを選びます。ノブは上下ドラッグ、矢印キー、フォーカス中のホイール、− / +で操作できます。\n機能ボタンをタップするとページを開きます。FX、EDIT、ARP、SEQ、SCL、GLO、SAVEを押しながら鍵盤やノブを操作できます。押したままHOMEでレイヤーを固定し、HOMEまたは別の機能ボタンで解除します。\nFX：パンチイン。EDIT：消去、OCT−/OCT+で元に戻す／やり直し。ARP：ロール。SEQ：白鍵でステップ、ステップを押しながらノブで音程・強弱・ラチェット。SCL：調とコード。GLO：ミュート・ソロ・音量。\nRECで録音待機。画面のノブでFREE/TEMPO、長さ、NOTE/COUNTを設定します。演奏して録音し、RECでフリーテイクを確定（PLAYは取消）。REC長押しでトラック消去、EDIT＋OCT−で復元します。\nSAVEでソング画面。SAVEを押しながら白鍵1～4でセクションA～Dを呼び出し、5～8で保存（上書きは2回）、13でソング再生、14でソング録音、16でソング画面を開きます。\nHOME長押しで設定。PRESETSで移動、KNOB 1で変更、OCT+で決定、OCT−で戻ります。ブラウザーにプロジェクト・音色・ソング・設定を自動保存します。USB音声入力と機器校正には実機が必要です。"
 }

@@ -132,7 +132,7 @@
   "view.preset": "Preset / kit",
   "view.pages": "Firmware parameter pages",
   "view.drums": "DRUMS",
-  "view.help": "Select a track, then a page to edit its four controls. Play with the keyboard below. Browser Studio is the full Skeuomorph editor for steps, samples and projects. Hold-button layers and live recording are not yet included.",
+  "view.help": "Play the native firmware panel: hold-button layers, step editing, recording and the song arranger. Both browser views share your session.",
   "view.device": "Device",
   "view.expanded": "Expanded",
   "view.layout": "Firmware layout",
@@ -142,5 +142,14 @@
   "audio.dismissTip": "Dismiss sound-source tip",
   "audio.tipFM1": "Connect and edit your FM-1 over USB. Sound comes from the hardware.",
   "audio.tipFirmware": "Play in your browser using firmware-style pages, with Device and Expanded layouts. No FM-1 needed.",
-  "audio.tipStudio": "Play and edit in your browser with the full Skeuomorph editor. Shares the same session as Firmware mode."
+  "audio.tipStudio": "Play and edit in your browser with the full Skeuomorph editor. Shares the same session as Firmware mode.",
+  "native.screen": "Live Sloop firmware display",
+  "native.guide": "How to use the firmware panel",
+  "native.track": "Track",
+  "native.recording": "Recording",
+  "native.armed": "Record armed",
+  "native.playing": "Playing",
+  "native.stopped": "Stopped",
+  "native.layer": "Layer",
+  "native.instructions": "ALGORITHM selects the track; PRESETS selects its sound; SELECT sets tempo. Drag knobs up/down, focus and use arrows or wheel, or use − / +.\nTap a function button for its pages. Hold FX, EDIT, ARP, SEQ, SCL, GLO or SAVE while playing a key or turning a knob. Hold a layer button and tap HOME to lock it; HOME or another layer releases the lock.\nFX: punch-in effects. EDIT: erase; OCT−/OCT+ undo/redo. ARP: rolls. SEQ: white keys toggle steps; hold a step and turn knobs to edit its note, level and ratchet. SCL: key and chords. GLO: mute, solo and track levels.\nREC arms recording; the screen knobs choose free/tempo, length and note/count-in start. Play notes to record; REC closes a free take; PLAY cancels it. Hold REC to clear the selected track; EDIT + OCT− restores it.\nSAVE opens the song arranger. Hold SAVE: white keys 1–4 recall sections A–D, 5–8 store them (repeat to overwrite), 13 toggles song playback, 14 arms song recording, 16 opens the song page.\nHold HOME for settings. In menus PRESETS moves, KNOB 1 changes values, OCT+ confirms and OCT− returns. Browser sessions autosave projects, presets, song order and settings. USB audio input and hardware calibration require a physical FM-1."
 }

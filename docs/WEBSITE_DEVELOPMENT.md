@@ -116,3 +116,27 @@ use a separate validated format and IndexedDB namespace.
 
 Build and validation commands, source attribution, supported browser features
 and remaining hardware/mobile checks are recorded in `web/audio/README.md`.
+
+## Native Firmware mode
+
+`feat/native-firmware-mode` follows `feat/firmware-view` in the draft PR stack.
+It replaces the first parameter-page approximation with the repository's native
+framebuffer renderer, panel/layer input, recording, preset/project and arranger
+modules compiled into the browser WASM. Only browser adapters and website files
+change; `firmware/`, the public homepage, hardware protocol and packaged firmware
+remain unchanged.
+
+Native input runs on the audio thread with ordered events. Snapshot/mode barriers
+wait behind pending edits; native state bridges to the existing browser session.
+Song playback exports/autosaves the original working loop rather than replacing
+it with the currently playing section. Browser Studio refreshes its descriptors,
+bank and project slots after leaving Firmware mode. Hardware calibration is
+handled explicitly by the adapter because the physical routine waits on GPIO.
+
+Validation: native tests cover layers/lock release, drum step velocity and
+ratchets, undo/redo, free and tempo recording, count-in, section/song playback,
+SONG REC, user presets, settings and session restoration. Edge tests verify the
+real WASM/worklet, framebuffer, QWERTY audio, recording, bank persistence, shared
+edits, import/export/reload, mobile layout and mode switching. Static request
+routing in tests avoids intermittent localhost resets while executing the exact
+built assets. Real mobile audio and hardware listening parity remain unverified.

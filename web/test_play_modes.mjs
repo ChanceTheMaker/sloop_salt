@@ -1,9 +1,18 @@
 // SPDX-License-Identifier: GPL-3.0-only
 import assert from 'node:assert/strict';
 import {pathToFileURL} from 'node:url';
+import {resolve,sep} from 'node:path';
 const {chromium}=await import(pathToFileURL(process.env.PLAYWRIGHT_MODULE).href);
 const browser=await chromium.launch({headless:true,channel:'msedge'});
 const page=await browser.newPage({viewport:{width:390,height:900}});
+if(process.env.STUDIO_STATIC_DIR){
+ const root=resolve(process.env.STUDIO_STATIC_DIR);
+ await page.route('http://127.0.0.1:8769/**',async route=>{
+  const pathname=decodeURIComponent(new URL(route.request().url()).pathname),path=resolve(root,'.'+pathname+(pathname.endsWith('/')?'index.html':''));
+  if(!path.startsWith(root+sep))return route.fulfill({status:403,body:''});
+  try{await route.fulfill({path});}catch{await route.fulfill({status:404,body:''});}
+ });
+}
 const errors=[];page.on('pageerror',e=>errors.push(e.message));
 try{
  await page.goto('http://127.0.0.1:8769/webapp/editor/',{waitUntil:'domcontentloaded',timeout:60000});
