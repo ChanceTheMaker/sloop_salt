@@ -176,12 +176,18 @@
   #sysinfo th { padding-right: 16px; }
   [hidden] { display: none !important; }
 </style>
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="skin.css">
+<link rel="stylesheet" href="interface.css">
+<link rel="stylesheet" href="sloop.css">
+<script src="locales.js"></script><script src="i18n.js"></script><script src="skin.js"></script>
 </head>
-<body>
+<body class="editor-page">
 <main>
-  <button class="lang" id="lang"></button>
-  <h1>SLOOP Editor</h1>
-  <p class="dim"><a href="../installer/" style="color:inherit" data-t="installer"></a></p>
+  <header class="brand-row masthead" id="page-top">
+    <div><span class="eyebrow">FM-1 / LIVE GROOVEBOX</span><h1><a class="brand-home" href="../../"><span class="salt-mark" aria-hidden="true"></span><span class="brand-title">Sloop [Salt]</span></a></h1><p class="tagline">THREE SYNTHS · ONE DRUM MACHINE · YOUR MUSIC</p></div>
+    <nav class="site-nav" aria-label="Website"><a href="../installer/">Install</a><a href="https://github.com/isod89/sloop-fm1/blob/main/SLOOP.md">Manual</a><a href="./" aria-current="page">Studio</a><a href="../installer/#themes">Themes</a></nav><div class="brand-links"><button class="lang" id="lang"></button></div>
+  </header><div class="appearance" data-appearance></div>
   <!-- always visible: connection, version, sync mode, the tabs and (Sound / Sequencer / Tracks) the track selector -->
   <header class="top">
     <div class="bar">
@@ -207,7 +213,7 @@
   <section class="panel" id="p-sound" data-tab="sound" data-dev hidden>
     <div class="browser" id="browser">
       <label><span data-t="engine"></span><br><select id="engine"></select></label>
-      <label><span data-t="presets"></span><br><select id="preset" size="8"></select></label>
+      <label><span data-t="presets"></span><br><select id="preset"></select></label>
       <div>
         <p class="bar"><button id="init" data-t="initSound"></button>
           <button id="factlib" data-t="factoryToLib" data-ic="symbol_folder"></button></p>
@@ -2204,14 +2210,14 @@ const TEXT = {
     smpSlots: "Sample slots", userBank: "User presets", none: "none",
   },
 };
-let lang = (navigator.language || "en").toLowerCase().startsWith("ja") ? "ja" : "en";
+let lang = window.SloopI18n.language;
 const t = (k) => TEXT[lang][k] ?? k;
 let lastKey = null, lastArg = "";
 function sayK(k, arg = "") { lastKey = k; lastArg = arg; $("status").textContent = t(k) + arg; }
 function applyLang() {
   document.documentElement.lang = lang;
   document.querySelectorAll("[data-t]").forEach((e) => setLabel(e, t(e.dataset.t)));
-  $("lang").textContent = t("other");
+
   setLabel($("connect"), t(dev ? "disconnect" : "connect"));
   if (lastKey) $("status").textContent = t(lastKey) + lastArg;
   $("libq").placeholder = t("libSearch");
@@ -2221,12 +2227,12 @@ function applyLang() {
   renderPanels();
   if (dev) { renderSlots(); renderStepHead(); renderSamples(); renderTrackbar(); renderMixer(); renderSysinfo(); }
 }
-$("lang").addEventListener("click", () => { lang = lang === "ja" ? "en" : "ja"; applyLang(); });
+window.SloopI18n.onChange(value => { lang = value; applyLang(); });
 
 /* ---------------------------------------------------------------- tabs --- */
 /* one panel at a time; the last one is remembered (localStorage) and in the URL hash (#sound ...) */
 const TABS = ["sound", "sequencer", "tracks", "library", "samples", "projects", "settings"];
-const TAB_KEY = "felucca-editor-tab";
+const TAB_KEY = "sloop-editor-tab";
 const TRACK_TABS = new Set(["sound", "sequencer", "tracks"]);
 let tab = (() => {
   const h = location.hash.slice(1);
@@ -2573,7 +2579,7 @@ function buildGroups() {
   const { info } = dev;
   if (info.pcount === EXPECT.pcount && info.gcount === EXPECT.gcount && info.pe0 === EXPECT.pe0) {
     for (const g of LAYOUT(info.pe0)) {
-      const div = el("div", { class: "group" }, el("h2", { ic: HEAD_IC[g.t], text: g.engine ? `EDIT ${info.engines[dev.dump.engine] || ""}` : g.t }));
+      const div = el("div", { class: "group control-bank" }, el("h2", { ic: HEAD_IC[g.t], text: g.engine ? `EDIT ${info.engines[dev.dump.engine] || ""}` : g.t }));
       for (const [title, s, ids] of g.pages) {
         const rows = ids.map((id) => paramRow(s, id)).filter(Boolean);
         if (!rows.length) continue;
@@ -2585,15 +2591,19 @@ function buildGroups() {
     }
   } else {
     /* unknown firmware layout: everything in id order */
-    const a = el("div", { class: "group" }, el("h2", { ic: HEAD_IC.INSTRUMENT, text: "INSTRUMENT" }), el("p", { class: "dim", text: t("layout") }));
-    const b = el("div", { class: "group" }, el("h2", { ic: HEAD_IC.EDIT, text: "EDIT" }));
-    const c = el("div", { class: "group" }, el("h2", { ic: HEAD_IC.GLOBAL, text: "GLOBAL" }));
+    const a = el("div", { class: "group control-bank" }, el("h2", { ic: HEAD_IC.INSTRUMENT, text: "INSTRUMENT" }), el("p", { class: "dim", text: t("layout") }));
+    const b = el("div", { class: "group control-bank" }, el("h2", { ic: HEAD_IC.EDIT, text: "EDIT" }));
+    const c = el("div", { class: "group control-bank" }, el("h2", { ic: HEAD_IC.GLOBAL, text: "GLOBAL" }));
     for (let i = 0; i < info.pcount; i++) { const r = paramRow(0, i); if (r) (i >= info.pe0 ? b : a).append(r); }
     for (let i = 0; i < info.gcount; i++) { const r = paramRow(1, i); if (r) c.append(r); }
     groups.groups.push(a, b);
     groups.setgroups.push(c);
   }
-  for (const [id, divs] of Object.entries(groups)) $(id).replaceChildren(...divs);
+  for (const [id, divs] of Object.entries(groups)) {
+    divs.forEach((div,i) => { div.dataset.cardKey = `${id}:${dev.dump.engine}:${i}`; });
+    $(id).replaceChildren(...divs);
+    window.SloopSkin.decorate($(id), `engine-${dev.dump.engine}`);
+  }
 }
 
 function paramRow(s, id) {
@@ -2639,8 +2649,9 @@ function paramRow(s, id) {
     });
   }
   input.title = d.label;
+  input.setAttribute("aria-label", d.label);
   const out = el("span", { class: "v" });
-  const row = el("div", { class: "row" }, el("span", { text: d.label }), input, out);
+  const row = el("div", { class: "row" }, el("span", { text: d.label }), window.SloopSkin.enhance(input), out);
   ctl.set(k, { input, out, desc: d, scope: s, id, row });
   showValue(k, s ? dev.dump.g[id] : dev.dump.p[id], true);
   return row;
@@ -2652,6 +2663,7 @@ function showValue(k, v, force) {
   const [txt, unit] = fmtValue(c.desc, v);
   c.out.textContent = unit ? `${txt} ${unit}` : txt;
   if (force || !touched(k)) c.input.value = String(v);
+  window.SloopSkin.sync(c.input);
 }
 /* the user is working on this control: polling and pushes must not move it */
 function touched(k) {
@@ -3962,7 +3974,7 @@ const store = (() => {
   let dbp = null;
   const open = () => dbp || (dbp = new Promise((res) => {
     try {
-      const r = indexedDB.open("felucca-editor", 1);
+      const r = indexedDB.open("sloop-editor", 1);
       r.onupgradeneeded = () => { r.result.createObjectStore("patches", { keyPath: "id" }); r.result.createObjectStore("meta"); };
       r.onsuccess = () => res(r.result);
       r.onerror = r.onblocked = () => res(null);

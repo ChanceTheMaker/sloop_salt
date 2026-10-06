@@ -78,6 +78,10 @@ def main(pkg, version, out):
     for f in ("fukiai.ttf", "FUKIAI-LICENSE.txt"):
         if (HERE / f).exists():
             shutil.copy(HERE / f, ed / f)
+    for dest in (ed, inst):
+        for asset in ("skin.css", "skin.js", "interface.css", "sloop.css", "fonts.css", "i18n.js", "locales.js", "salt-shaker.png"):
+            shutil.copy(HERE / asset, dest / asset)
+        shutil.copytree(HERE / "fonts", dest / "fonts", dirs_exist_ok=True)
     (out / "index.html").write_text(
         '<!doctype html><meta charset="utf-8"><title>SLOOP</title>'
         '<meta http-equiv="refresh" content="0; url=webapp/installer/">'
