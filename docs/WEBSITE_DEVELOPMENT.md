@@ -204,7 +204,7 @@ preferences, including menu changes, export/import and reload. The help icon
 alone is borderless. Palette browser checks cover every choice and persistence.
 
 GitHub Pages publication (authorized 2026-10-06):
-`https://chancethemaker.github.io/sloop-fm1/`, with Studio at
+`https://chancethemaker.github.io/sloop_salt/`, with Studio at
 `webapp/editor/`. Like the owner's Felucca site, the deployment uses a dedicated
 `gh-pages` branch with static files at its root. Publish the committed `docs/`
 site, excluding this development document, together with LICENSE and a source
