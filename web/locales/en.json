@@ -4,8 +4,8 @@
   "site.octave_up": "Octave up",
   "site.octx": "Oct+",
   "ui.language": "Language",
-  "ui.installerTitle": "Sloop [Salt] installer",
-  "ui.editorTitle": "Sloop [Salt] Studio",
+  "ui.installerTitle": "Sloop [salt] installer",
+  "ui.editorTitle": "Sloop [salt] Studio",
   "ui.websiteSettings": "Website settings",
   "ui.websiteTheme": "Website theme",
   "ui.soundControls": "Sound controls",
@@ -82,5 +82,15 @@
   "landing.chopTitle": "Find a new rhythm",
   "landing.chop": "CHOP recordings, choose your slices and send them to your FM-1.",
   "landing.saveTitle": "Keep your work close",
-  "landing.save": "A local sound library, device projects, and full backup and restore."
+  "landing.save": "A local sound library, device projects, and full backup and restore.",
+  "nav.website": "Website",
+  "nav.install": "Install",
+  "nav.manual": "Manual",
+  "nav.studio": "Studio",
+  "nav.themes": "Themes",
+  "nav.features": "Features",
+  "brand.editorKicker": "FM-1 / LIVE GROOVEBOX",
+  "brand.installerKicker": "FM-1 / CUSTOM FIRMWARE",
+  "brand.tagline": "THREE SYNTHS · ONE DRUM MACHINE · YOUR MUSIC",
+  "play.navigation": "Piano keys: use Left/Right to move, Home/End for the first/last key, and hold Space or Enter to play. Tab leaves the piano."
 }
