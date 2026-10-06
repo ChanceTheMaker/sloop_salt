@@ -9,7 +9,7 @@ const page=await browser.newPage({viewport:{width:1440,height:1000}});
 const errors=[];page.on('pageerror',e=>errors.push(e.message));
 await mkdir('build/screenshots',{recursive:true});
 try {
- await page.goto((process.env.STUDIO_URL || 'http://127.0.0.1:8769/webapp/editor/')+'?mock=1');
+ await page.goto((process.env.STUDIO_URL || 'http://127.0.0.1:8769/webapp/editor/')+'?mock=1',{waitUntil:'domcontentloaded',timeout:60000});
  await page.locator('#connect').click();
  await page.locator('#groups .group').first().waitFor({timeout:30000});
  await page.waitForFunction(()=>!document.getElementById('connect').disabled);
