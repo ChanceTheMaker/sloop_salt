@@ -53,8 +53,11 @@ try{
  await page.locator('.native-menu>summary').click();
  const key=page.locator('#play-keys button').first(),second=page.locator('#play-keys button:not(.black)').nth(1);
  const firstBox=await key.boundingBox(),secondBox=await second.boundingBox();
+ const finish=element=>{const s=getComputedStyle(element);return [s.background,s.color,s.boxShadow,s.borderWidth];};
+ const idleFinish=await key.evaluate(finish);
  await page.mouse.move(firstBox.x+firstBox.width/2,firstBox.y+firstBox.height-15);await page.mouse.down();
  assert.equal(await key.getAttribute('aria-pressed'),'true');
+ assert.deepEqual(await key.evaluate(finish),idleFinish,'pressed capsule body stays unlit');
  assert.equal(await key.evaluate(e=>getComputedStyle(e,'::before').backgroundColor),'rgb(226, 255, 235)');
  await page.screenshot({path:'build/screenshots/fm1-touch-desktop.png'});
  await page.mouse.move(secondBox.x+secondBox.width/2,secondBox.y+secondBox.height-15);

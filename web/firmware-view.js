@@ -35,7 +35,7 @@ export function mountFirmwareView(host,api){
   button.addEventListener('focusout',()=>{release('button:Space');release('button:Enter');});
   button.addEventListener('click',e=>{if(e.detail===0){const owner='assistive:'+kind+':'+id;press(owner,kind,id);setTimeout(()=>release(owner),50);}});
  }
- buttons.forEach((name,id)=>{const b=make('button',{type:'button'},name);wire(b,0,id);(id<12?panel:octaves).append(b);});
+ buttons.forEach((name,id)=>{const b=make('button',{type:'button'},name);if(name==='PLAY'){b.textContent='PLAY\nSTOP';b.style.whiteSpace='pre-line';b.setAttribute('aria-label','PLAY');}wire(b,0,id);(id<12?panel:octaves).append(b);});
  ['MASTER','SELECT','ALGORITHM','PRESETS','KNOB 1','KNOB 2','KNOB 3','KNOB 4'].forEach((name,index)=>{
   const id=index-1;
   const wrap=make('div',{className:'native-encoder'}),label=make('span',{},name),dial=make('button',{type:'button',className:'native-dial'});
