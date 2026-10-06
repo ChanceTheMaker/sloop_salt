@@ -2,10 +2,23 @@
 import assert from 'node:assert/strict';
 import {pathToFileURL} from 'node:url';
 import {mkdir,readFile} from 'node:fs/promises';
+import {resolve,sep} from 'node:path';
 const {chromium}=await import(process.env.PLAYWRIGHT_MODULE?pathToFileURL(process.env.PLAYWRIGHT_MODULE).href:'playwright');
 const browser=await chromium.launch({headless:true,channel:process.env.BROWSER_CHANNEL||'msedge'});
 const page=await browser.newPage({viewport:{width:1440,height:1000}});
+// Optional static transport for environments that reset localhost connections.
+// This still executes the built editor, native WASM and worklet in real Edge.
+if(process.env.STUDIO_STATIC_DIR){
+ const root=resolve(process.env.STUDIO_STATIC_DIR);
+ await page.route('http://127.0.0.1:8769/**',async route=>{
+  const pathname=decodeURIComponent(new URL(route.request().url()).pathname);
+  const path=resolve(root,'.'+pathname+(pathname.endsWith('/')?'index.html':''));
+  if(!path.startsWith(root+sep))return route.fulfill({status:403,body:''});
+  try{await route.fulfill({path});}catch{await route.fulfill({status:404,body:''});}
+ });
+}
 const errors=[];page.on('pageerror',e=>errors.push(e.message));
+page.on('requestfailed',r=>console.error('Request failed:',r.url(),r.failure()));
 page.setDefaultTimeout(20000);
 await page.addInitScript(()=>{
  window.midiRequests=0;navigator.requestMIDIAccess=async()=>{midiRequests++;throw new Error('Hardware MIDI must not be requested');};
@@ -29,8 +42,10 @@ try {
  await page.keyboard.press('s');assert.ok(await page.locator('#play-keys [aria-pressed=true]').count()>0);
  await page.locator('#audio-stop').click();assert.equal(await page.locator('#play-keys [aria-pressed=true]').count(),0);
  await page.locator('#trackbtns button').nth(3).click();await page.locator('#trackbtns button').nth(3).evaluate(e=>e.blur());
+ await page.waitForFunction(()=>document.querySelectorAll('#trackbtns button')[3].getAttribute('aria-pressed')==='true'&&document.getElementById('status').textContent==='Browser synth ready');
  await page.keyboard.press('a');await waitSignal();
  await page.locator('#trackbtns button').nth(0).click();
+ await page.waitForFunction(()=>document.querySelectorAll('#trackbtns button')[0].getAttribute('aria-pressed')==='true'&&document.getElementById('status').textContent==='Browser synth ready');
  // Upload a real WAV through the existing sample editor, then play USR1.
  page.on('dialog',d=>d.accept());
  const wav=Buffer.alloc(44+11025*2);
@@ -43,8 +58,10 @@ try {
  await page.waitForFunction(()=>document.getElementById('status').textContent.includes('Uploaded USR'));
  await page.locator('#tabs [data-tab="sound"]').click();
  await page.locator('#engine').selectOption('4');
+ await page.waitForFunction(()=>document.getElementById('status').textContent==='Browser synth ready'&&document.getElementById('engine').value==='4');
  await page.locator('#groups select[aria-label="SET"]').selectOption('8');
- await page.locator('#groups select[aria-label="SET"]').evaluate(e=>e.blur());
+ // selectOption does not move focus: leave the Sound tab before QWERTY play.
+ await page.evaluate(()=>document.activeElement?.blur());
  await page.keyboard.down('a');await waitSignal();await page.keyboard.up('a');
  const exportPromise=page.waitForEvent('download');await page.locator('#audio-export').click();
  const exported=await exportPromise;const session=JSON.parse(await readFile(await exported.path(),'utf8'));

@@ -31,7 +31,7 @@ export class BrowserSynth {
      this.gain=context.createGain();this.gain.gain.value=0.35;
      this.analyser=context.createAnalyser();this.analyser.fftSize=2048;
      this.node.connect(this.gain).connect(context.destination);this.gain.connect(this.analyser);
-     this.node.port.onmessage=({data})=>{if(data.type==='transport'){this.playing=data.playing;this.onTransport?.(data);}};
+     this.node.port.onmessage=({data})=>{if(data.type==='transport'){this.playing=data.playing;this.positions=data.positions;this.onTransport?.(data);}};
      this.node.onprocessorerror=()=>{this.gain.gain.value=0;this.onError?.(new Error(window.SloopI18n.t('audio.failed')));};
    }catch(error){await context.close();this.context=null;throw error;}
  }

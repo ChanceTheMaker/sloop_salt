@@ -180,6 +180,7 @@
 <link rel="stylesheet" href="skin.css">
 <link rel="stylesheet" href="interface.css">
 <link rel="stylesheet" href="sloop.css">
+<link rel="stylesheet" href="firmware-view.css">
 <script src="locales.js"></script><script src="i18n.js"></script><script src="skin.js"></script>
 </head>
 <body class="editor-page">
@@ -196,8 +197,11 @@
   <header class="top">
     <div class="bar">
       <button id="connect" data-t="connect" data-ic="port_usb_c"></button>
-      <button id="browser-start" type="button" data-i18n="audio.start">Play in browser</button>
-      <button id="device-mode" type="button" data-i18n="audio.device" hidden>Use FM-1</button>
+      <div id="audio-mode" class="audio-mode" role="group" aria-label="Sound source" data-i18n-aria-label="audio.source">
+        <button id="device-mode" type="button" aria-pressed="true" data-i18n-title="audio.tipFM1" title="Connect and edit your FM-1 over USB. Sound comes from the hardware.">FM-1</button>
+        <button id="view-firmware" type="button" aria-pressed="false" data-i18n="view.firmware" data-i18n-title="audio.tipFirmware" title="Play in your browser using firmware-style pages, with Device and Expanded layouts. No FM-1 needed.">Firmware</button>
+        <button id="browser-start" type="button" aria-pressed="false" data-i18n="audio.browser" data-i18n-title="audio.tipStudio" title="Play and edit in your browser with the full Skeuomorph editor. Shares the same session as Firmware mode.">Browser Studio</button>
+      </div>
       <span id="version" class="dim"></span>
       <span id="live" class="dim"></span>
       <span id="mock" class="dim" hidden data-t="mock"></span>
@@ -227,6 +231,7 @@
     </nav>
     <div class="trackbar" id="trackbar" hidden><span class="dim" data-t="track"></span><span class="seg" id="trackbtns" role="group"></span></div>
   </header>
+  <section id="firmware-view" hidden aria-label="Firmware view"></section>
   <p class="hint" id="hint" hidden></p>
 
   <section class="panel" id="p-sound" data-tab="sound" data-dev hidden>
@@ -4565,9 +4570,32 @@ $("connect").addEventListener("click", () => {
 });
 function audioControls(enabled) {
   for (const id of ['audio-play','audio-stop','audio-export','audio-import']) $(id).disabled = !enabled;
+  if (!enabled) setEditorView(false);
+}
+let firmwareView;
+async function setEditorView(on) {
+  if(on && (!dev || !browserMode || busy))return;
+  window.SloopPlay.release();
+  if(on && !firmwareView){
+    const {mountFirmwareView}=await import('./firmware-view.js');
+    firmwareView=mountFirmwareView($('firmware-view'),{
+      state:()=>dev&&browserMode?{sel:dev.sel,dump:dev.dump,pdesc:dev.pdesc,gdesc:dev.gdesc,
+        names:dev.names,engines:dev.info.engines,kitNames:dev.kitNames||dev.pdesc[50]?.names||[],
+        tracks:browserSynth.virtual.state.tracks,positions:browserSynth.positions||[],playing:browserSynth.playing,busy:!!busy}:null,
+      set:(scope,id,value)=>{if(!busy)userSet(scope,id,value,true);},
+      select:selectTrack,preset:choosePreset,format:fmtValue
+    });
+  }
+  if(on && (!dev || !browserMode))return;
+  document.body.dataset.editorView=on?'firmware':'skeuomorph';
+  $('view-firmware').setAttribute('aria-pressed',String(on));
+  $('browser-start').setAttribute('aria-pressed',String(browserMode&&!on));
+  $('device-mode').setAttribute('aria-pressed',String(!browserMode));
+  firmwareView?.show(on);
 }
 async function chooseAudioMode(on) {
   if (busy || $('connect').disabled) return;
+  if (browserMode === on) return;
   wantConnected = false;
   if (dev) disconnect();
   if (browserSynth) await browserSynth.stop();
@@ -4575,17 +4603,37 @@ async function chooseAudioMode(on) {
   access = null; mock?.stop(); mock = null;
   browserMode = on;
   $('browser-audio').hidden = !on;
-  $('device-mode').hidden = !on;
-  $('browser-start').hidden = on;
+  $('device-mode').setAttribute('aria-pressed',String(!on));
+  $('browser-start').setAttribute('aria-pressed',String(on));
   $('mock').hidden = on || !MOCK;
   audioControls(false);applyLang();
 }
-$('browser-start').addEventListener('click', async () => { await chooseAudioMode(true); if (browserMode) await connect(); });
-$('device-mode').addEventListener('click', () => chooseAudioMode(false).catch(report));
+let switchingSource=false;
+async function switchSource(source){
+ if(switchingSource||busy||$('connect').disabled)return;
+ switchingSource=true;
+ for(const button of $('audio-mode').children)button.disabled=true;
+ try{
+  await chooseAudioMode(source!=='fm1');
+  if(source!=='fm1'&&browserMode&&!dev)await connect();
+  await setEditorView(source==='firmware');
+ }catch(error){report(error);}
+ finally{switchingSource=false;for(const button of $('audio-mode').children)button.disabled=false;}
+}
+$('browser-start').addEventListener('click',()=>switchSource('studio'));
+$('view-firmware').addEventListener('click',()=>switchSource('firmware'));
+$('device-mode').addEventListener('click',()=>switchSource('fm1'));
 $('audio-play').addEventListener('click', async () => { try {await browserSynth.start();browserSynth.transport(1);}catch(e){report(e);} });
 $('audio-stop').addEventListener('click', () => { window.SloopPlay.release();browserSynth.panic(); });
 $('audio-volume').addEventListener('input', () => browserSynth?.volume(+$('audio-volume').value/100));
-$('audio-export').addEventListener('click', () => download(`sloop-session-${today()}.json`, JSON.parse(browserSynth.export())));
+$('audio-export').addEventListener('click', async () => {
+  const d=dev,deadline=performance.now()+10000;
+  // Include the last queued edit when Export is clicked immediately after it.
+  while(d&&d===dev&&browserMode&&(busy||!d.link.idle)&&performance.now()<deadline)await sleep(20);
+  if(!d||d!==dev||!browserMode)return;
+  if(busy||!d.link.idle){sayK('busy');return;}
+  download(`sloop-session-${today()}.json`, JSON.parse(browserSynth.export()));
+});
 $('audio-import').addEventListener('click', () => $('audio-file').click());
 $('audio-file').addEventListener('change', async e => {
   const file=e.target.files[0];e.target.value='';if(!file||!dev||!browserMode||busy)return;
@@ -4598,6 +4646,32 @@ $('audio-file').addEventListener('change', async e => {
 });
 window.addEventListener('pagehide', () => { if(browserMode)browserSynth?.stop().catch(console.error); });
 document.addEventListener('visibilitychange', () => { if(document.hidden && browserMode){browserSynth?.panic();browserSynth?.save();} });
+// Adapted from Chance Roth's Felucca Salt sound-source introduction (GPL-3.0).
+const modeTip=document.createElement('aside');
+modeTip.className='mode-tip';modeTip.hidden=true;modeTip.setAttribute('role','status');
+const tipCopy=document.createElement('p'),tipClose=document.createElement('button');
+tipClose.type='button';tipClose.textContent='×';modeTip.append(tipCopy,tipClose);document.body.append(modeTip);
+const tipKey='sloop.web.soundSourceTipDismissed';let tipDismissed=false;
+try {tipDismissed=localStorage.getItem(tipKey)==='1';} catch (_) {}
+function positionModeTip(){
+ if(modeTip.hidden)return;
+ const anchor=$('audio-mode').getBoundingClientRect(),width=Math.min(330,innerWidth-24);
+ modeTip.style.width=width+'px';
+ modeTip.style.visibility=anchor.bottom<=0||anchor.top>=innerHeight?'hidden':'visible';
+ const beside=anchor.right+14+width<=innerWidth-12;
+ modeTip.classList.toggle('below',!beside);
+ const left=beside?anchor.right+14:Math.max(12,Math.min(anchor.left,innerWidth-width-12));
+ modeTip.style.left=left+'px';
+ modeTip.style.top=Math.max(12,Math.min(innerHeight-modeTip.offsetHeight-12,beside?anchor.top+anchor.height/2-modeTip.offsetHeight/2:anchor.bottom+14))+'px';
+ modeTip.style.setProperty('--tip-arrow-x',Math.max(18,Math.min(width-18,anchor.left+anchor.width/2-left))+'px');
+}
+function renderModeTip(){tipCopy.textContent=window.SloopI18n.t('audio.sourceTip');tipClose.setAttribute('aria-label',window.SloopI18n.t('audio.dismissTip'));positionModeTip();}
+function dismissModeTip(){tipDismissed=true;modeTip.hidden=true;try{localStorage.setItem(tipKey,'1');}catch(_){} }
+tipClose.onclick=dismissModeTip;$('audio-mode').addEventListener('click',dismissModeTip);
+document.addEventListener('keydown',e=>{if(e.key==='Escape')dismissModeTip();});
+window.addEventListener('resize',positionModeTip);window.addEventListener('scroll',positionModeTip,{passive:true});
+window.SloopI18n.onChange(renderModeTip);renderModeTip();
+setTimeout(()=>{if(!tipDismissed){modeTip.hidden=false;positionModeTip();}},700);
 applyLang();
 showTab(tab);
 libInit();

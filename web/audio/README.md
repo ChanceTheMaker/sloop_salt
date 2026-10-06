@@ -1,8 +1,8 @@
 # Sloop browser synth
 
-Choose **Play in browser** in Studio, or open `?browser=1` and press **Start audio**.
+Choose **Browser Studio** or **Firmware**, or open `?browser=1` and press **Start audio**.
 No FM-1 or MIDI permission is needed. QWERTY, pointer and touch playing use the
-same keyboard as device mode. **Use FM-1** stops browser playback and returns to
+same keyboard as device mode. **FM-1** stops browser playback and returns to
 the device connection screen.
 
 The browser engine compiles this repository's SLOOP 2.3 DSP: nine synth engines,
@@ -68,6 +68,13 @@ node web/test_browser_synth.mjs
 
 The browser test uses the existing preview at `http://127.0.0.1:8769/webapp/editor/`
 and Playwright/Edge; configure `PLAYWRIGHT_MODULE` and `BROWSER_CHANNEL` if needed.
+After building `build/site`, start that dedicated preview with
+`python tools/preview_site.py`. Its connection queue accommodates simultaneous
+browser asset requests on Windows. Port 8768 belongs to the Felucca preview.
+If the environment still resets localhost connections, set `STUDIO_STATIC_DIR`
+to the absolute `build/site` path for `test_browser_synth.mjs`. Playwright then
+serves those exact built files to Edge while the real WASM/audio worklet runs;
+this isolates functional checks from preview networking.
 DSP tests render every factory preset and drum kit, note releases, sequence
 playback, user samples, and worklet output at 44.1/48 kHz. Session tests validate
 native preset parity, malformed import rejection and sample byte preservation.
@@ -79,3 +86,25 @@ input, USB audio and hardware settings are not added by this port. Editing
 patterns and playing the four-track sequence are supported. No FM6 engine is
 present because it is not a SLOOP engine. AudioWorklet needs HTTPS or localhost;
 opening the HTML directly as a local file is insufficient.
+
+## Browser views
+
+The three-state play-mode switch offers FM-1 (hardware), Firmware (browser
+audio with a compact device-inspired interface), and Browser Studio (the full
+Skeuomorph editor). An anchored introduction explains these options once;
+dismissal is stored under `sloop.web.soundSourceTipDismissed`.
+
+Firmware has Device and Expanded layouts of the same controls. Four colored
+track rows display patterns and the running playhead; its pages use the native
+parameter IDs, descriptors, ranges and value formatting. Track/preset changes
+and edits go through the existing editor protocol adapter. Switching browser
+views keeps the same AudioContext, samples, project and autosaved session.
+The shared keyboard and transport remain available in both views.
+
+This is a browser interpretation of the firmware pages, not the firmware's
+framebuffer UI running in the browser. Hold-button layers, live recording and
+arranger controls still require a subsequent UI/input port. Step editing,
+sample management and projects are available in Browser Studio.
+
+`node web/test_firmware_view.mjs` checks shared edits, track/sound selection,
+audible QWERTY input, page controls, layouts, export and hardware-mode exit.

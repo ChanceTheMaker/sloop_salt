@@ -273,14 +273,22 @@ The protocol is documented in [web/EDITOR_PROTOCOL.md](web/EDITOR_PROTOCOL.md).
 
 ### Play in the browser
 
-The Sloop [salt] editor also offers **Play in browser**: play its nine synth engines
+The Sloop [salt] editor also offers **Browser Studio**: play its nine synth engines
 and drum kits with QWERTY, mouse or touch, without connecting an FM-1. Edit sounds,
 mix four tracks, build sequences and load your own samples. Browser volume and
 the live waveform sit above the Studio tabs.
 
 Browser sessions save locally. Use **Export session** to keep a portable copy of
 your tracks, project slots, user presets and samples; these files are separate
-from FM-1 backups. **Use FM-1** stops browser audio and returns to device mode.
+from FM-1 backups. **FM-1** stops browser audio and returns to device mode.
+
+The three-state switch selects **FM-1**, **Firmware**, or **Browser Studio**.
+Firmware offers compact Device and larger Expanded layouts with four colored
+tracks and firmware parameter pages. Browser Studio is the full Skeuomorph
+editor. Both browser views share sounds, samples and the same session. The
+Firmware view currently supports parameter editing and playback; use Browser
+Studio for step editing, samples and projects. Hold-button layers and live
+recording are not yet available in the browser.
 See [browser synth usage and setup](web/audio/README.md).
 
 ## Compatibility
