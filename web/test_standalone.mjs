@@ -41,6 +41,14 @@ try{
  const key=page.locator('#play-keys button[data-note="60"]');
  await key.hover();await page.mouse.down();await signal();await page.mouse.up();
  await page.keyboard.down('KeyA');await signal();await page.keyboard.up('KeyA');
+ assert.equal(await page.locator('.native-toolbar #play-typing').count(),1);
+ assert.equal(await page.locator('.native-toolbar #play-sustain svg').count(),1);
+ assert.equal(await page.locator('.native-toolbar #play-stop svg').count(),1);
+ await page.locator('#play-typing').uncheck();assert.equal(await page.locator('#play-typing').isChecked(),false);
+ await page.locator('#play-typing').check();
+ await page.locator('#play-sustain').click();assert.equal(await page.locator('#play-sustain').getAttribute('aria-pressed'),'true');
+ await page.locator('#play-stop').click();assert.equal(await page.locator('#play-sustain').getAttribute('aria-pressed'),'false');
+ assert.equal(await page.locator('.play-controls').isVisible(),false);
  const screen=()=>page.locator('.native-screen').evaluate(e=>e.getBoundingClientRect().width);
  const initialWidth=await screen();
  await page.getByRole('button',{name:'Expanded',exact:true}).click();
@@ -61,6 +69,8 @@ try{
  for(const size of [{width:390,height:844},{width:320,height:568},{width:740,height:360}]){
   await page.setViewportSize(size);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'viewport width');
   assert.ok(await page.locator('#firmware-view .play-keyboard').evaluate(e=>{const r=e.getBoundingClientRect(),p=e.parentElement.getBoundingClientRect();return r.left>=p.left&&r.right<=p.right+1;}));
+  assert.ok(await page.locator('.native-toolbar').evaluate(e=>{const r=e.getBoundingClientRect(),p=e.parentElement.getBoundingClientRect();return r.left>=p.left&&r.right<=p.right;}),'toolbar stays inside device');
+  if(size.width===390)assert.ok(await page.locator('#firmware-view').evaluate(e=>e.getBoundingClientRect().bottom<innerHeight),'mobile device fits screen');
   if(size.width===390)await page.screenshot({path:'build/screenshots/standalone-mobile.png',fullPage:true});
   await page.getByRole('button',{name:'Expanded',exact:true}).click();
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
