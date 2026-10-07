@@ -66,13 +66,22 @@ try{
  assert.equal(await page.locator('#utility-drawer').evaluate(e=>e.open),false);
  await page.locator('.native-help-button').click();await page.locator('.native-tour').waitFor({state:'visible'});await page.keyboard.press('Escape');
  await page.screenshot({path:'build/screenshots/standalone-desktop.png'});
- for(const size of [{width:390,height:844},{width:320,height:568},{width:740,height:360}]){
-  await page.setViewportSize(size);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'viewport width');
+ for(const size of [{width:390,height:844},{width:390,height:650},{width:320,height:568},{width:740,height:360}]){
+  await page.setViewportSize(size);await page.waitForTimeout(150);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'viewport width');
   assert.ok(await page.locator('#firmware-view .play-keyboard').evaluate(e=>{const r=e.getBoundingClientRect(),p=e.parentElement.getBoundingClientRect();return r.left>=p.left&&r.right<=p.right+1;}));
   assert.ok(await page.locator('.native-toolbar').evaluate(e=>{const r=e.getBoundingClientRect(),p=e.parentElement.getBoundingClientRect();return r.left>=p.left&&r.right<=p.right;}),'toolbar stays inside device');
   if(size.width===390)assert.ok(await page.locator('#firmware-view').evaluate(e=>e.getBoundingClientRect().bottom<innerHeight),'mobile device fits screen');
+  if(size.height===650){
+   const fit=await page.locator('#firmware-view').evaluate(e=>{const r=e.getBoundingClientRect();return {scale:Number(e.dataset.fitScale),x:r.width/e.offsetWidth,y:r.height/e.offsetHeight};});
+   assert.ok(fit.scale<1&&fit.scale>=.72,'short phone uses bounded scaling');assert.ok(Math.abs(fit.x-fit.y)<.002,'scaling preserves proportions');
+   await key.hover();await page.mouse.down();await signal();await page.mouse.up();
+   await page.locator('#utility-drawer>summary').click();await page.waitForTimeout(100);
+   assert.equal(await page.locator('#firmware-view').getAttribute('data-fit-scale'),'1.000','drawer restores natural size');
+   await page.locator('#utility-drawer>summary').press('Escape');await page.waitForTimeout(100);
+  }
   if(size.width===390)await page.screenshot({path:'build/screenshots/standalone-mobile.png',fullPage:true});
   await page.getByRole('button',{name:'Expanded',exact:true}).click();
+  await page.waitForTimeout(100);assert.equal(await page.locator('#firmware-view').evaluate(e=>e.style.transform),'','Expanded is not scaled');
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
   await page.getByRole('button',{name:'Device',exact:true}).click();
  }
