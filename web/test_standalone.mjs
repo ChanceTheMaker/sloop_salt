@@ -19,7 +19,8 @@ await page.addInitScript(()=>{
  localStorage.setItem('sloop.web.analyticsConsent','denied');
  document.cookie='sloop_simulator_tour_v1=seen; Path=/; SameSite=Lax';
  navigator.requestMIDIAccess=()=>{throw Error('Unexpected hardware access');};
- const Context=window.AudioContext;window.AudioContext=class extends Context {constructor(...args){super(...args);window.testContext=this;}createAnalyser(){const a=super.createAnalyser();window.testAnalyser=a;return a;}};
+ window.directTap=false;document.addEventListener('click',()=>{window.directTap=true;setTimeout(()=>window.directTap=false,0);},true);
+ const Context=window.AudioContext;window.AudioContext=class extends Context {constructor(...args){window.createdDuringTap=window.directTap;super(...args);window.testContext=this;}createAnalyser(){const a=super.createAnalyser();window.testAnalyser=a;return a;}};
 });
 const signal=()=>page.waitForFunction(()=>{const a=new Float32Array(testAnalyser.fftSize);testAnalyser.getFloatTimeDomainData(a);return a.some(v=>Math.abs(v)>.001);});
 try{
@@ -34,6 +35,7 @@ try{
  assert.match(await page.locator('.device-credits').textContent(),/Chance Roth/);assert.match(await page.locator('.device-credits').textContent(),/Not affiliated/);
  await page.screenshot({path:'build/screenshots/standalone-start.png'});
  await page.locator('#synth-start').click();await page.locator('.synth-start').waitFor({state:'hidden'});
+ assert.equal(await page.evaluate(()=>window.createdDuringTap),true,'AudioContext created directly from the tap');
  await page.waitForFunction(()=>document.querySelector('.native-status').textContent.includes('Stopped'));
  await page.locator('.native-splash').waitFor({state:'hidden'});
  const key=page.locator('#play-keys button[data-note="60"]');

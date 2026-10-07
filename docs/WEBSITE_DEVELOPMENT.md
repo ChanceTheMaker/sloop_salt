@@ -243,3 +243,15 @@ Preview: http://127.0.0.1:8769/webapp/editor/ (`tools/preview_site.py`).
 `web/test_standalone.mjs` checks startup, real AudioWorklet output, QWERTY,
 pause/resume, both layouts, drawer/export, help, finish persistence and mobile
 bounds. Firmware sources and hardware packages remain untouched.
+
+
+Standalone startup hardening: prepare the browser module before exposing Start
+synth, preload/compile the engine without creating an AudioContext, and call
+AudioContext construction/resume synchronously from the click. Audio activation,
+engine loading, worklet setup and session storage have bounded waits with visible
+stage messages and Retry. A timed-out session restore stops startup rather than
+silently starting a blank workspace that could overwrite the saved session.
+The database-open cache resets on failure. Edge fault-injection checks exercise
+stalled resume and saved-session open followed by successful retry. Physical
+Safari/iPhone validation remains outstanding. The display now has a rounded,
+raised black bezel, with its screen, startup overlay and splash clipped to fit.
