@@ -23,6 +23,7 @@
  * 8. the bank (fm6_bank.c on a simulated NOR through storage.c): store, read back, erase, a power cycle (the
  *    bank found again in flash), a bad slot, a part on a bank slot hears a store (fm6_poll), the tail of the
  *    sector stays erased, an empty slot plays the init voice.
+ * 5b. AMS (2.4.1): an operator with amplitude modulation sensitivity sounds as it should, not as noise.
  * 9. demos into DEMODIR: every factory preset playing a short phrase. */
 #define main hostsim_main
 #include "hostsim.c"
@@ -701,6 +702,50 @@ static void bank(void)
     printf("fm6: bank: %u sector erases for 4 writes\n", nor_erases);
 }
 
+/* ------------------------------------------------- amplitude modulation --- */
+/* 2.4.1: an operator with AMS > 0 (a quarter of the DX7 patches in circulation) played noise, whatever the LFO's
+ * AMD: the level offset came from a mantissa shifted left past 32 bits. Two operators (OP2 -> OP1), OP2 with AMS
+ * 1..3: tonal, with AMD 0 as with AMD 99 (the spectral centroid near the AMS 0 one; with the bug it was above
+ * 6 kHz, noise); with AMD 0 the voice close to the AMS 0 one (msfa takes about 1 dB off the operator); every voice
+ * below 2 x VOICE_FS */
+static void ams(void)
+{
+    static const int RC[4] = {99, 30, 30, 50}, LC[4] = {99, 95, 90, 0}, RM[4] = {99, 40, 30, 50}, LM[4] = {99, 90, 80, 0};
+    static double y0[FS / 2], y1[FS / 2];
+    uint8_t v[FP_SIZE + 1u];
+    double c0, c1, pk = 0, d, e, worst = 0;
+    uint32_t i, a, amd, ok = 1;
+    init_patch(v);
+    v[FP_ALG] = 0;
+    op_set(v, 1, RC, LC, 99, 1);
+    op_set(v, 2, RM, LM, 82, 3);
+    for (i = 3; i <= 6u; i++)
+        v[(6u - i) * FP_OP + FP_OL] = 0;
+    v[FP_LFS] = 35; v[FP_LFD] = 0; v[FP_LPMD] = 0;
+    for (amd = 0; amd <= 99u; amd += 99u) {
+        v[FP_LAMD] = (uint8_t)amd;
+        v[(6u - 2u) * FP_OP + FP_AMS] = 0;
+        c0 = centroid_of(v, 0, 100, 4096);
+        setup(v, 0); voice_render(57, 100, y0, FS / 2, 0);
+        for (a = 1; a <= 3u; a++) {
+            v[(6u - 2u) * FP_OP + FP_AMS] = (uint8_t)a;
+            c1 = centroid_of(v, 0, 100, 4096);
+            ok &= c1 < c0 * 1.5 + 100 && c1 > c0 * 0.4;
+            setup(v, 0); voice_render(57, 127, y1, FS / 2, 0);
+            for (i = 0; i < FS / 2; i++) pk = fabs(y1[i]) > pk ? fabs(y1[i]) : pk;
+            if (!amd) {
+                setup(v, 0); voice_render(57, 100, y1, FS / 2, 0);
+                for (d = e = 0, i = 0; i < FS / 2; i++) { d += (y1[i] - y0[i]) * (y1[i] - y0[i]); e += y0[i] * y0[i]; }
+                worst = sqrt(d / e) > worst ? sqrt(d / e) : worst;
+            }
+            printf("fm6: AMS %u, AMD %2u: centroid %4.0f Hz (AMS 0: %4.0f Hz)\n", a, amd, c1, c0);
+        }
+    }
+    printf("fm6: AMS 1..3, AMD 0: at most %.1f %% from the AMS 0 voice\n", 100 * worst);
+    check("AMS 1..3 (AMD 0 and 99): tonal, the centroid near the AMS 0 one (not noise)", ok);
+    check("AMS 1..3, AMD 0: the voice within 25 % of the AMS 0 one; every voice below 2 x VOICE_FS", worst < 0.25 && pk < 2.0 * VOICE_FS);
+}
+
 int main(int argc, char **argv)
 {
     uint32_t pi;
@@ -709,6 +754,7 @@ int main(int argc, char **argv)
     retrigger();
     dc_clip();
     macros();
+    ams();
     formats();
     voices();
     if (!getenv("NOCOST"))

@@ -1,10 +1,12 @@
 <p align="center"><img src="assets/logo/sloop-logo.png" alt="SLOOP" width="360"></p>
 
-# SLOOP 2.4 — démarrage rapide
+# SLOOP 2.4.1 — démarrage rapide
 
 **SLOOP** transforme le M-VAVE FM-1 en groovebox à jouer en live, pour tous les styles : trois synthés et une batterie de 16 sons sur les touches blanches, 10 moteurs de synthèse (dont la FM à six opérateurs, avec les patchs DX7), 76 sons rangés par famille (basses, claviers, orgues, nappes, leads, plucks, stabs), 37 kits de batterie (808, 909, trap, phonk, house, techno, UK garage, jungle, amapiano, synthwave, chiptune, ambient…) et tes propres kits, tes propres samples, ghost notes et ratchets, verrous de paramètre, décalage des pas et fills, note repeat, accords sur une touche, 16 effets punch-in, et un écran à la teenage engineering qui montre toujours ce que tes mains peuvent faire. Aucun motif d'usine : tout ce que tu entends, tu le joues.
 
 Le guide complet, chaque bouton, combinaison et page, avec un aide-mémoire d'une page (en anglais) : [GUIDE.md](GUIDE.md). Le manuel (en anglais) : [SLOOP.md](SLOOP.md).
+
+**Correctif 2.4.1 :** les patchs DX7 importés ne font plus de bruit. Un opérateur FM6 avec une sensibilité à la modulation d'amplitude (**AMS** au-dessus de 0, environ un patch DX7 sur quatre) donnait du bruit et du grésillement, pire avec plusieurs touches ; ces patchs sonnent maintenant comme sur un DX7. Les sons FM6 d'usine n'étaient pas touchés.
 
 **Nouveau dans la 2.4 :** le moteur **FM6** (FM à six opérateurs, import des patchs DX7 dans l'éditeur web), les **verrous de paramètre** et le **décalage** des pas, les **fills**, la **chaîne de sections**, le séquenceur vers la **sortie MIDI** (GLO → SYSTEM → MIDI = SEQ), des pas de **1/2, 1 ou 2 mesures**, les délais **pointés** (TIME = 1/8D, 1/16D), **KEYS = ALL KEYS** (toutes les touches éclairées), et avec **NOTES** les notes courtes du séquenceur allument enfin leur touche. Corrigés : un START MIDI pendant le décompte de REC démarre maintenant l'enregistrement ; le swing ne décale plus les triolets ; tourner DIV juste après PLAY ne saute plus de pas ; l'éditeur n'écrit plus en flash pendant la lecture. Les projets et sauvegardes de la 2.3 se chargent tels quels.
 

@@ -17,11 +17,11 @@ Free and open source (GPL-3.0), based on <a href="https://github.com/hugelton/Fe
 
 SLOOP turns the FM-1 into a four-track groovebox you play live: **three synths and a drum machine** with 16 sounds on the white keys, ten synthesis engines, 76 sounds, 37 drum kits, your own samples, a song mode you play with your hands, USB audio, MIDI in on the jack and MIDI clock — and now **six-operator FM with DX7 patches**, **parameter locks**, **micro timing**, **fills**, a **quick chain** of sections and the **sequencer to MIDI out**. House, techno, hip-hop, trap, drum & bass, amapiano, synthwave, lo-fi, ambient, chiptune — it does not pick a style for you. No factory patterns, nothing to load: everything you hear, you play.
 
-> **Status:** 2.4. Still a beta: install at your own risk, and please [report](../../issues) what you find. Your projects, presets, samples and settings are kept when you update, and you can go back at any time (see [Going back](#going-back)).
+> **Status:** 2.4.1 (a hotfix of 2.4: imported DX7 patches no longer play noise). Still a beta: install at your own risk, and please [report](../../issues) what you find. Your projects, presets, samples and settings are kept when you update, and you can go back at any time (see [Going back](#going-back)).
 
 ## Contents
 
-1. [What's new in 2.4](#whats-new-in-24)
+1. [What's new in 2.4.1 and 2.4](#whats-new-in-241)
 2. [Screenshots](#screenshots)
 3. [Features](#features)
 4. [Install](#install)
@@ -40,6 +40,10 @@ SLOOP turns the FM-1 into a four-track groovebox you play live: **three synths a
 17. [Licence](#licence)
 
 ---
+
+## What's new in 2.4.1
+
+**Imported DX7 patches no longer play noise.** An FM6 operator with amplitude modulation sensitivity (**AMS** above 0, about one DX7 patch in four) turned into noise and static, worse with every key held: a wrong calculation gave it a random level. Those patches now sound as on a DX7. The factory FM6 sounds were not affected. Thanks for reporting it!
 
 ## What's new in 2.4
 
