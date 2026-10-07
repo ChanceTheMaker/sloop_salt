@@ -86,17 +86,22 @@ def main(pkg, version, out):
     (inst / "index.html").write_text(html, encoding="utf-8")
     shutil.copy(pkg, fw / name)
     shutil.copy(HERE / "editor.html", ed / "index.html")
-    # Reuse the firmware's original splash artwork and build version.
-    import base64
+    # Stack the original vector icon and lettering; the firmware PNG clips p's descender.
+    import xml.etree.ElementTree as ET
     from xml.sax.saxutils import escape
-    logo = base64.b64encode((HERE.parent / "assets/logo/sloop-splash.png").read_bytes()).decode("ascii")
+    ET.register_namespace("", "http://www.w3.org/2000/svg")
+    logo_root = ET.fromstring((HERE.parent / "assets/logo/sloop-logo.svg").read_text(encoding="utf-8"))
+    icon_root = ET.fromstring((HERE.parent / "assets/logo/sloop-icon.svg").read_text(encoding="utf-8"))
+    icon = "".join(ET.tostring(child, encoding="unicode") for child in icon_root)
+    lettering = "".join(ET.tostring(child, encoding="unicode") for child in list(logo_root)[8:])
     (ed / "sloop-boot.svg").write_text(
         '<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 240 240">'
         '<rect width="240" height="240" fill="black"/>'
-        f'<image href="data:image/png;base64,{logo}" x="10" y="10" width="220" height="176"/>'
+        f'<svg x="65" y="8" width="110" height="110" viewBox="0 0 240 240">{icon}</svg>'
+        f'<svg x="20" y="114" width="200" height="86" viewBox="260 55 365 157">{lettering}</svg>'
         f'<text x="120" y="213" text-anchor="middle" fill="#c4c4cc" font-family="monospace" font-size="12">{escape(version)}</text>'
         '<text x="120" y="231" text-anchor="middle" fill="#606068" font-family="monospace" font-size="12">based on felucca</text></svg>', encoding="utf-8")
-    for asset in ("firmware-view.js", "firmware-view.css", "midi-input.js"):
+    for asset in ("firmware-view.js", "firmware-view.css", "midi-input.js", "standalone.js", "standalone.css"):
         shutil.copy(HERE / asset, ed / asset)
     (ed / "audio").mkdir(exist_ok=True)
     for asset in ("browser.js", "worklet.js", "session.js", "native-state.js", "engine.wasm"):
