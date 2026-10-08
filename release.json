@@ -1,5 +1,6 @@
 {
-  "source_commit": "1f20ea443cd9bc6392ae230f265865f8edeabb18",
-  "source_url": "https://github.com/ChanceTheMaker/sloop_salt/tree/1f20ea443cd9bc6392ae230f265865f8edeabb18",
-  "source_archive": "source/Sloop-source-1f20ea4.zip"
+  "source_commit": "bb30fb1c8b3336feded71358bff7eab3c223e43b",
+  "source_url": "https://github.com/ChanceTheMaker/sloop_salt/tree/bb30fb1c8b3336feded71358bff7eab3c223e43b",
+  "source_archive": "source/Sloop-source-bb30fb1.zip",
+  "firmware_version": "2.4.1"
 }

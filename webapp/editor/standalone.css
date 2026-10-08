@@ -1,0 +1,81 @@
+/* SPDX-License-Identifier: GPL-3.0-only */
+body.standalone-synth {margin:0;background:#101114!important;min-height:100dvh;padding:36px 18px 24px;color:#eceef1}
+body.standalone-synth {padding-left:max(18px,env(safe-area-inset-left));padding-right:max(18px,env(safe-area-inset-right));padding-bottom:max(24px,env(safe-area-inset-bottom))}
+.standalone-synth main {max-width:none;margin:0 auto;padding:0;border:0;box-shadow:none;background:transparent}
+:root[data-full-width] body.standalone-synth main {width:100%;padding:0}
+.standalone-synth main::before,.standalone-synth main::after,.standalone-synth .play-keyboard::before,.standalone-synth .play-keyboard::after {display:none!important}
+.standalone-synth .piano-scroll {padding-top:12px;padding-bottom:12px}
+.standalone-synth .masthead,.standalone-synth .site-nav,.standalone-synth .settings-menu,.standalone-synth #back-to-top,.standalone-synth .mode-tip {display:none!important}
+.standalone-synth #tabs,.standalone-synth #trackbar,.standalone-synth .panel,.standalone-synth #hint {display:none!important}
+.standalone-synth #firmware-view {margin:12px auto 0}
+.standalone-synth #firmware-view[data-layout=device] {max-width:1100px}
+.standalone-synth #firmware-view>.native-body {padding-top:28px}
+.standalone-synth .device-credits {max-width:1050px;margin:18px auto 0;text-align:center;color:#aab0bb;font:11px/1.7 system-ui}
+.standalone-synth .device-credits p {margin:0 0 8px}
+.standalone-synth .device-credits a {color:#c5cbd5}
+.utility-drawer {position:relative;margin:0 auto;max-width:1280px;z-index:5}
+.utility-drawer>summary {position:fixed;z-index:6;top:0;left:50%;transform:translateX(-50%);display:grid;place-items:center;width:88px;height:26px;border:1px solid #535966;border-top:0;border-radius:0 0 14px 14px;background:#242830;cursor:pointer;list-style:none;box-shadow:0 3px 12px #0005}
+.utility-drawer>summary::-webkit-details-marker {display:none}
+.utility-drawer>summary span {width:10px;height:10px;border-right:2px solid #cbd2dd;border-bottom:2px solid #cbd2dd;transform:translateY(-3px) rotate(45deg)}
+.utility-drawer[open]>summary span {transform:translateY(3px) rotate(225deg)}
+.utility-content {max-height:60dvh;overflow:auto;padding:18px;margin:0 0 20px;border:1px solid #454b56;border-radius:0 0 16px 16px;background:#191c22;box-shadow:0 12px 30px #0005}
+.utility-content .top {position:static;margin:12px 0 0}
+.utility-content .appearance {display:flex!important;flex-wrap:wrap;position:static!important;gap:16px;width:auto!important;box-shadow:none}
+.utility-content .language-picker {margin:0 0 12px}
+.standalone-synth #audio-mode,.standalone-synth #mock,.standalone-synth #connect {display:none!important}
+.standalone-synth .synth-power {display:grid;place-items:center;width:32px;height:32px;padding:0;border:0;border-radius:50%;background:#14191f;color:#fff;font:22px/1 system-ui;cursor:pointer}
+.standalone-synth .synth-power[aria-pressed=true] {color:#a5ffc0;box-shadow:inset 0 0 0 1px #a5ffc070}
+.standalone-synth .synth-power[hidden] {display:none}
+.synth-start {position:absolute;inset:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#050506;border-radius:16px;z-index:1;padding:12px;box-sizing:border-box}
+.synth-start[hidden] {display:none}
+.synth-start img {width:70%;max-height:60%;object-fit:contain}
+.synth-start button {padding:10px 20px;border:1px solid #ffac80;border-radius:9px;background:#f06427;color:#160d08;font:700 15px/1.3 system-ui;cursor:pointer}
+.synth-start-message {margin:8px 0 0;color:#b9c0ca;font:12px/1.4 system-ui;text-align:center;max-height:60px;overflow:auto}
+.standalone-synth .analytics-menu-button {margin:8px auto;background:transparent;color:#aab0bb;border:0;padding:4px;font-size:11px;text-decoration:underline}
+.standalone-synth .native-help-button:disabled {opacity:.4;cursor:default}
+.standalone-synth .utility-drawer :focus-visible,.standalone-synth .synth-start :focus-visible {outline:3px solid #a4dfff;outline-offset:3px}
+@media(max-width:780px){body.standalone-synth {padding:34px 8px 18px}.standalone-synth #firmware-view>.native-body {padding-top:0}.utility-content {padding:12px}.standalone-synth .device-credits {font-size:10px}.synth-start {padding:6px}.synth-start img {max-height:48%}.synth-start button {font-size:12px;padding:8px 12px}.synth-start-message {font-size:10px}}
+
+/* Performance shortcuts share the existing top row. */
+.standalone-synth .native-toolbar {gap:6px}
+.native-play-tools {display:flex;gap:2px;padding:3px;border:1px solid #68717b;border-radius:10px;background:#20262d}
+#firmware-view .native-play-tools button,#firmware-view .native-typing-toggle {position:relative;display:grid;place-items:center;box-sizing:border-box;width:32px;height:30px;margin:0;padding:5px!important;border:0;border-radius:6px;background:transparent;color:#d4dce5;box-shadow:none;cursor:pointer}
+#firmware-view .native-play-tools svg {width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+#firmware-view .native-play-tools button::before,#firmware-view .native-play-tools button::after {display:none!important}
+#firmware-view .native-play-tools button[aria-pressed=true],#firmware-view .native-typing-toggle:has(input:checked) {background:#dce6ee;color:#15232e}
+#firmware-view .native-typing-toggle input {position:absolute;inset:0;opacity:0;width:100%;height:100%;margin:0;cursor:pointer}
+#firmware-view .native-typing-toggle:has(input:focus-visible) {outline:3px solid #45bcff;outline-offset:3px}
+body.fm1-device-layout .play-keyboard .play-controls {display:none}
+body.fm1-device-layout #firmware-view>.play-keyboard {margin-top:6px}
+@media(max-width:360px){.standalone-synth .native-toolbar {gap:4px}.standalone-synth .native-help-button {width:28px}.standalone-synth .synth-power {width:28px;height:30px}#firmware-view .native-play-tools button,#firmware-view .native-typing-toggle {width:28px}}
+@media(max-width:780px){
+ .standalone-synth #firmware-view {padding:44px 10px 10px;margin-top:6px}
+ .standalone-synth .native-body {gap:10px}
+ .standalone-synth .native-navigation {gap:12px 4px}
+ .standalone-synth .native-encoder {gap:4px}
+ .standalone-synth .native-dial {width:44px;height:44px}
+ .standalone-synth .native-dial::before {inset:4px}
+ .standalone-synth .native-dial::after {top:6px;height:10px;transform-origin:2px 14px}
+ .standalone-synth .native-octaves {margin-top:2px}
+ .standalone-synth .native-encoders {margin-bottom:12px}
+ .standalone-synth .native-buttons {gap:4px;padding:6px;max-width:290px}
+ .standalone-synth .device-credits {margin-top:12px;line-height:1.45}
+ /* Small Device-only trim; keep keys, screen and touch targets at their existing sizes. */
+ body.standalone-synth.fm1-device-layout {padding-top:30px}
+ body.fm1-device-layout #firmware-view {margin-top:2px;padding-bottom:8px}
+ body.fm1-device-layout .native-body {gap:8px 10px}
+ body.fm1-device-layout .native-encoders {margin-bottom:8px}
+ body.fm1-device-layout #firmware-view>.play-keyboard {margin-top:4px}
+ body.standalone-synth {padding-left:max(8px,env(safe-area-inset-left));padding-right:max(8px,env(safe-area-inset-right));padding-bottom:max(18px,env(safe-area-inset-bottom))}
+ body.standalone-synth.fm1-device-layout {padding-top:max(30px,env(safe-area-inset-top))}
+}
+/* Phone landscape follows the hardware's side-by-side control groups. */
+@media (orientation:landscape) and (min-width:560px) and (max-height:500px){
+ body.standalone-synth.fm1-device-layout #firmware-view {padding:44px 10px 8px;margin-top:2px}
+ body.standalone-synth.fm1-device-layout #firmware-view>.native-body {padding-top:0;grid-template-columns:minmax(90px,.75fr) minmax(140px,1fr) minmax(230px,1.65fr);gap:10px}
+ body.fm1-device-layout .native-controls {grid-column:auto}
+ body.fm1-device-layout .native-navigation {gap:10px 4px}
+ body.fm1-device-layout .native-encoders {margin-bottom:8px;gap:4px}
+ body.fm1-device-layout .native-dial {width:44px;height:44px}
+ body.fm1-device-layout .native-buttons {gap:4px;padding:6px}
+}
