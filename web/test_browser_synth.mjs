@@ -53,8 +53,8 @@ try {
  wav.writeUInt16LE(1,20);wav.writeUInt16LE(1,22);wav.writeUInt32LE(22050,24);wav.writeUInt32LE(44100,28);wav.writeUInt16LE(2,32);wav.writeUInt16LE(16,34);wav.write('data',36);wav.writeUInt32LE(wav.length-44,40);
  for(let i=0;i<11025;i++)wav.writeInt16LE(Math.round(Math.sin(i*2*Math.PI*220/22050)*18000),44+2*i);
  await page.locator('#tabs [data-tab="samples"]').click();
- await page.locator('.smp[data-k="0"] input[type=file]').setInputFiles({name:'tone_C4.wav',mimeType:'audio/wav',buffer:wav});
- await page.locator('.smp[data-k="0"]').getByRole('button',{name:'Upload',exact:true}).click();
+ await page.locator('#smpslots input[type=file][multiple]').setInputFiles({name:'tone_C4.wav',mimeType:'audio/wav',buffer:wav});
+ await page.locator('#smpslots button.pri').click();
  await page.waitForFunction(()=>document.getElementById('status').textContent.includes('Uploaded USR'));
  await page.locator('#tabs [data-tab="sound"]').click();
  await page.locator('#engine').selectOption('4');
@@ -65,8 +65,8 @@ try {
  await page.keyboard.down('a');await waitSignal();await page.keyboard.up('a');
  const exportPromise=page.waitForEvent('download');await page.locator('#audio-export').click();
  const exported=await exportPromise;const session=JSON.parse(await readFile(await exported.path(),'utf8'));
- assert.equal(session.format,'sloop-browser-session');assert.equal(session.tracks.length,4);assert.equal(session.smp.length,3);
- assert.equal(session.tracks[0].engine,4);assert.equal(session.tracks[0].p[50],8);assert.equal(session.smp[0].zones,1);
+ assert.equal(session.format,'sloop-browser-session');assert.equal(session.tracks.length,4);assert.equal(session.smp.length,4);
+ assert.equal(session.tracks[0].engine,4);assert.equal(session.tracks[0].p[53],8);assert.equal(session.smp[0].zones,1);
  // Restore an edited sequence through the user-facing session import.
  session.tracks[0].step[0]={n:1,notes:[60,0,0,0],time:0,flags:0,vel:100,lvl:0,rat:0};
  session.tracks[0].p[29]=4;

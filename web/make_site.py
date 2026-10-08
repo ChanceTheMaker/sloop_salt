@@ -9,7 +9,8 @@
   webapp/editor/index.html    editor.html (+ fukiai.ttf, FUKIAI-LICENSE.txt)
   src/                        not touched
 
-  web/make_site.py build/felucca-X.Y.fwsc X.Y OUT_DIR [--beta]
+  web/make_site.py build/felucca-X.Y.fwsc X.Y OUT_DIR [--beta] [--studio]
+  (--studio: full Studio rather than the compact standalone Simulator)
   (--beta: web/beta_banner.html at the top of the installer: the beta channel, docs/beta)
 
 The package identity (FM-1_9xx) is read from the package; the device reports it
@@ -85,7 +86,14 @@ def main(pkg, version, out):
         old.unlink()
     (inst / "index.html").write_text(html, encoding="utf-8")
     shutil.copy(pkg, fw / name)
-    shutil.copy(HERE / "editor.html", ed / "index.html")
+    editor = (HERE / "editor.html").read_text(encoding="utf-8")
+    if "--studio" in sys.argv:
+        # The full Studio and the separate compact simulator share one source
+        # and engine, but retain their existing launch/navigation behavior.
+        editor = editor.replace('class="editor-page standalone-synth" data-editor-view="firmware"', 'class="editor-page"')
+        editor = re.sub(r'  <details id="utility-drawer".*?<div class="utility-content">\n', '', editor, count=1)
+        editor = editor.replace('  </div></details>\n', '', 1)
+    (ed / "index.html").write_text(editor, encoding="utf-8")
     # Stack the original vector icon and lettering; the firmware PNG clips p's descender.
     import xml.etree.ElementTree as ET
     from xml.sax.saxutils import escape
@@ -129,7 +137,7 @@ def main(pkg, version, out):
 
 
 if __name__ == "__main__":
-    args = [a for a in sys.argv[1:] if a not in ("--studio-guide", "--beta")]
+    args = [a for a in sys.argv[1:] if a not in ("--studio-guide", "--studio", "--beta")]
     if len(args) != 3:
         sys.exit(__doc__)
     main(*args)

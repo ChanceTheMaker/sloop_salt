@@ -67,7 +67,7 @@ function machine(){
  m.tap(B.PLAY);m.frame(175);assert.equal(m.state().status[12],1,'advanced to section B');assert.equal(m.state().tracks[0].p[1],75);
  assert.notEqual(m.codec.readProject(6).tracks[0].p[1],75,'autosave preserves original working loop');
  m.frame(180);assert.equal(m.state().status[1],0,'song ended');assert.notEqual(m.state().tracks[0].p[1],75,'original loop restored');
- const data=m.state();data.smp=Array.from({length:3},()=>({flash:new Uint8Array(0x14000).fill(255),zones:0,name:'',len:0,next:512}));
+ const data=m.state();data.smp=Array.from({length:4},()=>({flash:new Uint8Array(0x14000).fill(255),zones:0,name:'',len:0,next:512}));
  const portable=validate(snapshot(data));const restored=machine();restored.codec.write(portable);
  assert.deepEqual(restored.state().slots,data.slots);assert.deepEqual(restored.state().native,data.native);
  console.log('Native sections, song transitions/end/loop restore and session persistence passed');
@@ -92,7 +92,7 @@ function machine(){
  assert.equal(m.state().native.arrangement[5],1,'song bars knob');
  m.tap(B.HOME);m.down(B.HOME);m.frame(80);m.up(B.HOME);assert.equal(m.state().status[8],1,'settings opened');
  const palette=m.state().native.prefs[0];m.knob(3,1);assert.notEqual(m.state().native.prefs[0],palette,'palette changed');
- for(let i=0;i<7;i++)m.knob(2,1);m.tap(B.UP);assert.equal(m.state().status[8],0,'hardware calibration returns safely');
+ for(let i=0;i<3;i++)m.knob(0,1);m.tap(B.UP);assert.equal(m.state().status[8],0,'hardware calibration returns safely');
  m.tap(B.REC);m.event(2,0,1);m.frame(10);m.e.fw_release();m.e.synth_panic();m.frame(3);
  assert.equal(m.state().status[4],0);assert.equal(m.state().status[3],0);assert.equal(m.state().status[2],0);
  console.log('Native user preset save/load/erase, arranger knobs, settings and recording panic passed');

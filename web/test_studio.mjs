@@ -36,7 +36,7 @@ try {
   await page.locator('#trackbtns button').nth(0).click();
   await page.waitForFunction(()=>document.querySelector('#trackbtns button[data-i="0"]').getAttribute('aria-pressed')==='true');
  }
- assert.equal(await page.locator('#tabs button').count(),7);
+ assert.equal(await page.locator('#tabs button').count(),8);
  assert.equal(await page.locator('#web-skin option').count(),13);
  assert.equal(await page.locator('html').getAttribute('data-skin'),'sloop','native theme is the first-visit default');
  assert.equal(await page.locator('.widget-env [role=slider]').count(),4);
@@ -67,5 +67,5 @@ try {
   await page.screenshot({path:`build/screenshots/studio-viewport-${width}.png`});
  }
  assert.deepEqual(errors,[]);
- console.log('Studio: 13 themes × 2 modes × desktop/mobile, widgets, keyboard, seven tabs and console passed');
+ console.log('Studio: 13 themes × 2 modes × desktop/mobile, widgets, keyboard, eight tabs and console passed');
 } finally {await browser.close();}

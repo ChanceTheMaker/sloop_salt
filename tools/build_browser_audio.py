@@ -17,6 +17,7 @@ args = parser.parse_args()
 gen = ROOT / 'build/browser-audio/gen'
 gen.mkdir(parents=True, exist_ok=True)
 for script, header in [('gen_tables.py', 'felucca_tables.h'),
+                       ('gen_fm6_patches.py', 'felucca_fm6.h'),
                        ('gen_samples.py', 'felucca_samples.h'),
                        ('gen_drumkits.py', 'felucca_drumkits.h'),
                        ('gen_font.py','felucca_font.h'),('gen_icons.py','felucca_icons.h')]:
@@ -27,7 +28,7 @@ exports = ['synth_init','synth_target','synth_select','synth_engine','synth_para
            'synth_sample_buffer','synth_sample_apply','engine_count','param_count',
            'global_count','preset_count','preset_name','preset_value','engine_name',
            'descriptor_value','descriptor_text','fw_tick','fw_screen','fw_event','fw_release',
-           'fw_buffer','fw_layout','fw_commit']
+           'fw_buffer','fw_layout','fw_commit','synth_extras']
 env = {**os.environ, 'ZIG_GLOBAL_CACHE_DIR': str(ROOT/'build/zig-cache'),
        'ZIG_LOCAL_CACHE_DIR': str(ROOT/'build/zig-local-cache')}
 subprocess.run([args.zig, 'cc', '-target', 'wasm32-freestanding', '-O2', '-fno-builtin',

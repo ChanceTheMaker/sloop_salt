@@ -65,7 +65,7 @@
   
   
   <section class="sloop-hero" id="install">
-    <div><p class="eyebrow" data-i18n="landing.kicker">SLOOP 2.3 · LIVE GROOVEBOX</p>
+    <div><p class="eyebrow" data-i18n="landing.kicker">SLOOP 2.4.1 · LIVE GROOVEBOX</p>
       <h2 data-i18n="landing.title">Four tracks. All yours.</h2>
       <p class="lead" data-i18n="landing.lead">Three synths and a drum machine. Play, record and shape your music on the FM-1, with a Studio that feels like an instrument.</p>
       <a class="studio-cta" href="../editor/" data-i18n="landing.open">Open Studio ↗</a>
@@ -74,7 +74,7 @@
     </div>
     <figure class="firmware-preview"><img src="screenshots/live-tracks.png" width="480" height="480" data-i18n-alt="landing.screenAlt" alt="SLOOP firmware showing three synth tracks and drums"><figcaption data-i18n="landing.screenCaption">The SLOOP tracks screen · your instrument, unchanged</figcaption></figure>
   </section>
-  <section class="install-section" aria-labelledby="install-title"><h2 id="install-title" data-i18n="landing.install">Install SLOOP 2.3</h2>
+  <section class="install-section" aria-labelledby="install-title"><h2 id="install-title" data-i18n="landing.install">Install SLOOP 2.4.1</h2>
   <p data-t="intro"></p>
   <p data-t="warn"></p>
   <p><button id="go" disabled data-t="install"></button></p>
@@ -104,7 +104,7 @@
 <a class="theme-card" href="../editor/?theme=hicon&mode=dark"><img src="screenshots/themes/hicon.jpg" alt="High Contrast Studio" width="1000" height="740" loading="lazy"><strong>High Contrast</strong><span data-i18n="landing.click">Click to play / edit</span></a>
 </div></section>
   <section id="features" class="feature-section"><h2 data-i18n="landing.features">From a first idea to a full set</h2><div class="feature-grid">
-   <article><span aria-hidden="true">♫</span><div><h3 data-i18n="landing.soundsTitle">Make it sound like you</h3><p data-i18n="landing.sounds">Nine synth engines, 68 sounds, 37 drum kits and your own samples.</p></div></article>
+   <article><span aria-hidden="true">♫</span><div><h3 data-i18n="landing.soundsTitle">Make it sound like you</h3><p data-i18n="landing.sounds">Ten synth engines, 76 sounds, 37 drum kits and your own samples.</p></div></article>
    <article><span aria-hidden="true">▦</span><div><h3 data-i18n="landing.seqTitle">Keep the performance moving</h3><p data-i18n="landing.seq">Four tracks, editable sequences, drum lanes, swing and per-hit ratchets.</p></div></article>
    <article><span aria-hidden="true">≋</span><div><h3 data-i18n="landing.chopTitle">Find a new rhythm</h3><p data-i18n="landing.chop">CHOP recordings, choose your slices and send them to your FM-1.</p></div></article>
    <article><span aria-hidden="true">⇩</span><div><h3 data-i18n="landing.saveTitle">Keep your work close</h3><p data-i18n="landing.save">A local sound library, device projects, and full backup and restore.</p></div></article>
@@ -501,7 +501,7 @@ const sayK = (k, arg = "") => { lastKey = k; lastArg = arg; $("status").textCont
 const say = (txt) => { lastKey = null; $("status").textContent = txt; };
 const log = (t) => { $("log").textContent += t + "\n"; };
 let image = null;
-const meta = {"version": "2.3", "product": "FM-1_900", "pkg": "../../firmware/sloop-2.3.fwsc", "sha256": "f4866903ca3304a2c2c788ef6929d3bb0dcf8468c90b61495e038e97ffb1fa00"};
+const meta = {"version": "2.4.1", "product": "FM-1_900", "pkg": "../../firmware/sloop-2.4.1.fwsc", "sha256": "98ccc614d67a6fe48ee180368d5586b64f071f3c196224bfff3daef1631fb005"};
 
 let writing = false, stock = null;
 const lockAll = (on) => {

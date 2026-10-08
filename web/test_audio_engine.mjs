@@ -7,7 +7,7 @@ import {NativeState} from './audio/native-state.js';
 const module=await WebAssembly.compile(await readFile(new URL('./audio/engine.wasm',import.meta.url)));
 assert.deepEqual(WebAssembly.Module.imports(module),[],'no hardware/runtime imports');
 const catalog=catalogFrom(module);
-assert.equal(catalog.engines.length,9);assert.equal(catalog.common.length,50);assert.equal(catalog.globals.length,32);
+assert.equal(catalog.engines.length,10);assert.equal(catalog.common.length,53);assert.equal(catalog.globals.length,32);
 const fresh=()=>{const e=new WebAssembly.Instance(module).exports;e.synth_init();return e;};
 function preset(e,engine,p=0,k=0) {
  e.synth_target(k);e.synth_engine(engine);
@@ -23,9 +23,9 @@ function energy(e,blocks=700) {
  return {sum,peak};
 }
 let presets=0;
-for(let engine=0;engine<9;engine++) {
+for(let engine=0;engine<10;engine++) {
  for(let p=0;p<catalog.engines[engine].presets.length;p++) {
-  const e=fresh();preset(e,engine,p);e.synth_midi(0x90,engine===4&&catalog.engines[engine].presets[p].values[50]===7?36:60,110);
+  const e=fresh();preset(e,engine,p);e.synth_midi(0x90,engine===4&&catalog.engines[engine].presets[p].values[53]===7?36:60,110);
   assert.ok(energy(e).sum>1000,`${catalog.engines[engine].name}/${p} is audible`);
   presets++;
  }
@@ -35,7 +35,7 @@ e.synth_midi(0x90,60,100);assert.ok(energy(e).sum>1000);
 e.synth_midi(0x80,60,0);energy(e,2000);assert.ok(energy(e,100).peak<10,'released voice settles to silence');
 // All drum kits, including sampled kit zero and synthesised kit 36.
 for(let kit=0;kit<37;kit++) {
- const d=fresh();d.synth_target(3);d.synth_param(50,kit);d.synth_midi(0x99,36,110);
+ const d=fresh();d.synth_target(3);d.synth_param(53,kit);d.synth_midi(0x99,36,110);
  assert.ok(energy(d,300).sum>1000,`drum kit ${kit}`);
 }
 const seq=fresh();preset(seq,0);seq.synth_step(0,0,1,0,0,100,0,0,60,0,0,0);
@@ -53,4 +53,4 @@ for(const sampleRate of [44100,48000]) {
  for(let i=0;i<100;i++){const channels=[new Float32Array(128),new Float32Array(128)];p.process([], [channels]);for(const c of channels)for(const x of c){assert.ok(Number.isFinite(x)&&Math.abs(x)<=1);sum+=Math.abs(x);}}
  assert.ok(sum>1);assert.ok(messages.length>0);
 }
-console.log(`SLOOP DSP: ${presets} factory presets, 9 engines, 37 drum kits, release/panic, sequencer and 44.1/48kHz worklets passed`);
+console.log(`SLOOP DSP: ${presets} factory presets, 10 engines, 37 drum kits, release/panic, sequencer and 44.1/48kHz worklets passed`);
