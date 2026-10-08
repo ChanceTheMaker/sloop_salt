@@ -37,9 +37,10 @@ static void fm1_delay_ms(uint32_t ms) {fm1_ms+=ms;}
 static struct {uint32_t magic,stage,page,home,ui_frames;} felucca_dbg;
 #define FELUCCA_ICONS 1
 #define SCOPE_N 512u
-static int16_t scope_buf[SCOPE_N];
+static int16_t scope_buf[SCOPE_N],scope_bufr[SCOPE_N];
 static uint32_t scope_w;
 static struct {uint32_t up,config,suspended,setups,sof_seen;} usb;
+static int usb_cdc_now(void) {return 0;}
 #include "../../firmware/src/panel.c"
 #include "../../firmware/src/ui.c"
 #include "../../firmware/src/upreset.c"
@@ -48,6 +49,7 @@ static struct {uint32_t up,config,suspended,setups,sof_seen;} usb;
 #include "../../firmware/src/ui_studio.c"
 #include "../../firmware/src/icons.c"
 #include "../../firmware/src/ui_draw.c"
+#include "../../firmware/src/ui_vis.c"
 #include "../../firmware/src/ui_layers.c"
 #include "../../firmware/src/ui_menu.c"
 #include "../../firmware/src/ui_input.c"
@@ -83,10 +85,16 @@ static int browser_led(const uint8_t *matrix,unsigned id){unsigned q=led_pos[id]
 API unsigned fw_layout(unsigned n) {
     const unsigned layout[]={sizeof(project_t),__builtin_offsetof(project_t,t),sizeof(proj_trk_t),
         __builtin_offsetof(proj_trk_t,step),sizeof(up_rec_t),__builtin_offsetof(up_rec_t,p),
-        __builtin_offsetof(up_rec_t,note),__builtin_offsetof(up_rec_t,flags),sizeof(arr_config_t)};
+        __builtin_offsetof(up_rec_t,note),__builtin_offsetof(up_rec_t,flags),sizeof(arr_config_t),
+        P_COUNT,P_E0,G_COUNT,__builtin_offsetof(proj_trk_t,engine),
+        __builtin_offsetof(proj_trk_t,micro),__builtin_offsetof(proj_trk_t,lock),
+        __builtin_offsetof(proj_trk_t,fill),__builtin_offsetof(project_t,sel),PROJ_MAGIC};
     return n<sizeof(layout)/sizeof(*layout)?layout[n]:0;
 }
 API void *fw_buffer(unsigned kind,unsigned k) {
+    if(kind==7&&k<3){fm6_pack(fm6_patch[k],browser_fm6packed[k]);return browser_fm6packed[k];}
+    if(kind==8&&k<27)return browser_fm6bank[k];
+    if(kind==9)return browser_fm6used;
     if(kind==0){proj_capture(&browser_project);return &browser_project;}
     if(kind==1&&k<4)return &proj_slot[k];
     if(kind==2&&k<UP_SLOTS)return up_rec(k);
@@ -116,6 +124,8 @@ API void *fw_buffer(unsigned kind,unsigned k) {
     return 0;
 }
 API void fw_commit(unsigned kind,unsigned k,int used) {
+    if(kind==7&&k<3){uint8_t v[FP_SIZE+1u];fm6_unpack(browser_fm6packed[k],v);fm6_set_patch(k,v);fm6_slot[k]=(uint8_t)trk[k].p[P_E7];return;}
+    if(kind==8&&k<27){browser_fm6used[k]=!!used;for(unsigned t=0;t<3;t++)if(trk[t].p[P_E7]==FM6_NFACTORY+k)fm6_slot[t]=255;return;}
     if(kind==0||kind==1){
         project_t *p=kind==0?&browser_project:(k<4?&proj_slot[k]:0);if(!p)return;
         p->magic=used?PROJ_MAGIC:0;p->size=sizeof *p;p->sum=proj_sum(p);

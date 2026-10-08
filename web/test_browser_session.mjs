@@ -10,11 +10,11 @@ const html=await readFile(new URL('./editor.html',import.meta.url),'utf8');
 const proto=html.split('/*PROTO-BEGIN*/')[1].split('/*PROTO-END*/')[0];
 const E=vm.runInNewContext(proto+';({makeMockDevice,buildSlot,SMP})',{setTimeout,clearTimeout,setInterval,clearInterval,console,TextEncoder});
 const mock=E.makeMockDevice({auto:false,catalog,noBackup:true});
-for(let e=0;e<9;e++) {
+for(let e=0;e<10;e++) {
  mock.state.engine=e;
  catalog.engines[e].presets.forEach((p,i)=>{
   mock.sim.reload(i);
-  for(let n=0;n<58;n++)if(![0,25,26,27,29,30,31,32,39,40,49].includes(n))assert.equal(mock.state.p[n],p.values[n],`preset ${e}/${i}, parameter ${n}`);
+  for(let n=0;n<61;n++)if(![0,25,26,27,29,30,31,32,39,40,49,50,51,52].includes(n))assert.equal(mock.state.p[n],p.values[n],`preset ${e}/${i}, parameter ${n}`);
  });
 }
 const s=Int16Array.from({length:11025},(_,i)=>Math.sin(i*2*Math.PI*220/22050)*18000);
@@ -29,7 +29,7 @@ for(const mutate of [d=>d.format='felucca-backup',d=>d.tracks.pop(),d=>d.tracks[
 function sampleEnergy(loaded) {
  const e=new WebAssembly.Instance(module).exports;e.synth_init();e.synth_target(0);e.synth_engine(4);
  catalog.engines[4].presets[0].values.forEach((v,i)=>e.synth_param(i,v));
- e.synth_param(50,8);e.synth_param(35,0);e.synth_param(36,0);
+ e.synth_param(53,8);e.synth_param(35,0);e.synth_param(36,0);
  if(loaded){new Uint8Array(e.memory.buffer,e.synth_sample_buffer(0),0x14000).set(restored.smp[0].flash);e.synth_sample_apply(0);}
  e.synth_midi(0x90,60,100);const pcm=new Int32Array(e.memory.buffer);let sum=0;
  for(let b=0;b<300;b++){const p=e.synth_render()/4;for(const x of pcm.subarray(p,p+64))sum+=Math.abs(x);}

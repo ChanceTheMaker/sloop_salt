@@ -5,8 +5,8 @@ No FM-1 or MIDI permission is needed. Both browser views support QWERTY,
 pointer and touch. **FM-1** stops browser playback and returns to
 the device connection screen.
 
-The browser engine compiles this repository's SLOOP 2.3 DSP: nine synth engines,
-68 factory sounds, 37 drum kits, three synth parts and one drum part, insert/send
+The browser engine compiles this repository's SLOOP 2.4.1 DSP: ten synth engines,
+76 factory sounds, 37 drum kits, three synth parts and one drum part, insert/send
 effects, mixer, arpeggiator, scale/chord controls and 64-step patterns. Browser
 volume is independent of track levels. The waveform displays the actual browser
 output. **Play sequence** starts from the beginning; **Stop** ends playback and
@@ -15,7 +15,7 @@ browser transport and notes. Collapsing the keyboard releases held keys without
 stopping the sequence.
 
 The Samples tab uses the existing WAV/CHOP conversion and the real SLOOP ADPCM
-decoder. USR1–USR3 are browser RAM slots in this mode. The same supported file
+decoder. USR1-USR4 are browser RAM slots in this mode. The same supported file
 types, mono 22050 Hz conversion and per-slot limits apply. Select a USR set in
 SAMPLE or GRAIN to play it. A new browser workspace starts with empty patterns,
 project slots and user preset slots.
@@ -35,8 +35,18 @@ Requires Python with Pillow and Zig 0.13.0. Build without a firmware toolchain:
 ```sh
 python tools/build_browser_audio.py --zig /path/to/zig
 python web/build_locales.py
-python web/make_site.py docs/firmware/sloop-2.3.fwsc 2.3 build/site
+python web/make_site.py docs/firmware/sloop-2.4.1.fwsc 2.4.1 build/site
+python web/make_site.py docs/firmware/sloop-2.4.1.fwsc 2.4.1 build/studio --studio
 ```
+
+The first site build is the compact standalone simulator; `--studio` builds the
+full themed Studio and installer site. Both use the same engine.
+
+Session format 2 keeps FM6 track patches and the 27-slot bank, per-step nudges,
+parameter locks, fill conditions, and four sample slots. Format 1 exports and
+existing browser storage migrate automatically: the three new common
+parameters are inserted before the eight engine parameters. The original
+format-1 IndexedDB record is retained under `before-2.4.1` on the first save.
 
 The build writes generated tables under `build/browser-audio/gen` and the runtime
 asset `web/audio/engine.wasm`. `engine.c` includes Sloop's existing DSP sources
@@ -52,8 +62,7 @@ to the worklet. The silent `?mock=1` fixtures retain their prior behavior. Brows
 state and MIDI never use the connected hardware's output port.
 
 This port reuses the architecture of Chance Roth's committed Felucca browser
-implementation (`558f2b8`), with a fresh SLOOP build. Felucca's WASM, FM6 engine,
-song-chain model and unfinished sample/session implementation are not included.
+implementation (`558f2b8`), with a fresh SLOOP build. The DSP and FM6 hotfix come from Sloop 2.4.1; the browser adapters are maintained in this fork.
 Code is GPL-3.0-only; firmware credits and the CC0 sample attributions in
 `assets/samples-cc0/CREDITS.txt` remain applicable. See the repository LICENSE
 and LICENSING.md. Keep the corresponding source and build scripts with releases.
@@ -63,6 +72,7 @@ and LICENSING.md. Keep the corresponding source and build scripts with releases.
 ```sh
 node web/test_audio_engine.mjs
 node web/test_browser_session.mjs
+node web/test_upgrade_241.mjs
 node web/test_native_firmware.mjs
 node web/test_browser_synth.mjs
 node web/test_firmware_view.mjs
@@ -86,8 +96,7 @@ The tested browser is desktop Edge; mobile layouts are simulated. Real-device
 mobile performance, listening comparisons against an FM-1, and other browsers
 still need testing. External MIDI input, USB audio and physical panel calibration
 require separate hardware integration. Browser Firmware mode includes the
-native musical controls, recording and arranger. No FM6 engine is
-present because it is not a SLOOP engine. AudioWorklet needs HTTPS or localhost;
+native musical controls, recording, arranger and FM6/DX7 patches. AudioWorklet needs HTTPS or localhost;
 opening the HTML directly as a local file is insufficient.
 
 ## Browser views

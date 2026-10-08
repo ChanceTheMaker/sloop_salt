@@ -1,5 +1,31 @@
 # Website development
 
+## Current integration: SLOOP 2.4.1
+
+Branch `feat/sloop-2.4.1-webapp` imports upstream tag `v2.4.1`
+(`a1c5d68767ae10fafb6821dc63b9b1fc490342d2`). The device firmware sources and
+installer package are unchanged from that release. Package SHA-256:
+`98ccc614d67a6fe48ee180368d5586b64f071f3c196224bfff3daef1631fb005`.
+
+Both browser presentations use the rebuilt 2.4.1 engine, including the FM6 AMS
+hotfix. The adapter now handles 61 parameters, FM6 patches/bank, four sample
+slots, microtiming, parameter locks and fills. Version-1 browser sessions migrate
+to version 2; IndexedDB keeps the original under `before-2.4.1` before replacing
+`current`. Exported old files are not modified.
+
+Build `build/site` for the compact Simulator; add `--studio` and target
+`build/studio` for the full Studio/installer. Do not exchange these deployment
+outputs. Full preview: http://localhost:8772/webapp/editor/ (installer at
+`/webapp/installer/`); compact preview remains on port 8769.
+
+Validation includes real-WASM audio/session/native UI tests, upstream FM6,
+project, sequencer and user-kit host tests, and Edge checks for migration, FM6
+editing, samples, themes, mobile layouts and simulated MIDI input. These are
+software checks; no device flashing or hardware verification was performed.
+This integration is local, not a live deployment.
+
+## Original website baseline (historical)
+
 Baseline: isod89/sloop-fm1 `d691ba7b2d922f1a1f41a3622cffe29ce41c5506` (SLOOP 2.3).
 Work is prepared in focused branches on ChanceTheMaker/sloop-fm1 for review and
 possible upstream contribution. Firmware, SysEx command definitions, storage
@@ -21,7 +47,7 @@ Generate a preview using the unchanged tracked SLOOP firmware package:
 
 ```sh
 python web/build_locales.py
-python web/make_site.py docs/firmware/sloop-2.3.fwsc 2.3 build/site
+python web/make_site.py docs/firmware/sloop-2.4.1.fwsc 2.4.1 build/site
 python -m http.server 8769 --bind 127.0.0.1 --directory build/site
 node web/test_web.mjs
 ```

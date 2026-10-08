@@ -25,6 +25,7 @@ const exportSession=async()=>{const event=page.waitForEvent('download');await pa
 const signal=()=>page.waitForFunction(()=>{const a=new Float32Array(testAnalyser.fftSize);testAnalyser.getFloatTimeDomainData(a);return a.some(v=>Math.abs(v)>.001);});
 try{
  await page.goto('http://127.0.0.1:8769/webapp/editor/',{waitUntil:'domcontentloaded',timeout:60000});
+ await page.getByRole('button',{name:'Essential only',exact:true}).click();
  await page.locator('#view-firmware').click();await page.locator('.native-screen').waitFor({state:'visible'});
  const chooseLayout=async name=>{await page.getByRole('button',{name,exact:true}).click();};
  assert.equal(await page.locator('#firmware-view #play-keys button').count(),27);
@@ -101,7 +102,7 @@ try{
  await page.keyboard.down('a');await page.evaluate(()=>window.dispatchEvent(new Event('blur')));await page.keyboard.up('a');await page.keyboard.up('Space');
  await page.waitForFunction(()=>!document.querySelector('.native-buttons [aria-pressed=true]')&&!document.querySelector('#play-keys [aria-pressed=true]'));
  await page.waitForFunction(()=>document.querySelector('.native-status').textContent.includes('Layer PLAY'));
- await button('ENV').click();await button('SAVE').click();await button('SAVE').click();
+ await button('ENV').click();await page.waitForTimeout(100);await button('SAVE').click();await page.waitForTimeout(100);await button('SAVE').click();await page.waitForTimeout(100);
  await page.getByRole('button',{name:'KNOB 4',exact:true}).press('ArrowUp');await page.getByRole('button',{name:'KNOB 4',exact:true}).press('ArrowUp');
  const banked=await exportSession();assert.ok(banked.bank[0],'native user bank saved on audio thread');
  console.log('Native free recording and focus-loss release passed');

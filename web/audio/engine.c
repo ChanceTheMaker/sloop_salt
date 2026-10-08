@@ -9,10 +9,15 @@
 static struct { volatile uint32_t notes, buttons; } fm1_in;
 static void fm1_irq_off(void) {}
 static void fm1_irq_on(void) {}
-static uint8_t browser_samples[3][0x14000];
+static uint8_t browser_samples[4][0x14000];
 #define SMP_USER_XIP(k) (browser_samples[k])
 #include "../../firmware/src/core.h"
 #include "../../firmware/src/engines.c"
+static uint8_t browser_fm6bank[27][128],browser_fm6used[27],browser_fm6packed[3][128];
+static int browser_fm6_read(uint32_t k,uint8_t *p) {
+    if(k>=27||!browser_fm6used[k])return 1;
+    memcpy(p,browser_fm6bank[k],128);return 0;
+}
 #include "../../firmware/src/drums.c"
 #include "../../firmware/src/params.c"
 #include "../../firmware/src/voice.c"
@@ -36,7 +41,9 @@ API void synth_init(void) {
     }
     song.master_q12=4096;
     memset(browser_samples,255,sizeof browser_samples);
-    for(unsigned k=0;k<3;k++) smp_user_scan(k);
+    for(unsigned k=0;k<4;k++) smp_user_scan(k);
+    fm6_init();
+    fm6_bank_read=browser_fm6_read;
     browser_ui_init();
 }
 API void synth_target(unsigned k) { if(k<NTRK) target=k; }
@@ -81,12 +88,22 @@ API void synth_panic(void) {
 }
 API unsigned synth_playing(void) {return song.playing;}
 API unsigned synth_position(unsigned k) {return k<NTRK?trk[k].seq_idx:0;}
-API uint8_t *synth_sample_buffer(unsigned k) {return k<3?browser_samples[k]:0;}
-API void synth_sample_apply(unsigned k) {if(k<3){panic_req=15;smp_user_scan(k);}}
-API int32_t *synth_render(void) {fm1_ms=(uint32_t)(frames*1000/FS);mix_block(output,CTL);for(unsigned i=1;i<CTL;i+=2)scope_buf[scope_w++&(SCOPE_N-1u)]=(int16_t)output[2*i];frames+=CTL;return output;}
+API uint8_t *synth_sample_buffer(unsigned k) {return k<4?browser_samples[k]:0;}
+API void synth_sample_apply(unsigned k) {if(k<4){panic_req=15;smp_user_scan(k);}}
+API int32_t *synth_render(void) {fm6_poll();fm1_ms=(uint32_t)(frames*1000/FS);mix_block(output,CTL);for(unsigned i=1;i<CTL;i+=2){unsigned w=scope_w++&(SCOPE_N-1u);scope_buf[w]=(int16_t)output[2*i];scope_bufr[w]=(int16_t)output[2*i+1];}frames+=CTL;return output;}
 API unsigned engine_count(void) {return NENGINES;}
 API unsigned param_count(void) {return P_COUNT;}
 API unsigned global_count(void) {return G_COUNT;}
+API void synth_extras(unsigned k,unsigned type,unsigned index,int a,int b) {
+    if(k>=NTRK)return;
+    if(type==0&&index<NSTEP)trk[k].micro[index]=clamp(a,-32,31);
+    if(type==1&&index<NSTEP/4)trk[k].fill[index]=a&255;
+    if(type==2&&index<NLOCK){
+        trk[k].lock[index].step=(a>=0&&a<NSTEP)?a:LOCK_FREE;
+        trk[k].lock[index].param=(b>>16)&255;
+        trk[k].lock[index].val=(int16_t)b;
+    }
+}
 API const char *engine_name(unsigned e) {return e<NENGINES?N_ENGNAME[e]:"";}
 API unsigned preset_count(unsigned e) {return e<NENGINES?ENGINES[e]->npresets:0;}
 API const char *preset_name(unsigned e,unsigned p) {return e<NENGINES&&p<ENGINES[e]->npresets?ENGINES[e]->presets[p].name:"";}
